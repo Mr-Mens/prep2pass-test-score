@@ -1,0 +1,35 @@
+# PassReady — Cursor / agent rules
+
+## Tech stack
+- Frontend: Next.js (App Router, TypeScript)
+- Styling: Tailwind CSS
+- Backend: Next.js API routes
+- Database: Supabase (PostgreSQL)
+- Auth: Supabase Auth (later)
+- Payments: Stripe
+- AI: OpenAI API
+
+## Code
+- TypeScript everywhere; functional React components
+- Modular, reusable files; clean architecture without over-layering
+
+## API
+- REST handlers; validate all inputs with Zod
+- Never trust client-submitted data for security or billing decisions
+
+## Security
+- No API keys in client bundles; env vars for secrets
+- Sanitize inputs; rate-limit public/sensitive API routes
+- Protect PII; GDPR-minded collection and retention
+
+## Performance
+- Prefer server-side logic; avoid unnecessary re-renders
+- Target fast API responses; design for concurrency (stateless routes)
+
+## Product (MVP)
+- Flow: homepage → assessment form → pay £4.99 → AI report
+- Outputs: pass probability, top risks, personalised improvement plan
+- AI tone: professional instructor — specific, actionable, not generic
+
+## Build approach
+- MVP first; simple and fast; validate with users; iterate from feedback

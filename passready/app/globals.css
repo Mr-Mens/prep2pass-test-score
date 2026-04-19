@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "../styles/tokens.css";
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply min-h-dvh bg-brand-50 text-brand-900 antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-teal-200/60 text-brand-950;
+  }
+}
+
+@media print {
+  header,
+  footer {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+}

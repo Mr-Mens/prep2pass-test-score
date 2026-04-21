@@ -82,7 +82,7 @@ export default function HomePage() {
           />
           <TrustBadge
             title="Payment-secure checkout"
-            description="One-time payment through Stripe with server-side verification before report unlock."
+            description="One-time payment through Stripe, safe and secure."
           />
         </div>
       </Section>

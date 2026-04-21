@@ -86,7 +86,7 @@ export function CheckoutSuccessFlow() {
         <p className="text-sm font-medium text-brand-600/90">Processing securely</p>
         <p className="mt-2 text-base text-brand-900">{message}</p>
         <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
-          Your Premium TestReady Score Report unlocks only after server-side payment verification.
+          We confirm your payment with Stripe before showing your report.
         </p>
       </div>
     );

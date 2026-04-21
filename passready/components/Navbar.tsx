@@ -14,6 +14,21 @@ const links = [
   { href: "/report-lookup", label: "Find my report" },
 ] as const;
 
+const mobileNavItemBase =
+  "block w-full rounded-xl px-4 py-3.5 text-left text-sm transition-colors";
+
+function mobileNavLinkClass(active: boolean) {
+  return `${mobileNavItemBase} font-medium ${
+    active ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
+  }`;
+}
+
+function mobileNavCtaClass(active: boolean) {
+  return `${mobileNavItemBase} font-semibold ${
+    active ? "bg-teal-50/90 text-teal-950" : "text-teal-800 hover:bg-teal-50/60"
+  }`;
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -80,31 +95,28 @@ export function Navbar() {
           className="border-t border-brand-100 bg-white/98 shadow-inner md:hidden"
           style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         >
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-3 py-3 sm:px-6">
-            <Button
+          <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-3 py-3 sm:px-6" aria-label="Mobile primary">
+            <Link
               href="/assessment"
-              variant="conversion"
-              className="w-full"
+              className={mobileNavCtaClass(pathname === "/assessment")}
               onClick={() => setOpen(false)}
             >
               Get My TestReady Score
-            </Button>
+            </Link>
             {links.map((l) => {
               const active = pathname === l.href;
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`rounded-xl px-4 py-3.5 text-sm font-medium ${
-                    active ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
-                  }`}
+                  className={mobileNavLinkClass(active)}
                   onClick={() => setOpen(false)}
                 >
                   {l.label}
                 </Link>
               );
             })}
-          </div>
+          </nav>
         </div>
       ) : null}
     </header>

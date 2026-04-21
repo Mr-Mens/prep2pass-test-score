@@ -6,7 +6,7 @@ import { Section } from "@/components/Section";
 export const metadata: Metadata = {
   title: "Find My Report",
   description:
-    "Find your saved Premium TestReady Score Reports — enter the email you used at checkout.",
+    "Find your saved Premium TestReady Score Reports. Enter the email you used at checkout.",
 };
 
 export default function ReportLookupPage() {

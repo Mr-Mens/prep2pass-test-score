@@ -123,13 +123,13 @@ export function ResultsView() {
         k: "Mock test",
         v:
           a.mockTestTaken === "yes"
-            ? `Yes · ${a.mockTestResult === "pass" ? "Pass" : a.mockTestResult === "fail" ? "Fail" : "—"}`
+            ? `Yes · ${a.mockTestResult === "pass" ? "Pass" : a.mockTestResult === "fail" ? "Fail" : "Not recorded"}`
             : "No",
       },
       { k: "Serious / driving faults", v: `${a.seriousFaults} / ${a.drivingFaults}` },
       { k: "Confidence (self-rated)", v: `${a.confidenceLevel}/10` },
       { k: "Weak areas", v: weakAreaLabels(a.weakAreas) },
-      { k: "Extra notes", v: a.extraNotes?.trim() ? a.extraNotes : "—" },
+      { k: "Extra notes", v: a.extraNotes?.trim() ? a.extraNotes : "None" },
     ];
   }, [state]);
 
@@ -220,10 +220,10 @@ export function ResultsView() {
       className="max-md:bg-transparent bg-brand-50 print:bg-white print:py-10"
       contentClassName="max-w-3xl"
       eyebrow="Prep2Pass"
-      subtitle="Structured from your answers — saved on this device for quick access."
+      subtitle="Structured from your answers, saved on this device for quick access."
     >
       <div className="space-y-5 pb-32 sm:space-y-10 sm:pb-0 print:space-y-6 md:pb-0">
-        {/* A — Score summary */}
+        {/* A: score summary */}
         <div className={`${reportCard} print:break-inside-avoid`}>
           <p className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-500/90 sm:text-left">
             Your TestReady Score
@@ -255,7 +255,7 @@ export function ResultsView() {
           <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
             <h3 className={sectionTitle}>Coach note</h3>
             <p className={sectionIntro}>
-              A concise takeaway you can read before your next lesson — grounded in your answers, not generic tips.
+              A concise takeaway you can read before your next lesson, grounded in your answers, not generic tips.
             </p>
             <div className="mt-4 rounded-xl border border-teal-200/80 bg-teal-50/85 px-5 py-5 text-sm leading-relaxed text-teal-950 shadow-sm ring-1 ring-teal-200/50 print:border-teal-200 print:bg-teal-50/60 print:ring-0">
               {report.coachMessage}
@@ -265,16 +265,16 @@ export function ResultsView() {
           <p className="mt-8 text-center text-xs leading-relaxed text-brand-500/85 sm:text-left">{metaLine}</p>
         </div>
 
-        {/* B — Risk areas */}
+        {/* B: risk areas */}
         <div className="print:break-inside-avoid">
           <RiskAreasSection blocks={riskGroups} />
         </div>
 
-        {/* C — Next steps */}
+        {/* C: next steps */}
         <div className={`${reportCard} print:break-inside-avoid`}>
           <h2 className={sectionTitle}>What to do next</h2>
           <p className={sectionIntro}>
-            A focused lesson plan from your report — work through in order with your instructor where you can.
+            A focused lesson plan from your report. Work through it in order with your instructor where you can.
           </p>
           <ol className="mt-6 space-y-3">
             {report.nextSteps.map((item, i) => (
@@ -294,17 +294,17 @@ export function ResultsView() {
           </ol>
         </div>
 
-        {/* D — Lesson guidance */}
+        {/* D: lesson guidance */}
         <div className={`${reportCard} print:break-inside-avoid`}>
           <h2 className={sectionTitle}>Lesson guidance</h2>
           <p className={sectionIntro}>
-            A realistic steer on how much focused time often helps at this stage — use it to plan with your instructor,
+            A realistic steer on how much focused time often helps at this stage. Use it to plan with your instructor,
             not as a fixed rule.
           </p>
           <p className="mt-5 text-sm font-medium leading-relaxed text-brand-900">{report.recommendedHours}</p>
         </div>
 
-        {/* E — Use this report well */}
+        {/* E: use this report well */}
         <div className={`${reportCard} print:break-inside-avoid`}>
           <h2 className={sectionTitle}>Use this report well</h2>
           <p className={sectionIntro}>
@@ -321,7 +321,7 @@ export function ResultsView() {
               <span className="font-semibold text-brand-700" aria-hidden>
                 ·
               </span>
-              <span>Pick one or two risk areas to improve this week — avoid spreading attention too thin.</span>
+              <span>Pick one or two risk areas to improve this week, and avoid spreading attention too thin.</span>
             </li>
             <li className="flex gap-3 rounded-xl border border-brand-100/80 bg-brand-50/40 px-4 py-3 print:bg-white">
               <span className="font-semibold text-brand-700" aria-hidden>
@@ -352,7 +352,7 @@ export function ResultsView() {
         <div className="rounded-2xl border border-amber-200/90 bg-amber-50/50 p-5 text-sm leading-relaxed text-amber-950 print:border-brand-200 print:bg-white">
           <p className="font-semibold text-amber-950">Disclaimer</p>
           <p className="mt-2 text-amber-950/95">
-            This TestReady Score report is guidance only — not driving instruction, not DVSA advice, and not a
+            This TestReady Score report is guidance only. It is not driving instruction, not DVSA advice, and not a
             guarantee of test outcomes. {SITE.name} combines scoring with optional AI wording; always review with your
             instructor alongside how you drive.
           </p>

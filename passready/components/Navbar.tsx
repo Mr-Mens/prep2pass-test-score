@@ -25,7 +25,7 @@ export function Navbar() {
           href="/"
           className="flex min-h-[44px] min-w-0 items-center gap-2 rounded-xl pr-2"
           onClick={() => setOpen(false)}
-          aria-label={`${SITE.name} — Home`}
+          aria-label={`${SITE.name}, home`}
         >
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-950 text-sm font-bold text-white shadow-sm">
             P2

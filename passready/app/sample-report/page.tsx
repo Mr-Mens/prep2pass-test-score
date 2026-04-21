@@ -9,7 +9,7 @@ import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readin
 export const metadata: Metadata = {
   title: "Sample Premium TestReady Score Report",
   description:
-    "Preview a realistic Premium TestReady Score Report from Prep2Pass before checkout — score, risks, next steps, coach note, and lesson focus.",
+    "Preview a realistic Premium TestReady Score Report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus.",
 };
 
 const sampleRiskAreas: GroupedRiskArea[] = [
@@ -26,7 +26,7 @@ const sampleRiskAreas: GroupedRiskArea[] = [
       },
     ],
     summary:
-      "Front-load test prep: Mirrors & MSPSL — short timed repeats until each look is spoken before you signal or change speed.",
+      "Front-load test prep: Mirrors & MSPSL, with short timed repeats until each look is spoken before you signal or change speed.",
     highlights: [
       "Late planning when traffic density increases near junctions.",
     ],
@@ -44,7 +44,7 @@ const sampleRiskAreas: GroupedRiskArea[] = [
       },
     ],
     summary:
-      "Junctions · Roundabouts: one narrow win per week — same approach speed until emerging feels boring, then add traffic.",
+      "Junctions · Roundabouts: one narrow win per week. Keep the same approach speed until emerging feels boring, then add traffic.",
   },
   {
     groupKey: "following_routes",
@@ -80,7 +80,7 @@ const sampleRiskAreas: GroupedRiskArea[] = [
       },
     ],
     summary:
-      "Reverse bay parking · Parallel parking: same slow-speed mirror pattern on both — control first, lines second.",
+      "Reverse bay parking · Parallel parking: same slow-speed mirror pattern on both. Control first, lines second.",
   },
 ];
 
@@ -112,7 +112,7 @@ export default function SampleReportPage() {
       contentClassName="max-w-3xl"
       eyebrow="Preview"
       title="Sample Premium TestReady Score Report"
-      subtitle="Illustrative example — your paid report follows the same structure."
+      subtitle="Illustrative example. Your paid report follows the same structure."
     >
       <div className="space-y-8 print:space-y-4">
         <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] print:border-brand-200 print:shadow-none print:ring-0">

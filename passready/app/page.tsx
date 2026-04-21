@@ -12,7 +12,7 @@ import { PREMIUM_PRICE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "TestReady Score by Prep2Pass",
   description:
-    "Get your TestReady Score — a clear UK learner assessment with practical risks and next steps before your practical test.",
+    "Get your TestReady Score: a clear UK learner assessment with practical risks and next steps before your practical test.",
 };
 
 export default function HomePage() {
@@ -28,7 +28,7 @@ export default function HomePage() {
               Know if you&apos;re ready to pass before you book your test
             </h1>
             <p className="mt-4 max-w-sm text-pretty text-[0.9375rem] leading-relaxed text-brand-600/90 md:mt-5 md:max-w-xl md:text-base lg:mt-6 lg:max-w-2xl">
-              Get a clear breakdown of what might hold you back — and exactly what to fix.
+              Get a clear breakdown of what might hold you back, and exactly what to fix.
             </p>
             <div
               className="mt-6 flex w-full max-w-[17.5rem] items-center justify-between gap-3 rounded-2xl border border-brand-200/40 bg-brand-50/40 px-4 py-3 ring-1 ring-black/[0.02] md:mt-7 lg:mt-8 lg:max-w-[20rem] lg:gap-4 lg:px-5 lg:py-4"
@@ -103,7 +103,7 @@ export default function HomePage() {
             {
               step: "02",
               title: "Unlock your TestReady Score",
-              body: `Pay ${PREMIUM_PRICE} once through secure checkout for your full report — score, risks, and next steps.`,
+              body: `Pay ${PREMIUM_PRICE} once through secure checkout for your full report: score, risks, and next steps.`,
             },
             {
               step: "03",
@@ -123,7 +123,7 @@ export default function HomePage() {
       <Section
         eyebrow="Premium TestReady Score Report"
         title="What you unlock after checkout"
-        subtitle="Structured, instructor-style guidance — not generic tips."
+        subtitle="Structured, instructor-style guidance, not generic tips."
       >
         <div className="grid gap-6 md:grid-cols-2">
           <FeatureCard

@@ -35,12 +35,12 @@ export const WEAK_AREA_OPTIONS = [
   {
     id: "forwardBayParking",
     label: "Forward bay parking",
-    description: "Driving into a bay — positioning, accuracy, and observations",
+    description: "Driving into a bay: positioning, accuracy, and observations",
   },
   {
     id: "reverseBayParking",
     label: "Reverse bay parking",
-    description: "Reversing into a bay — control, lines, and all-round awareness",
+    description: "Reversing into a bay: control, lines, and all-round awareness",
   },
   {
     id: "pullUpOnRightReverse",
@@ -50,7 +50,7 @@ export const WEAK_AREA_OPTIONS = [
   {
     id: "parallelParking",
     label: "Parallel parking",
-    description: "Parking behind another vehicle — control, positioning, observations",
+    description: "Parking behind another vehicle: control, positioning, observations",
   },
   {
     id: "independentDriving",
@@ -105,7 +105,7 @@ export const PRODUCT_SKILL_MAP = {
     riskTier: "critical",
     reportLabel: "Mirrors",
     issueLine:
-      "Mirrors & MSPSL: mirror routine before signalling, braking, or changing direction — weak mirror use often drives junction and roundabout faults.",
+      "Mirrors & MSPSL: mirror routine before signalling, braking, or changing direction. Weak mirror use often drives junction and roundabout faults.",
   },
   speedControl: {
     groupKey: "observation_signalling_planning",
@@ -113,7 +113,7 @@ export const PRODUCT_SKILL_MAP = {
     riskTier: "critical",
     reportLabel: "Speed & limits",
     issueLine:
-      "Use of speed: matching limits and conditions with safe judgement — speed and positioning faults often appear together under test pressure.",
+      "Use of speed: matching limits and conditions with safe judgement. Speed and positioning faults often appear together under test pressure.",
   },
   junctions: {
     groupKey: "junctions_roundabouts_crossings",
@@ -121,7 +121,7 @@ export const PRODUCT_SKILL_MAP = {
     riskTier: "critical",
     reportLabel: "Junctions",
     issueLine:
-      "Junctions: emerging and positioning with early observations — avoid late speed changes that surprise following traffic.",
+      "Junctions: emerging and positioning with early observations. Avoid late speed changes that surprise following traffic.",
   },
   roundabouts: {
     groupKey: "junctions_roundabouts_crossings",
@@ -137,7 +137,7 @@ export const PRODUCT_SKILL_MAP = {
     riskTier: "critical",
     reportLabel: "Moving off safely",
     issueLine:
-      "Moving away and stopping: all-round observations and smooth control on every pull-away — faults here repeat across routes.",
+      "Moving away and stopping: all-round observations and smooth control on every pull-away. Faults here repeat across routes.",
   },
   lanePositioning: {
     groupKey: "control_and_positioning",
@@ -145,7 +145,7 @@ export const PRODUCT_SKILL_MAP = {
     riskTier: "critical",
     reportLabel: "Lane positioning",
     issueLine:
-      "Safe positioning: road position, lane discipline, and safe space around hazards — pairs with speed judgement on busy roads.",
+      "Safe positioning: road position, lane discipline, and safe space around hazards. This pairs with speed judgement on busy roads.",
   },
   forwardBayParking: {
     groupKey: "manoeuvres",
@@ -209,7 +209,7 @@ export const PRODUCT_SKILL_MAP = {
     riskTier: "medium",
     reportLabel: "Motorways",
     issueLine:
-      "Motorways: joining, lane discipline, and safe gaps — even if not on every test route, gaps here show planning under speed.",
+      "Motorways: joining, lane discipline, and safe gaps. Even if not on every test route, gaps here show planning under speed.",
   },
   nightDriving: {
     groupKey: "driving_conditions",

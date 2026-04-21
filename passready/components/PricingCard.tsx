@@ -1,7 +1,7 @@
 import { Button } from "@/components/Button";
 
 const DEFAULT_BULLETS = [
-  "Your readiness score — explained in plain English",
+  "Your readiness score, explained in plain English",
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
@@ -43,7 +43,7 @@ export function PricingCard({
       </ul>
 
       <p className="mt-6 rounded-xl border border-teal-100/90 bg-teal-50/35 px-3 py-2.5 text-center text-xs leading-relaxed text-brand-700">
-        One failed driving test costs £62+ — this helps you avoid it.
+        One failed driving test costs £62+. This helps you avoid it.
       </p>
 
       <div className="mt-8 border-t border-brand-100/80 pt-8">

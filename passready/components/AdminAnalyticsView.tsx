@@ -26,7 +26,7 @@ type Sale = {
 };
 
 function poundsFromMinor(amount: number | null) {
-  if (amount == null) return "—";
+  if (amount == null) return "N/A";
   return `£${(amount / 100).toFixed(2)}`;
 }
 
@@ -122,7 +122,7 @@ export function AdminAnalyticsView() {
               { k: "Revenue (30d)", v: poundsFromMinor(overview.revenueLast30Days) },
               { k: "AI reports", v: overview.aiReportCount },
               { k: "Fallback reports", v: overview.fallbackReportCount },
-              { k: "Avg readiness", v: overview.averageReadinessScore ?? "—" },
+              { k: "Avg readiness", v: overview.averageReadinessScore ?? "N/A" },
               { k: "Reports (7d)", v: overview.reportsLast7Days },
             ].map((item) => (
               <div
@@ -154,7 +154,7 @@ export function AdminAnalyticsView() {
                       <td className="py-2">{new Date(s.created_at).toLocaleString("en-GB")}</td>
                       <td className="py-2">{poundsFromMinor(s.amount_total)}</td>
                       <td className="py-2">{s.payment_status}</td>
-                      <td className="py-2">{s.customer_email ?? "—"}</td>
+                      <td className="py-2">{s.customer_email ?? "N/A"}</td>
                       <td className="py-2 font-mono text-xs">{s.stripe_session_id}</td>
                     </tr>
                   ))}

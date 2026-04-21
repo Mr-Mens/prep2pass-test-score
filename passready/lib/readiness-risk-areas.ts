@@ -123,7 +123,7 @@ export function normalizeGroupedRiskAreas(raw: unknown): GroupedRiskArea[] {
         severity: "low",
         skills: [],
         summary:
-          "No stored risk lines for this snapshot — run a mock route near your test centre to stress-test your usual routines.",
+          "No stored risk lines for this snapshot. Run a mock route near your test centre to stress-test your usual routines.",
       },
     ]);
   }
@@ -169,7 +169,7 @@ export function normalizeGroupedRiskAreas(raw: unknown): GroupedRiskArea[] {
       severity: "low",
       skills: [],
       summary:
-        "Stored risk areas could not be read — your instructor can still review on-road performance with you.",
+        "Stored risk areas could not be read. Your instructor can still review on-road performance with you.",
     },
   ]);
 }

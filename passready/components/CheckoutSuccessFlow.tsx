@@ -69,7 +69,7 @@ export function CheckoutSuccessFlow() {
         setMessage(
           e instanceof ApiRequestError
             ? e.message
-            : "We could not finalise your report. Your payment is secure — return to the TestReady Score Assessment and try again.",
+            : "We could not finalise your report. Your payment is secure. Return to the TestReady Score Assessment and try again.",
         );
       }
     }

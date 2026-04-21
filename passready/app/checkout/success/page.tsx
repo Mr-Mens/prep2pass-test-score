@@ -16,7 +16,7 @@ export default function CheckoutSuccessPage() {
       contentClassName="max-w-2xl"
       eyebrow="Payment"
       title="Preparing your Premium TestReady Score Report"
-      subtitle="Confirming payment securely — usually a few seconds."
+      subtitle="Confirming payment securely, usually in a few seconds."
     >
       <Suspense
         fallback={

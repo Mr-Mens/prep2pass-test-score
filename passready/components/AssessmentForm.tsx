@@ -28,7 +28,7 @@ const sectionBox =
   "rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-7 sm:shadow-sm sm:ring-0";
 
 const CHECKOUT_VALUE_BULLETS = [
-  "Your readiness score — explained in plain English",
+  "Your readiness score, explained in plain English",
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
@@ -168,7 +168,7 @@ export function AssessmentForm() {
               inputMode="email"
               {...register("email")}
             />
-            <p className={hintClass}>Used for report delivery after checkout — not shared beyond Prep2Pass in this MVP.</p>
+            <p className={hintClass}>Used for report delivery after checkout. Not shared beyond Prep2Pass in this MVP.</p>
             {errors.email ? <p className={errorClass}>{errors.email.message}</p> : null}
           </div>
         </div>
@@ -178,7 +178,7 @@ export function AssessmentForm() {
         <SectionHeader
           step={2}
           title="Lessons & test plan"
-          hint="Rough numbers are fine — consistency matters more than perfect recall."
+          hint="Rough numbers are fine. Consistency matters more than perfect recall."
         />
         <div className="mt-6 grid gap-4 sm:gap-5">
           <div>
@@ -238,7 +238,7 @@ export function AssessmentForm() {
         <SectionHeader
           step={3}
           title="Mock test"
-          hint="Mocks are the closest safe proxy to exam pressure — answer honestly."
+          hint="Mocks are the closest safe proxy to exam pressure, so answer honestly."
         />
         <div className="mt-6 grid gap-4 sm:gap-5">
           <div>
@@ -308,7 +308,7 @@ export function AssessmentForm() {
         <SectionHeader
           step={4}
           title="Recent performance"
-          hint="Use one recent lesson or mock that felt typical — not your best-ever day."
+          hint="Use one recent lesson or mock that felt typical, not your best-ever day."
         />
         <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div>
@@ -322,7 +322,7 @@ export function AssessmentForm() {
               className={fieldClass}
               {...register("seriousFaults")}
             />
-            <p className={hintClass}>Must be zero or positive — serious faults weigh heavily in scoring.</p>
+            <p className={hintClass}>Must be zero or positive. Serious faults weigh heavily in scoring.</p>
             {errors.seriousFaults ? <p className={errorClass}>{errors.seriousFaults.message}</p> : null}
           </div>
           <div>
@@ -344,7 +344,7 @@ export function AssessmentForm() {
               <label className={labelClass} htmlFor="confidenceLevel">
                 Confidence going into the test
               </label>
-              <p className="text-sm font-semibold text-brand-800">{confidenceLevel ?? "—"}/10</p>
+              <p className="text-sm font-semibold text-brand-800">{confidenceLevel ?? "-"}/10</p>
             </div>
             <input
               id="confidenceLevel"
@@ -366,7 +366,7 @@ export function AssessmentForm() {
         <SectionHeader
           step={5}
           title="Focus areas"
-          hint="Tick skills that still wobble under test-like pressure — honesty improves the snapshot."
+          hint="Tick skills that still wobble under test-like pressure. Honesty improves the snapshot."
         />
 
         <Controller
@@ -409,7 +409,7 @@ export function AssessmentForm() {
         <SectionHeader
           step={6}
           title="Anything else?"
-          hint="Optional context your instructor would find useful — test centre, car type, nerves, etc."
+          hint="Optional context your instructor would find useful: test centre, car type, nerves, and similar."
         />
         <div className="mt-6">
           <label className={labelClass} htmlFor="extraNotes">
@@ -434,7 +434,7 @@ export function AssessmentForm() {
           Unlock your TestReady Score
         </h2>
         <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-          See exactly what could cause you to fail — and how to fix it before your test.
+          See exactly what could cause you to fail, and how to fix it before your test.
         </p>
         <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
           {CHECKOUT_VALUE_BULLETS.map((line) => (
@@ -456,7 +456,7 @@ export function AssessmentForm() {
           Secure payment powered by Stripe · No subscription · No hidden charges
         </p>
         <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
-          Most learners book their test too early — this helps you prepare with more clarity.
+          Most learners book their test too early. This helps you prepare with more clarity.
         </p>
       </div>
 
@@ -479,7 +479,7 @@ export function AssessmentForm() {
           {isSubmitting ? "Starting checkout…" : "Continue to Secure Checkout"}
         </Button>
         <p className="text-center text-xs leading-relaxed text-brand-500">
-          For information only — not a substitute for professional instruction. Your answers generate your
+          For information only, not a substitute for professional instruction. Your answers generate your
           TestReady Score report after payment.
         </p>
       </div>
@@ -504,7 +504,7 @@ export function AssessmentForm() {
           {isSubmitting ? "Starting checkout…" : "Continue to Secure Checkout"}
         </Button>
         <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
-          Information only — not a substitute for professional instruction
+          Information only, not a substitute for professional instruction
         </p>
       </div>
     </form>

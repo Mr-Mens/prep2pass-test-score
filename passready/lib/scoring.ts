@@ -109,21 +109,21 @@ function buildGroupSummary(
       return `${h0} Drill the repeat themes with your instructor until corrections are verbalised before each move.`;
     }
     if (/mock test was a fail/i.test(h0)) {
-      return "Mock was a fail — rehearse junctions and roundabouts first, then rebuild speed and observations on the same roads.";
+      return "Mock was a fail. Rehearse junctions and roundabouts first, then rebuild speed and observations on the same roads.";
     }
     if (/driving[- ]fault/i.test(h0)) {
-      return "Fault count points to rhythm, not slips — tighten one routine per lesson on routes you already know.";
+      return "Fault count points to rhythm, not slips. Tighten one routine per lesson on routes you already know.";
     }
     return h0;
   }
 
   if (severity === "high") {
-    return `Front-load test prep: ${focus || "these routines"} — short timed repeats until each step is spoken before the car moves.`;
+    return `Front-load test prep: ${focus || "these routines"}, with short timed repeats until each step is spoken before the car moves.`;
   }
   if (severity === "moderate") {
     return `${focus || "These areas"}: one narrow win per week (one junction type, one speed band), then reconnect on a mock.`;
   }
-  return `${focus || "These areas"}: light polish — keep one refresher drive before test week so habits stay automatic.`;
+  return `${focus || "These areas"}: light polish. Keep one refresher drive before test week so habits stay automatic.`;
 }
 
 function computeWeakAreaPenalty(assessment: AssessmentPayload): number {
@@ -145,19 +145,19 @@ function buildGroupedRiskAreas(assessment: AssessmentPayload): GroupedRiskArea[]
 
   if (assessment.seriousFaults > 0) {
     getBucket(buckets, "basics").highlights.push(
-      `Serious fault(s) reported (${assessment.seriousFaults}) — treat as a priority with your instructor before test day.`,
+      `Serious fault(s) reported (${assessment.seriousFaults}). Treat this as a priority with your instructor before test day.`,
     );
   }
 
   if (assessment.mockTestTaken === "yes" && assessment.mockTestResult === "fail") {
     getBucket(buckets, "junctions_roundabouts_crossings").highlights.push(
-      "Mock test was a fail — isolate behaviours that could become serious faults under exam conditions.",
+      "Mock test was a fail. Isolate behaviours that could become serious faults under exam conditions.",
     );
   }
 
   if (assessment.drivingFaults >= 12) {
     getBucket(buckets, "basics").highlights.push(
-      `Higher driving-fault count (${assessment.drivingFaults}) in a representative session — suggests consistency needs work, not one-off slips.`,
+      `Higher driving-fault count (${assessment.drivingFaults}) in a representative session suggests consistency needs work, not one-off slips.`,
     );
   }
 
@@ -199,7 +199,7 @@ function buildGroupedRiskAreas(assessment: AssessmentPayload): GroupedRiskArea[]
       severity: "low",
       skills: [],
       summary:
-        "No major self-reported hotspots — still worth one mock route near your test centre to pressure-test your default routines.",
+        "No major self-reported hotspots, but it is still worth one mock route near your test centre to pressure-test your default routines.",
     });
   }
 
@@ -253,11 +253,11 @@ function buildNextSteps(assessment: AssessmentPayload): string[] {
   }
 
   if (assessment.mockTestTaken === "no") {
-    steps.push("Book a mock test at least two weeks before your date — it is the closest safe proxy to exam pressure.");
+    steps.push("Book a mock test at least two weeks before your date. It is the closest safe proxy to exam pressure.");
   } else if (assessment.mockTestResult === "fail") {
     steps.push("Take one focused mock on weaknesses only, then a full mock to confirm improvements transfer under time pressure.");
   } else if (assessment.mockTestResult === "pass") {
-    steps.push("Keep one refresher mock close to test week to prevent complacency — pass mocks are confidence, not a guarantee.");
+    steps.push("Keep one refresher mock close to test week to prevent complacency. Pass mocks are confidence, not a guarantee.");
   }
 
   if (assessment.seriousFaults > 0) {
@@ -293,9 +293,9 @@ function buildSummary(assessment: AssessmentPayload, score: number): string {
   const mockLine =
     assessment.mockTestTaken === "yes"
       ? `Your most recent mock was a ${assessment.mockTestResult === "pass" ? "pass" : assessment.mockTestResult === "fail" ? "fail" : "not recorded"}.`
-      : "You have not taken a mock yet — that is normal, but it leaves pressure untested.";
+      : "You have not taken a mock yet. That is normal, but it leaves pressure untested.";
 
-  return `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine} Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity — not an official DVSA product or score — and should be reviewed with your instructor alongside on-road performance.`;
+  return `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine} Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity. This is not an official DVSA product or score, and it should be reviewed with your instructor alongside on-road performance.`;
 }
 
 /**

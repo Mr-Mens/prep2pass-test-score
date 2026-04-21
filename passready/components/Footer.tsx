@@ -11,7 +11,7 @@ export function Footer() {
         <div className="max-w-md">
           <p className="text-base font-semibold text-brand-950">{SITE.name}</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
-            Built for learner drivers in the UK first — clear signals, honest guidance, and a
+            Built for learner drivers in the UK first: clear signals, honest guidance, and a
             calm path to test day.
           </p>
         </div>

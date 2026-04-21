@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { Button } from "@/components/Button";
+import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
 import { SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
@@ -11,18 +12,17 @@ import { formatIsoDateUk, formatSubmittedAt } from "@/lib/formatting";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
 import { loadPersistedRecord, saveScoredAssessment } from "@/lib/storage";
 import type { MockReadinessResult } from "@/lib/types";
-import type { AssessmentPayload, GroupedRiskArea, PersistedAssessmentRecordV2, StoredAssessmentV1 } from "@/lib/validation";
+import type { AssessmentPayload, PersistedAssessmentRecordV2, StoredAssessmentV1 } from "@/lib/validation";
+
+const reportCard =
+  "rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8 sm:ring-0 print:border-brand-200 print:shadow-none";
+const sectionTitle = "text-base font-semibold tracking-tight text-brand-950 sm:text-lg";
+const sectionIntro = "mt-2 max-w-prose text-sm leading-relaxed text-brand-600";
 
 function labelBadgeClass(label: MockReadinessResult["readinessLabel"]) {
   if (label === "Not Ready") return "bg-red-50 text-red-900 ring-red-200";
   if (label === "Nearly Ready") return "bg-amber-50 text-amber-950 ring-amber-200";
   return "bg-teal-50 text-teal-950 ring-teal-200";
-}
-
-function severityBadgeClass(severity: GroupedRiskArea["severity"]) {
-  if (severity === "high") return "bg-red-50 text-red-900 ring-red-200";
-  if (severity === "medium") return "bg-amber-50 text-amber-950 ring-amber-200";
-  return "bg-brand-50 text-brand-800 ring-brand-200";
 }
 
 function weakAreaLabels(ids: AssessmentPayload["weakAreas"]) {
@@ -70,7 +70,7 @@ export function ResultsView() {
       const message =
         e instanceof ApiRequestError
           ? e.message
-          : "Could not refresh your score from the server. Retry or retake the TestReady Score Assessment.";
+          : "Could not refresh your score from the server. Retry or retake the assessment.";
       setState({ status: "migration_error", message, legacy });
     }
   }, []);
@@ -135,10 +135,15 @@ export function ResultsView() {
 
   if (state.status === "loading") {
     return (
-      <Section className="bg-brand-50" contentClassName="max-w-3xl" eyebrow="Results" title="Loading your report">
-        <div className="animate-pulse space-y-4 rounded-2xl border border-brand-100 bg-white p-8 shadow-card">
-          <div className="h-8 w-40 rounded bg-brand-100" />
-          <div className="h-24 w-full rounded-xl bg-brand-50" />
+      <Section
+        className="max-md:bg-transparent bg-brand-50"
+        contentClassName="max-w-3xl"
+        eyebrow="Prep2Pass"
+        title="Loading your report"
+      >
+        <div className="animate-pulse space-y-4 rounded-2xl border border-brand-200/80 bg-white p-8 shadow-card ring-1 ring-black/[0.02]">
+          <div className="h-8 w-48 rounded bg-brand-100" />
+          <div className="h-32 w-full rounded-xl bg-brand-50" />
           <div className="h-40 w-full rounded-xl bg-brand-50" />
         </div>
       </Section>
@@ -148,17 +153,21 @@ export function ResultsView() {
   if (state.status === "empty") {
     return (
       <Section
-        className="bg-brand-50"
+        className="max-md:bg-transparent bg-brand-50"
         contentClassName="max-w-xl text-center"
-        eyebrow="Results"
-        title="No TestReady Score Assessment found yet"
-        subtitle="Complete the TestReady Score Assessment once — your Premium TestReady Score Report appears here. Results are computed on our servers; this browser keeps a local copy until you clear site data."
+        eyebrow="Prep2Pass"
+        title="No report saved on this device yet"
+        subtitle="Complete the TestReady Score assessment once. Your report appears here after checkout, and a copy stays in this browser until you clear site data."
       >
         <div className="mt-8 flex flex-col items-center gap-4">
-          <Button href="/assessment" className="w-full px-6 py-3 text-base sm:w-auto">
-            Get My TestReady Score
+          <Button
+            href="/assessment"
+            variant="conversion"
+            className="w-full sm:w-auto sm:min-w-[12rem]"
+          >
+            Start assessment
           </Button>
-          <Button href="/" variant="ghost" className="w-full sm:w-auto">
+          <Button href="/" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
             Back to home
           </Button>
         </div>
@@ -169,24 +178,25 @@ export function ResultsView() {
   if (state.status === "migration_error") {
     return (
       <Section
-        className="bg-brand-50"
+        className="max-md:bg-transparent bg-brand-50"
         contentClassName="max-w-xl"
-        eyebrow="Results"
-        title="We could not refresh your saved score"
+        eyebrow="Prep2Pass"
+        title="We could not refresh your saved report"
         subtitle={state.message}
       >
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Button
             type="button"
-            className="w-full sm:w-auto"
+            variant="conversion"
+            className="w-full sm:w-auto sm:min-w-[10rem]"
             onClick={() => {
               void upgradeLegacyRecord(state.legacy);
             }}
           >
             Try again
           </Button>
-          <Button href="/assessment" variant="secondary" className="w-full sm:w-auto">
-            Get My TestReady Score
+          <Button href="/assessment" variant="secondary" className="w-full min-h-[48px] sm:w-auto">
+            Retake assessment
           </Button>
         </div>
       </Section>
@@ -195,116 +205,139 @@ export function ResultsView() {
 
   const { submittedAt, result: report } = state.data;
   const sourceLabel =
-    report.metadata.source === "ai" ? "AI-enriched Premium TestReady Score Report" : "Standard report";
-  const riskGroups = normalizeGroupedRiskAreas(
-    report.riskAreas as GroupedRiskArea[] | string[],
-  );
+    report.metadata.source === "ai" ? "Personalised with AI on top of your score" : "Structured from your assessment";
+  const riskGroups = normalizeGroupedRiskAreas(report.riskAreas as unknown);
+  const metaLine = [
+    formatSubmittedAt(submittedAt),
+    sourceLabel,
+    report.metadata.model ? `Model: ${report.metadata.model}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Section
-      className="bg-brand-50 print:bg-white"
+      className="max-md:bg-transparent bg-brand-50 print:bg-white print:py-10"
       contentClassName="max-w-3xl"
-      eyebrow="Your report"
-      title="Premium TestReady Score Report"
-      subtitle={`Submitted ${formatSubmittedAt(submittedAt)} on this device. Score computed on our servers; also cached locally on this device for quick access.`}
+      eyebrow="Prep2Pass"
+      subtitle="Structured from your answers — saved on this device for quick access."
     >
-      <div className="space-y-8 print:space-y-4">
-        <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card print:shadow-none sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-brand-600">Readiness score</p>
-              <div className="mt-2 flex flex-wrap items-end gap-3">
-                <p className="text-5xl font-semibold tracking-tight text-brand-950">{report.readinessScore}</p>
-                <p className="pb-1 text-sm text-brand-600">out of 100</p>
-              </div>
+      <div className="space-y-5 pb-32 sm:space-y-10 sm:pb-0 print:space-y-6 md:pb-0">
+        {/* A — Score summary */}
+        <div className={`${reportCard} print:break-inside-avoid`}>
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-500/90 sm:text-left">
+            Your TestReady Score
+          </p>
+
+          <div className="mt-8 flex flex-col items-center gap-6 sm:mt-10 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+            <div className="text-center sm:text-left">
+              <p
+                className="text-6xl font-semibold tracking-tight text-brand-950 tabular-nums sm:text-7xl"
+                aria-label={`Readiness score ${report.readinessScore} out of 100`}
+              >
+                {report.readinessScore}
+              </p>
+              <p className="mt-1 text-sm text-brand-500/85">out of 100</p>
             </div>
             <span
-              className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${labelBadgeClass(
+              className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold ring-2 ring-inset ${labelBadgeClass(
                 report.readinessLabel,
               )}`}
             >
               {report.readinessLabel}
             </span>
           </div>
-          <p className="mt-2 text-xs text-brand-500">
-            {sourceLabel}
-            {report.metadata.model ? ` · ${report.metadata.model}` : ""}
+
+          <p className="mx-auto mt-8 max-w-prose text-center text-base leading-relaxed text-brand-800 sm:mx-0 sm:text-left">
+            {report.summary}
           </p>
-          <p className="mt-5 text-sm leading-relaxed text-brand-800">{report.summary}</p>
-        </div>
 
-        <div className="rounded-2xl border border-teal-200 bg-teal-50/60 p-6 shadow-card print:shadow-none sm:p-8">
-          <h2 className="text-lg font-semibold text-teal-950">Instructor coach note</h2>
-          <p className="mt-3 text-sm leading-relaxed text-teal-900">{report.coachMessage}</p>
-        </div>
-
-        <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card print:shadow-none sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-950">Recommended lesson focus</h2>
-          <p className="mt-3 text-sm font-medium text-brand-800">{report.recommendedHours}</p>
-        </div>
-
-        <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card print:shadow-none sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-950">
-            Your Test Risk Areas (Based on Driving Skills Framework)
-          </h2>
-          <p className="mt-2 text-xs leading-relaxed text-brand-500">
-            Grouped using common practical test skill themes for clarity — not affiliated with DVSA.
-          </p>
-          <div className="mt-6 space-y-5">
-            {riskGroups.map((block) => (
-              <div
-                key={block.group}
-                className="rounded-2xl border border-brand-100 bg-brand-50/40 p-4 sm:p-5"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2 gap-y-1">
-                  <h3 className="text-base font-semibold text-brand-950">{block.group}</h3>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ring-inset ${severityBadgeClass(
-                      block.severity,
-                    )}`}
-                  >
-                    {block.severity} risk
-                  </span>
-                </div>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-brand-800">
-                  {block.issues.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
+            <h3 className={sectionTitle}>Coach note</h3>
+            <p className={sectionIntro}>
+              A concise takeaway you can read before your next lesson — grounded in your answers, not generic tips.
+            </p>
+            <div className="mt-4 rounded-xl border border-teal-200/80 bg-teal-50/85 px-5 py-5 text-sm leading-relaxed text-teal-950 shadow-sm ring-1 ring-teal-200/50 print:border-teal-200 print:bg-teal-50/60 print:ring-0">
+              {report.coachMessage}
+            </div>
           </div>
+
+          <p className="mt-8 text-center text-xs leading-relaxed text-brand-500/85 sm:text-left">{metaLine}</p>
         </div>
 
-        <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card print:shadow-none sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-950">Next steps</h2>
-          <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-brand-700">
-            {report.nextSteps.map((item) => (
-              <li key={item}>{item}</li>
+        {/* B — Risk areas */}
+        <div className="print:break-inside-avoid">
+          <RiskAreasSection blocks={riskGroups} />
+        </div>
+
+        {/* C — Next steps */}
+        <div className={`${reportCard} print:break-inside-avoid`}>
+          <h2 className={sectionTitle}>What to do next</h2>
+          <p className={sectionIntro}>
+            A focused lesson plan from your report — work through in order with your instructor where you can.
+          </p>
+          <ol className="mt-6 space-y-3">
+            {report.nextSteps.map((item, i) => (
+              <li
+                key={`next-step-${i}`}
+                className="flex gap-4 rounded-xl border border-brand-100/90 bg-brand-50/50 px-4 py-3.5 text-sm leading-relaxed text-brand-800 print:border-brand-200 print:bg-white"
+              >
+                <span
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-brand-800 ring-1 ring-brand-200/80 print:bg-brand-50"
+                  aria-hidden
+                >
+                  {i + 1}
+                </span>
+                <span className="pt-0.5">{item}</span>
+              </li>
             ))}
           </ol>
         </div>
 
-        <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card print:shadow-none sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-950">What to do next</h2>
-          <ul className="mt-4 space-y-3 text-sm leading-relaxed text-brand-700">
-            <li className="rounded-xl bg-brand-50/60 px-4 py-3">
-              Share this report with your instructor and agree one primary focus for your next lesson.
+        {/* D — Lesson guidance */}
+        <div className={`${reportCard} print:break-inside-avoid`}>
+          <h2 className={sectionTitle}>Lesson guidance</h2>
+          <p className={sectionIntro}>
+            A realistic steer on how much focused time often helps at this stage — use it to plan with your instructor,
+            not as a fixed rule.
+          </p>
+          <p className="mt-5 text-sm font-medium leading-relaxed text-brand-900">{report.recommendedHours}</p>
+        </div>
+
+        {/* E — Use this report well */}
+        <div className={`${reportCard} print:break-inside-avoid`}>
+          <h2 className={sectionTitle}>Use this report well</h2>
+          <p className={sectionIntro}>
+            Structured insight only helps if you turn it into one or two concrete habits on the road.
+          </p>
+          <ul className="mt-5 space-y-3 text-sm leading-relaxed text-brand-800">
+            <li className="flex gap-3 rounded-xl border border-brand-100/80 bg-brand-50/40 px-4 py-3 print:bg-white">
+              <span className="font-semibold text-brand-700" aria-hidden>
+                ·
+              </span>
+              <span>Bring this to your instructor and agree one primary theme for your next lesson.</span>
             </li>
-            <li className="rounded-xl bg-brand-50/60 px-4 py-3">
-              Revisit your highest-risk area first, then re-check confidence after two focused sessions.
+            <li className="flex gap-3 rounded-xl border border-brand-100/80 bg-brand-50/40 px-4 py-3 print:bg-white">
+              <span className="font-semibold text-brand-700" aria-hidden>
+                ·
+              </span>
+              <span>Pick one or two risk areas to improve this week — avoid spreading attention too thin.</span>
             </li>
-            <li className="rounded-xl bg-brand-50/60 px-4 py-3">
-              Use Find My Report if you purchased with email storage and need access from another device.
+            <li className="flex gap-3 rounded-xl border border-brand-100/80 bg-brand-50/40 px-4 py-3 print:bg-white">
+              <span className="font-semibold text-brand-700" aria-hidden>
+                ·
+              </span>
+              <span>Use the numbered steps above as a checklist and revisit them after a couple of sessions.</span>
             </li>
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card print:shadow-none sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-950">Your answers (snapshot)</h2>
-          <p className="mt-1 text-sm text-brand-600">
-            This device caches your answers and latest score for convenience (local key{" "}
-            <span className="font-mono text-xs">passready_assessment</span>, v2).
+        {/* Snapshot */}
+        <div className={`${reportCard} print:break-inside-avoid`}>
+          <h2 className={sectionTitle}>Your assessment snapshot</h2>
+          <p className={sectionIntro}>
+            The answers this report is based on. Cached on this device (local key{" "}
+            <span className="font-mono text-[11px] text-brand-700">passready_assessment</span>, v2) for convenience.
           </p>
           <dl className="mt-6 space-y-4">
             {snapshotRows.map((row) => (
@@ -316,22 +349,32 @@ export function ResultsView() {
           </dl>
         </div>
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-relaxed text-amber-950 print:border-brand-200 print:bg-white">
-          <p className="font-semibold">Disclaimer</p>
-          <p className="mt-2">
-            This Premium TestReady Score Report is guidance only — not driving instruction, DVSA
-            guidance, or a guarantee of test performance. {SITE.name} combines deterministic scoring
-            with optional AI enrichment; review with your instructor before test decisions.
+        <div className="rounded-2xl border border-amber-200/90 bg-amber-50/50 p-5 text-sm leading-relaxed text-amber-950 print:border-brand-200 print:bg-white">
+          <p className="font-semibold text-amber-950">Disclaimer</p>
+          <p className="mt-2 text-amber-950/95">
+            This TestReady Score report is guidance only — not driving instruction, not DVSA advice, and not a
+            guarantee of test outcomes. {SITE.name} combines scoring with optional AI wording; always review with your
+            instructor alongside how you drive.
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button href="/assessment" className="w-full px-6 py-3 text-base sm:w-auto">
-            Get My TestReady Score
-          </Button>
-          <Button href="/" variant="secondary" className="w-full sm:w-auto">
-            Back to home
-          </Button>
+        <div className="rounded-2xl border border-brand-200/80 bg-white/95 p-5 text-sm leading-relaxed text-brand-700 shadow-card ring-1 ring-black/[0.02] print:hidden max-md:sticky max-md:bottom-0 max-md:z-20 max-md:-mx-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:border-x-0 max-md:border-b-0 max-md:px-4 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:pt-4 max-md:shadow-[0_-10px_36px_rgba(28,34,48,0.1)] max-md:backdrop-blur-lg sm:shadow-sm sm:ring-0">
+          <p className="font-medium text-brand-900">What you might do from here</p>
+          <p className="mt-2">
+            Retake the assessment if your lessons shift materially, or use Find My Report if you checked out with an
+            email and need this on another device.
+          </p>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button href="/assessment" className="w-full sm:w-auto sm:min-w-[11rem]">
+              Retake assessment
+            </Button>
+            <Button href="/report-lookup" variant="secondary" className="w-full min-h-[48px] sm:w-auto sm:min-w-[11rem]">
+              Find another report
+            </Button>
+            <Button href="/" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
+              Back to home
+            </Button>
+          </div>
         </div>
       </div>
     </Section>

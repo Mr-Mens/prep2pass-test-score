@@ -88,20 +88,23 @@ export function AdminAnalyticsView() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={onUnlock} className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card">
+      <form
+        onSubmit={onUnlock}
+        className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02]"
+      >
         <label className="text-sm font-medium text-brand-900" htmlFor="admin-key">
           Admin access key (temporary gate)
         </label>
-        <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-stretch">
           <input
             id="admin-key"
             type="password"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            className="block w-full rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200"
+            className="block min-h-[48px] w-full rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200"
             placeholder="Enter ADMIN_ACCESS_KEY"
           />
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto sm:shrink-0">
             {loading ? "Loading..." : "Unlock"}
           </Button>
         </div>
@@ -122,14 +125,17 @@ export function AdminAnalyticsView() {
               { k: "Avg readiness", v: overview.averageReadinessScore ?? "—" },
               { k: "Reports (7d)", v: overview.reportsLast7Days },
             ].map((item) => (
-              <div key={item.k} className="rounded-xl border border-brand-100 bg-white p-4 shadow-sm">
+              <div
+                key={item.k}
+                className="rounded-xl border border-brand-200/70 bg-white p-4 shadow-sm ring-1 ring-black/[0.02]"
+              >
                 <p className="text-xs uppercase tracking-wide text-brand-500">{item.k}</p>
                 <p className="mt-2 text-xl font-semibold text-brand-950">{item.v}</p>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card">
+          <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02]">
             <h2 className="text-lg font-semibold text-brand-950">Recent sales</h2>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">

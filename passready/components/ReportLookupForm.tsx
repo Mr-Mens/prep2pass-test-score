@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/Button";
@@ -48,7 +47,10 @@ export function ReportLookupForm() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={onSubmit} className="rounded-2xl border border-brand-100 bg-white p-6 shadow-card">
+      <form
+        onSubmit={onSubmit}
+        className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02]"
+      >
         <label className="text-sm font-medium text-brand-900" htmlFor="lookup-email">
           Email used at checkout
         </label>
@@ -58,12 +60,14 @@ export function ReportLookupForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-2 block w-full rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200"
+          className="mt-2 block min-h-[48px] w-full rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200"
           placeholder="you@example.com"
         />
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-xs text-brand-500">Lookup is email-only for now; sign-in will replace this later.</p>
-          <Button type="submit" disabled={loading}>
+        <p className="mt-3 text-xs leading-relaxed text-brand-500/90">
+          Lookup is email-only for now; sign-in will replace this later.
+        </p>
+        <div className="mt-5">
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? "Searching…" : "Find My Report"}
           </Button>
         </div>
@@ -89,9 +93,9 @@ export function ReportLookupForm() {
                       Score {r.readiness_score} · {r.readiness_label} · {r.report_source}
                     </p>
                   </div>
-                  <Link className="text-sm font-semibold text-brand-800 hover:text-brand-950" href={`/reports/${r.id}`}>
+                  <Button href={`/reports/${r.id}`} variant="secondary" className="w-full min-h-[48px] text-sm sm:w-auto sm:shrink-0">
                     Open report
-                  </Link>
+                  </Button>
                 </li>
               ))}
             </ul>

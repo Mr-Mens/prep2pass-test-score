@@ -20,7 +20,7 @@ export default function CheckoutSuccessPage() {
     >
       <Suspense
         fallback={
-          <div className="rounded-2xl border border-brand-100 bg-white p-8 shadow-card">
+          <div className="rounded-2xl border border-brand-200/80 bg-white p-8 shadow-card ring-1 ring-black/[0.02]">
             <p className="text-sm font-medium text-brand-600">Loading…</p>
           </div>
         }

@@ -10,8 +10,21 @@
   }
 
   body {
-    @apply min-h-dvh bg-brand-50 text-brand-900 antialiased;
+    @apply min-h-dvh text-brand-900 antialiased;
     text-rendering: optimizeLegibility;
+    background-color: #e8ecf3;
+  }
+
+  @media (min-width: 640px) {
+    body {
+      background-color: #f4f7fb;
+    }
+  }
+
+  button,
+  a[role="button"],
+  input[type="submit"] {
+    touch-action: manipulation;
   }
 
   ::selection {

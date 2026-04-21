@@ -2,32 +2,43 @@ import type { Metadata } from "next";
 
 import { AssessmentForm } from "@/components/AssessmentForm";
 import { Section } from "@/components/Section";
+import { PREMIUM_PRICE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "TestReady Score Assessment",
   description:
-    "Complete your TestReady Score Assessment, then checkout once to unlock your Premium TestReady Score Report.",
+    "Complete your TestReady Score Assessment, then pay once for your full report — score, risks, and next steps.",
 };
+
+const VALUE_BULLETS = [
+  "Your readiness score — explained in plain English",
+  "A breakdown of your highest-risk driving skills",
+  "A focused action plan for your next lessons",
+  "An instructor-style coach note",
+] as const;
 
 export default function AssessmentPage() {
   return (
-    <Section
-      className="bg-brand-50"
-      contentClassName="max-w-3xl"
-      eyebrow="Prep2Pass"
-      title="TestReady Score Assessment"
-      subtitle="Answer honestly, then continue to secure checkout to unlock your Premium TestReady Score Report."
-    >
-      <div className="mb-8 rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-base font-semibold text-brand-950">What you get</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-brand-700">
-          <li>Personalised readiness summary in clear instructor-style language</li>
-          <li>Prioritised risk areas and practical next steps for upcoming lessons</li>
-          <li>Your Premium TestReady Score Report generated only after payment is verified</li>
+    <Section className="max-md:bg-transparent bg-brand-50" contentClassName="max-w-3xl">
+      <div className="mb-10 rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.05] sm:mb-12 sm:p-8 sm:shadow-sm sm:ring-0">
+        <h1 className="text-center font-heading text-2xl font-semibold leading-tight tracking-tight text-brand-950 sm:text-left sm:text-3xl">
+          Start your TestReady Score
+        </h1>
+        <p className="mt-3 text-center text-sm leading-relaxed text-brand-600 sm:text-left sm:text-base">
+          Takes less than 60 seconds. No account needed.
+        </p>
+        <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-brand-800">
+          {VALUE_BULLETS.map((line) => (
+            <li key={line} className="flex gap-3">
+              <span className="mt-0.5 shrink-0 font-semibold text-teal-700" aria-hidden>
+                ✓
+              </span>
+              <span>{line}</span>
+            </li>
+          ))}
         </ul>
-        <p className="mt-4 text-xs leading-relaxed text-brand-500">
-          Checkout is secure (Stripe). Your answers are used to generate your report and improve the
-          product. Accounts are coming later.
+        <p className="mt-6 border-t border-brand-100 pt-5 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
+          {PREMIUM_PRICE} one-time • Instant report after checkout
         </p>
       </div>
       <AssessmentForm />

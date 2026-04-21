@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 import { WEAK_AREA_OPTIONS } from "./constants";
+import {
+  groupedRiskAreaSchema,
+  normalizeGroupedRiskAreas,
+  riskAreaSkillSchema,
+  riskSeveritySchema,
+} from "./readiness-risk-areas";
 import { migrateWeakAreaIds } from "./weak-area-migration";
 
 type WeakAreaId = (typeof WEAK_AREA_OPTIONS)[number]["id"];
@@ -136,16 +142,15 @@ export const readinessLabelSchema = z.enum(["Not Ready", "Nearly Ready", "Test R
 
 export type ReadinessLabel = z.infer<typeof readinessLabelSchema>;
 
-export const riskSeveritySchema = z.enum(["high", "medium", "low"]);
 export type RiskSeverity = z.infer<typeof riskSeveritySchema>;
-
-/** Grouped risk lines — aligned with practical skill themes (not an official DVSA product). */
-export const groupedRiskAreaSchema = z.object({
-  group: z.string().min(1),
-  severity: riskSeveritySchema,
-  issues: z.array(z.string().min(1)).min(1).max(8),
-});
 export type GroupedRiskArea = z.infer<typeof groupedRiskAreaSchema>;
+export type RiskAreaSkill = z.infer<typeof riskAreaSkillSchema>;
+export { groupedRiskAreaSchema, riskAreaSkillSchema, riskSeveritySchema, normalizeGroupedRiskAreas };
+
+const riskAreasNormalizedSchema = z
+  .unknown()
+  .transform((raw) => normalizeGroupedRiskAreas(raw))
+  .pipe(z.array(groupedRiskAreaSchema).min(1).max(8));
 
 /**
  * Core deterministic scoring output. Used as the base signal and fallback source of truth.
@@ -153,7 +158,7 @@ export type GroupedRiskArea = z.infer<typeof groupedRiskAreaSchema>;
 export const deterministicReadinessResultSchema = z.object({
   readinessScore: z.number().int().min(0).max(100),
   readinessLabel: readinessLabelSchema,
-  riskAreas: z.array(groupedRiskAreaSchema).min(1).max(8),
+  riskAreas: riskAreasNormalizedSchema,
   recommendedHours: z.string(),
   summary: z.string(),
   nextSteps: z.array(z.string()),
@@ -172,7 +177,7 @@ export const aiReadinessReportSchema = z.object({
   readinessScore: z.number().int().min(0).max(100),
   readinessLabel: readinessLabelSchema,
   summary: z.string().min(1),
-  riskAreas: z.array(groupedRiskAreaSchema).min(1).max(8),
+  riskAreas: riskAreasNormalizedSchema,
   nextSteps: z.array(z.string().min(1)).min(2).max(6),
   recommendedHours: z.string().min(1),
   coachMessage: z.string().min(1),

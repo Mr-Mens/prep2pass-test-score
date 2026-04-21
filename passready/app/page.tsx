@@ -7,7 +7,7 @@ import { PricingCard } from "@/components/PricingCard";
 import { Section } from "@/components/Section";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { TrustBadge } from "@/components/TrustBadge";
-import { PREMIUM_PRICE, SITE } from "@/lib/constants";
+import { PREMIUM_PRICE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "TestReady Score by Prep2Pass",
@@ -18,42 +18,51 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <section className="border-b border-brand-100 bg-white">
-        <div className="mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-16 sm:px-6 sm:pb-24 sm:pt-20 lg:grid-cols-2 lg:items-center lg:px-8">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
-              Prep2Pass · UK learner drivers
+      <section className="border-b border-brand-200/40 bg-gradient-to-b from-brand-50/90 via-white to-brand-50/50">
+        <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+          <div className="mx-auto flex w-full max-w-md flex-col items-center text-center md:max-w-2xl lg:max-w-3xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500/90 lg:text-xs">
+              Prep2Pass • TestReady Score
             </p>
-            <h1 className="mt-5 font-heading text-balance text-5xl font-semibold tracking-tight text-brand-950 sm:text-6xl">
-              Get confident on test readiness,{" "}
-              <span className="text-brand-700">before</span> you risk test-day surprises.
+            <h1 className="mt-4 font-heading text-balance text-3xl font-semibold leading-[1.12] tracking-tight text-brand-950 md:mt-5 md:text-4xl lg:mt-6 lg:text-5xl">
+              Know if you&apos;re ready to pass before you book your test
             </h1>
-            <p className="mt-5 max-w-2xl text-pretty text-lg leading-relaxed text-brand-600">
-              TestReady Score by Prep2Pass turns your lessons and mock performance into a Premium
-              TestReady Score Report you can use with your instructor — clear score, risks, and next
-              actions.
+            <p className="mt-4 max-w-sm text-pretty text-[0.9375rem] leading-relaxed text-brand-600/90 md:mt-5 md:max-w-xl md:text-base lg:mt-6 lg:max-w-2xl">
+              Get a clear breakdown of what might hold you back — and exactly what to fix.
             </p>
-            <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <Button href="/assessment" className="w-full px-6 py-3 text-base sm:w-auto">
+            <div
+              className="mt-6 flex w-full max-w-[17.5rem] items-center justify-between gap-3 rounded-2xl border border-brand-200/40 bg-brand-50/40 px-4 py-3 ring-1 ring-black/[0.02] md:mt-7 lg:mt-8 lg:max-w-[20rem] lg:gap-4 lg:px-5 lg:py-4"
+              role="group"
+              aria-label="Example TestReady Score: 72, Nearly Ready"
+            >
+              <div className="text-left">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-400/90 lg:text-[11px]">
+                  Sample
+                </p>
+                <p className="text-2xl font-semibold tabular-nums tracking-tight text-brand-800 lg:text-3xl">
+                  72
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-teal-50/90 px-3 py-1 text-xs font-medium text-teal-900/90 ring-1 ring-teal-200/70 lg:px-4 lg:py-1.5 lg:text-sm">
+                Nearly Ready
+              </span>
+            </div>
+            <div className="mt-9 flex w-full max-w-md justify-center md:mt-11 lg:mt-14 lg:max-w-none">
+              <Button
+                href="/assessment"
+                variant="conversion"
+                className="w-full lg:w-auto lg:min-w-[17.5rem]"
+              >
                 Get My TestReady Score
               </Button>
-              <Button href="/sample-report" variant="secondary" className="w-full px-6 py-3 text-base sm:w-auto">
-                See Sample Report
-              </Button>
             </div>
-            <p className="mt-4 text-xs text-brand-500">
-              {PREMIUM_PRICE} one-time payment · secure checkout · no subscription
+            <p className="mt-5 text-[11px] leading-snug text-brand-400/90 md:mt-5 lg:mt-6 lg:text-xs">
+              £4.99 one-time • Instant report
             </p>
           </div>
-          <PricingCard
-            price={PREMIUM_PRICE}
-            bullets={[
-              "Readiness score with plain-language explanation",
-              "Risk breakdown based on your current weak areas",
-              "Focused action plan for your next lessons",
-              "Coach note and realistic lesson-hour guidance",
-            ]}
-          />
+          <div className="mx-auto mt-14 max-w-sm md:mt-16 md:max-w-md lg:mt-20 lg:max-w-md">
+            <PricingCard price={PREMIUM_PRICE} />
+          </div>
         </div>
       </section>
 
@@ -93,8 +102,8 @@ export default function HomePage() {
             },
             {
               step: "02",
-              title: "Unlock your Premium TestReady Score Report",
-              body: `Pay ${PREMIUM_PRICE} once through secure checkout to generate your full Premium TestReady Score Report.`,
+              title: "Unlock your TestReady Score",
+              body: `Pay ${PREMIUM_PRICE} once through secure checkout for your full report — score, risks, and next steps.`,
             },
             {
               step: "03",
@@ -202,10 +211,14 @@ export default function HomePage() {
         className="bg-white"
         eyebrow="Ready?"
         title="Get your TestReady Score"
-        subtitle={`A few minutes to assess. One payment of ${PREMIUM_PRICE} unlocks your Premium TestReady Score Report.`}
+        subtitle={`A few minutes to assess. ${PREMIUM_PRICE} one-time unlocks your full report.`}
       >
-        <div className="text-center">
-          <Button href="/assessment" className="px-7 py-3 text-base">
+        <div className="mx-auto max-w-md px-2 pt-1 text-center">
+          <Button
+            href="/assessment"
+            variant="conversion"
+            className="w-full sm:w-auto sm:min-w-[14rem]"
+          >
             Get My TestReady Score
           </Button>
         </div>

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { OFFICIAL_SKILL_GROUPS } from "@/lib/dvsa-ready-to-pass-framework";
 import {
   aiReadinessReportSchema,
   type AssessmentPayload,
@@ -14,22 +15,27 @@ type GenerateArgs = {
   deterministic: DeterministicReadinessResult;
 };
 
+const officialGroupTitles = OFFICIAL_SKILL_GROUPS.map((g) => `- ${g.label}`).join("\n");
+
 const systemPrompt = `You are an experienced UK driving instructor writing concise readiness guidance.
 Rules:
 - Safety-first and practical.
 - No hype, no fluff, no vague motivational language.
 - Do not claim DVSA authority or official DVSA affiliation.
+- Do not state that this score is an official DVSA score or product.
 - Do not guarantee pass/fail outcomes.
 - Do not provide unsafe, illegal, or non-compliant advice.
 - Keep language clear for learner drivers.
 - Return STRICT JSON only with keys:
   readinessScore, readinessLabel, summary, riskAreas, nextSteps, recommendedHours, coachMessage
 - riskAreas: array of 2-6 objects. Each object MUST have:
-  "group" (string — one of the skill group titles provided in the user message),
-  "severity" ("high" | "medium" | "low"),
-  "issues" (array of 1-4 short bullet strings for that group).
-- Structure risks by skill group — do not return a flat list of strings.
-- For group "Manoeuvres", name the specific manoeuvre the learner flagged (e.g. reverse bay parking, parallel parking) — never only the word "manoeuvres" without naming which one.
+  "groupKey" (string — snake_case key, one of: basics, control_and_positioning, observation_signalling_planning, junctions_roundabouts_crossings, manoeuvres, road_types, driving_conditions, following_routes),
+  "groupLabel" (string — human title matching that key from the user message list),
+  "severity" ("high" | "moderate" | "low"),
+  "skills" (array of 0-8 objects, each with: "key" product id e.g. mirrors, "label" short learner label, "officialSkillId" number 1-27, "officialSkillName" full skill name from framework),
+  "summary" (one short paragraph for that group),
+  optional "highlights" (array of 0-3 extra bullet strings for context).
+- For Manoeuvres, include separate skill entries per manoeuvre (forward bay, reverse bay, pull up on right, parallel) when the learner flagged them — never only the word "manoeuvres" without specifics.
 - nextSteps: 3-6 concrete actions.
 - summary and coachMessage should be concise.`;
 
@@ -39,29 +45,22 @@ export async function generateReadinessReport({ assessment, deterministic }: Gen
     .map((id) => WEAK_AREA_OPTIONS.find((o) => o.id === id)?.label ?? id);
   const manoeuvrePrompt =
     manoeuvreLabels.length > 0
-      ? `\nManoeuvres: issues for group "Manoeuvres" must refer to these by name where relevant: ${manoeuvreLabels.join("; ")}.\n`
+      ? `\nManoeuvres: include named skill entries for: ${manoeuvreLabels.join("; ")}.\n`
       : "";
 
   const userPrompt = `Assessment data (normalised):
 ${JSON.stringify(assessment)}
 ${manoeuvrePrompt}
-Deterministic baseline (source of truth for score/label and grouped risk structure):
+Deterministic baseline (source of truth for score/label and grouped risk structure — align riskAreas to these groupKeys where possible):
 ${JSON.stringify(deterministic)}
 
-Use these exact group titles when populating riskAreas[].group (pick those that apply):
-- Basics
-- Control and Positioning
-- Observation, Signalling and Planning
-- Junctions, Roundabouts and Crossings
-- Manoeuvres
-- Road Types
-- Driving Conditions
-- Independent Driving
+Official skill group titles (use matching groupLabel spelling):
+${officialGroupTitles}
 
 Important constraints:
 1) Preserve readinessScore exactly as ${deterministic.readinessScore}.
 2) Preserve readinessLabel exactly as "${deterministic.readinessLabel}".
-3) Align riskAreas with the deterministic grouping where possible; enrich issue wording to be specific and practical.
+3) Align riskAreas with the deterministic grouping (same groupKey / skills keys where possible); enrich summary and highlights to be specific and practical.
 4) Enrich summary, nextSteps, recommendedHours, and coachMessage.
 5) Return JSON only.`;
 
@@ -82,7 +81,6 @@ Important constraints:
     throw new Error("OpenAI response failed schema validation");
   }
 
-  // Deterministic score/label remain canonical.
   return {
     ...parsed.data,
     readinessScore: deterministic.readinessScore,

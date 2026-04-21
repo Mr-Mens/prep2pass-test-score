@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { requestCheckoutSession } from "@/lib/api/create-checkout-session";
-import { WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { PREMIUM_PRICE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { savePendingAssessment } from "@/lib/storage";
 import { assessmentSchema, type AssessmentFormValues } from "@/lib/validation";
@@ -13,10 +13,10 @@ import { assessmentSchema, type AssessmentFormValues } from "@/lib/validation";
 import { Button } from "./Button";
 
 const fieldClass =
-  "mt-1 block w-full rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200";
+  "mt-1 block min-h-[50px] w-full rounded-xl border border-brand-200 bg-white px-4 py-3.5 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200 sm:min-h-0 sm:rounded-lg sm:px-3.5 sm:py-2.5";
 
 const fieldDisabledClass =
-  "mt-1 block w-full cursor-not-allowed rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-sm text-brand-500 shadow-inner outline-none";
+  "mt-1 block min-h-[50px] w-full cursor-not-allowed rounded-xl border border-brand-100 bg-brand-50 px-4 py-3.5 text-sm text-brand-500 shadow-inner outline-none sm:min-h-0 sm:rounded-lg sm:px-3.5 sm:py-2.5";
 
 const labelClass = "text-sm font-medium text-brand-900";
 
@@ -24,7 +24,17 @@ const hintClass = "mt-1 text-xs leading-relaxed text-brand-500";
 
 const errorClass = "mt-1 text-sm text-red-700";
 
-const sectionBox = "rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6";
+const sectionBox =
+  "rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-7 sm:shadow-sm sm:ring-0";
+
+const CHECKOUT_VALUE_BULLETS = [
+  "Your readiness score — explained in plain English",
+  "A breakdown of your highest-risk driving skills",
+  "A focused action plan for your next lessons",
+  "An instructor-style coach note",
+] as const;
+
+const checkoutSubmitButtonClass = "w-full";
 
 const TOTAL_STEPS = 6;
 
@@ -38,12 +48,16 @@ function SectionHeader({
   hint?: string;
 }) {
   return (
-    <legend className="block w-full border-b border-brand-100 pb-4">
-      <span className="text-xs font-semibold uppercase tracking-wide text-brand-500">
-        Step {step} of {TOTAL_STEPS}
-      </span>
-      <span className="mt-1 block text-base font-semibold text-brand-950">{title}</span>
-      {hint ? <span className={`${hintClass} mt-2 block max-w-prose`}>{hint}</span> : null}
+    <legend className="block w-full">
+      <div className="flex flex-col gap-2 border-b border-brand-200/70 pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+        <span className="font-heading text-lg font-semibold leading-snug tracking-tight text-brand-950 sm:text-xl">
+          {title}
+        </span>
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">
+          Step {step} of {TOTAL_STEPS}
+        </span>
+      </div>
+      {hint ? <p className={`${hintClass} mt-3 max-w-prose`}>{hint}</p> : null}
     </legend>
   );
 }
@@ -123,14 +137,18 @@ export function AssessmentForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form
+      id="prep2pass-assessment"
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-6 pb-[calc(7.25rem+env(safe-area-inset-bottom))] sm:space-y-10 md:pb-0"
+    >
       <fieldset className={sectionBox}>
         <SectionHeader
           step={1}
           title="About you"
           hint="Used on-device for now; checkout email can power delivery of your Premium TestReady Score Report later."
         />
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div className="sm:col-span-1">
             <label className={labelClass} htmlFor="fullName">
               Full name
@@ -162,7 +180,7 @@ export function AssessmentForm() {
           title="Lessons & test plan"
           hint="Rough numbers are fine — consistency matters more than perfect recall."
         />
-        <div className="mt-5 grid gap-5">
+        <div className="mt-6 grid gap-4 sm:gap-5">
           <div>
             <label className={labelClass} htmlFor="lessonsTaken">
               Approximate full lessons taken
@@ -181,10 +199,13 @@ export function AssessmentForm() {
 
           <div>
             <p className={labelClass}>Is your practical test booked?</p>
-            <div className="mt-2 flex flex-wrap gap-4">
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
               {(["yes", "no"] as const).map((v) => (
-                <label key={v} className="inline-flex items-center gap-2 text-sm text-brand-800">
-                  <input type="radio" value={v} className="h-4 w-4" {...register("testBooked")} />
+                <label
+                  key={v}
+                  className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-sm text-brand-800 shadow-sm has-[:checked]:border-teal-600/35 has-[:checked]:bg-teal-50/50 sm:min-h-0 sm:px-3 sm:py-2"
+                >
+                  <input type="radio" value={v} className="h-5 w-5 shrink-0 sm:h-4 sm:w-4" {...register("testBooked")} />
                   <span className="capitalize">{v}</span>
                 </label>
               ))}
@@ -219,13 +240,16 @@ export function AssessmentForm() {
           title="Mock test"
           hint="Mocks are the closest safe proxy to exam pressure — answer honestly."
         />
-        <div className="mt-5 grid gap-5">
+        <div className="mt-6 grid gap-4 sm:gap-5">
           <div>
             <p className={labelClass}>Have you taken a mock driving test?</p>
-            <div className="mt-2 flex flex-wrap gap-4">
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
               {(["yes", "no"] as const).map((v) => (
-                <label key={v} className="inline-flex items-center gap-2 text-sm text-brand-800">
-                  <input type="radio" value={v} className="h-4 w-4" {...register("mockTestTaken")} />
+                <label
+                  key={v}
+                  className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-sm text-brand-800 shadow-sm has-[:checked]:border-teal-600/35 has-[:checked]:bg-teal-50/50 sm:min-h-0 sm:px-3 sm:py-2"
+                >
+                  <input type="radio" value={v} className="h-5 w-5 shrink-0 sm:h-4 sm:w-4" {...register("mockTestTaken")} />
                   <span className="capitalize">{v}</span>
                 </label>
               ))}
@@ -257,14 +281,16 @@ export function AssessmentForm() {
                 return (
                   <label
                     key={opt.value}
-                    className={`inline-flex items-center gap-2 text-sm ${
-                      disabled ? "cursor-not-allowed text-brand-400" : "text-brand-800"
+                    className={`flex min-h-[48px] items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm shadow-sm sm:min-h-0 sm:px-3 sm:py-2 ${
+                      disabled
+                        ? "cursor-not-allowed border-brand-50 bg-brand-50/50 text-brand-400"
+                        : "cursor-pointer border-brand-100 bg-white text-brand-800 has-[:checked]:border-teal-600/35 has-[:checked]:bg-teal-50/50"
                     }`}
                   >
                     <input
                       type="radio"
                       value={opt.value}
-                      className="h-4 w-4"
+                      className="h-5 w-5 shrink-0 sm:h-4 sm:w-4"
                       disabled={disabled}
                       {...register("mockTestResult")}
                     />
@@ -284,7 +310,7 @@ export function AssessmentForm() {
           title="Recent performance"
           hint="Use one recent lesson or mock that felt typical — not your best-ever day."
         />
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div>
             <label className={labelClass} htmlFor="seriousFaults">
               Serious faults
@@ -347,17 +373,17 @@ export function AssessmentForm() {
           name="weakAreas"
           control={control}
           render={({ field }) => (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
               {WEAK_AREA_OPTIONS.map((opt) => {
                 const checked = field.value?.includes(opt.id) ?? false;
                 return (
                   <label
                     key={opt.id}
-                    className="flex cursor-pointer gap-3 rounded-xl border border-brand-100 bg-brand-50/40 p-3 text-sm text-brand-900 hover:bg-brand-50"
+                    className="flex min-h-[52px] cursor-pointer gap-3 rounded-xl border border-brand-200/80 bg-white p-3.5 text-sm text-brand-900 shadow-sm active:bg-brand-50/80 sm:min-h-0 sm:border-brand-100 sm:bg-brand-50/40 sm:shadow-none sm:hover:bg-brand-50"
                   >
                     <input
                       type="checkbox"
-                      className="mt-1 h-4 w-4 rounded border-brand-300 text-teal-700 focus:ring-teal-600"
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-brand-300 text-teal-700 focus:ring-teal-600 sm:h-4 sm:w-4"
                       checked={checked}
                       onChange={() => {
                         const next = checked
@@ -385,7 +411,7 @@ export function AssessmentForm() {
           title="Anything else?"
           hint="Optional context your instructor would find useful — test centre, car type, nerves, etc."
         />
-        <div className="mt-5">
+        <div className="mt-6">
           <label className={labelClass} htmlFor="extraNotes">
             Extra notes (optional)
           </label>
@@ -400,23 +426,86 @@ export function AssessmentForm() {
         </div>
       </fieldset>
 
+      <div className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8 sm:shadow-sm sm:ring-0">
+        <p className="text-center text-[11px] font-semibold uppercase tracking-wider text-brand-500/90 sm:text-left">
+          Checkout
+        </p>
+        <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:mt-0 sm:text-xl">
+          Unlock your TestReady Score
+        </h2>
+        <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+          See exactly what could cause you to fail — and how to fix it before your test.
+        </p>
+        <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
+          {CHECKOUT_VALUE_BULLETS.map((line) => (
+            <li key={line} className="flex gap-3">
+              <span className="mt-0.5 shrink-0 font-semibold text-teal-700" aria-hidden>
+                ✓
+              </span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2 border-t border-brand-100 pt-6">
+          <p>
+            <span className="text-3xl font-semibold tracking-tight text-brand-950">{PREMIUM_PRICE}</span>
+            <span className="ml-2 text-sm font-medium text-brand-600">one-time</span>
+          </p>
+        </div>
+        <p className="mt-4 text-xs leading-relaxed text-brand-600">
+          Secure payment powered by Stripe · No subscription · No hidden charges
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
+          Most learners book their test too early — this helps you prepare with more clarity.
+        </p>
+      </div>
+
       {submitError ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 md:order-none"
         >
           {submitError}
         </div>
       ) : null}
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs leading-relaxed text-brand-500">
-          By continuing you agree this assessment is for information only — not professional driving
-          instruction. Secure checkout unlocks your Premium TestReady Score Report.
-        </p>
-        <Button type="submit" disabled={isSubmitting} className="w-full px-6 py-3 text-base sm:w-auto">
-          {isSubmitting ? "Starting checkout…" : "Continue to Checkout"}
+      <div className="mt-10 hidden flex-col gap-5 border-t border-brand-100/80 pt-8 md:flex">
+        <Button
+          type="submit"
+          variant="conversion"
+          disabled={isSubmitting}
+          className={checkoutSubmitButtonClass}
+        >
+          {isSubmitting ? "Starting checkout…" : "Continue to Secure Checkout"}
         </Button>
+        <p className="text-center text-xs leading-relaxed text-brand-500">
+          For information only — not a substitute for professional instruction. Your answers generate your
+          TestReady Score report after payment.
+        </p>
+      </div>
+
+      <div
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+      >
+        {submitError ? (
+          <p className="mb-2 text-center text-xs font-medium text-red-800">{submitError}</p>
+        ) : (
+          <p className="mb-2 text-center text-[11px] leading-snug text-brand-500/90">
+            Stripe-secured checkout · One-time payment · No subscription
+          </p>
+        )}
+        <Button
+          type="submit"
+          variant="conversion"
+          disabled={isSubmitting}
+          className={checkoutSubmitButtonClass}
+        >
+          {isSubmitting ? "Starting checkout…" : "Continue to Secure Checkout"}
+        </Button>
+        <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
+          Information only — not a substitute for professional instruction
+        </p>
       </div>
     </form>
   );

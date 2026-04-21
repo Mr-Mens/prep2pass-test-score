@@ -1,14 +1,19 @@
-import {
-  DVSA_GROUP_SCORE_WEIGHT,
-  GROUP_ORDER,
-  labelForSkillGroup,
-  WEAK_AREA_TO_DVSA_GROUP,
-  type DvsaSkillGroupId,
-} from "./dvsa-skill-groups";
 import { WEAK_AREA_OPTIONS, type WeakAreaId } from "./constants";
-import { isManoeuvreWeakArea } from "./weak-area-migration";
+import {
+  labelForOfficialGroup,
+  officialSkillById,
+  OFFICIAL_GROUP_ORDER,
+  type OfficialGroupKey,
+} from "./dvsa-ready-to-pass-framework";
+import {
+  isManoeuvreWeakArea,
+  productMeta,
+  RISK_TIER_POINTS,
+  WEAK_AREA_CLUSTERS,
+} from "./product-skill-map";
+import { sortGroupedRiskAreasByImpact, type GroupedRiskArea, type RiskAreaSkill } from "./readiness-risk-areas";
 import type { AssessmentPayload } from "./validation";
-import type { DeterministicReadinessResult, GroupedRiskArea, ReadinessLabel } from "./validation";
+import type { DeterministicReadinessResult, ReadinessLabel } from "./validation";
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
@@ -20,139 +25,231 @@ const labelForScore = (score: number): ReadinessLabel => {
 
 const weakAreaLabel = (id: WeakAreaId) => WEAK_AREA_OPTIONS.find((o) => o.id === id)?.label ?? id;
 
-/** One credible issue line per weak-area id (deterministic, instructor-style). */
-const issueTemplates: Record<WeakAreaId, string> = {
-  roundabouts:
-    "Roundabouts: approach speed, lane discipline, and observations under test-style pressure.",
-  forwardBayParking:
-    "Forward bay parking: positioning into the bay with accuracy and observations through the move.",
-  reverseBayParking:
-    "Reverse bay parking: line control and all-round awareness while reversing into the bay.",
-  pullUpOnRightReverse:
-    "Pull up on the right and reverse: safe stop, two-car-length reverse, and rejoining with effective observations.",
-  parallelParking:
-    "Parallel parking: clearance, slow-speed control, and observations while positioning next to the kerb.",
-  mirrors:
-    "Mirrors & MSPSL: mirror routine before signalling, braking, or changing direction.",
-  junctions:
-    "Junctions: emerging and positioning with early observations — avoid late speed changes.",
-  observations:
-    "Observations: effective looks before moving off, changing direction, or near vulnerable road users.",
-  speedControl: "Speed & limits: matching limits to conditions with safe judgement and planning.",
-  clutchControl: "Clutch & biting point: smooth pull-aways and slow control when nerves rise.",
-  independentDriving:
-    "Independent driving: lane discipline and planning when following signs or sat-nav.",
+type RiskBucket = {
+  skills: Map<string, RiskAreaSkill>;
+  highlights: string[];
 };
 
-const BASE_WEAK_PENALTY = 3.8;
+function getBucket(
+  buckets: Partial<Record<OfficialGroupKey, RiskBucket>>,
+  groupKey: OfficialGroupKey,
+): RiskBucket {
+  if (!buckets[groupKey]) {
+    buckets[groupKey] = { skills: new Map(), highlights: [] };
+  }
+  return buckets[groupKey]!;
+}
+
+function riskTierScore(t: "critical" | "high" | "medium" | "low"): number {
+  return { critical: 3, high: 2, medium: 1, low: 0 }[t];
+}
+
+function pickGroupSeverity(
+  groupKey: OfficialGroupKey,
+  skills: RiskAreaSkill[],
+  highlights: string[],
+): GroupedRiskArea["severity"] {
+  const serious = highlights.some((h) => /serious fault/i.test(h));
+  const mockFail = highlights.some((h) => /mock test was a fail/i.test(h));
+  const drivingBand = highlights.some((h) => /driving[- ]fault/i.test(h));
+
+  if (groupKey === "basics" && serious) return "high";
+
+  if (groupKey === "manoeuvres") {
+    const manoeuvreKeys = new Set([
+      "forwardBayParking",
+      "reverseBayParking",
+      "pullUpOnRightReverse",
+      "parallelParking",
+    ]);
+    const n = skills.filter((s) => manoeuvreKeys.has(s.key)).length;
+    if (n >= 4) return "high";
+    if (n >= 2) return "moderate";
+    if (n === 1) return "low";
+  }
+
+  if (skills.length === 0) {
+    if (mockFail) return "moderate";
+    if (drivingBand) return "moderate";
+    if (highlights.length >= 2) return "moderate";
+    return highlights.length ? "low" : "low";
+  }
+
+  const tierScores = skills.map((s) => {
+    try {
+      return riskTierScore(productMeta(s.key as WeakAreaId).riskTier);
+    } catch {
+      return 1;
+    }
+  });
+  const sum = tierScores.reduce((a, b) => a + b, 0);
+  const maxTier = Math.max(...tierScores);
+
+  if (mockFail && skills.length >= 2 && groupKey === "junctions_roundabouts_crossings") return "high";
+  if (sum >= 7 && skills.length >= 2) return "high";
+  if (maxTier >= 3 && skills.length >= 3) return "high";
+
+  if (mockFail) return "moderate";
+  if (sum >= 4 || skills.length >= 2) return "moderate";
+  if (maxTier >= 3) return "moderate";
+  if (maxTier >= 2 && skills.length >= 1) return "moderate";
+  return "low";
+}
+
+function buildGroupSummary(
+  skills: RiskAreaSkill[],
+  severity: GroupedRiskArea["severity"],
+  highlights: string[],
+): string {
+  const focus = skills.map((s) => s.label).join(" · ");
+
+  if (skills.length === 0 && highlights.length) {
+    const h0 = highlights[0];
+    if (/serious fault/i.test(h0)) {
+      return `${h0} Drill the repeat themes with your instructor until corrections are verbalised before each move.`;
+    }
+    if (/mock test was a fail/i.test(h0)) {
+      return "Mock was a fail — rehearse junctions and roundabouts first, then rebuild speed and observations on the same roads.";
+    }
+    if (/driving[- ]fault/i.test(h0)) {
+      return "Fault count points to rhythm, not slips — tighten one routine per lesson on routes you already know.";
+    }
+    return h0;
+  }
+
+  if (severity === "high") {
+    return `Front-load test prep: ${focus || "these routines"} — short timed repeats until each step is spoken before the car moves.`;
+  }
+  if (severity === "moderate") {
+    return `${focus || "These areas"}: one narrow win per week (one junction type, one speed band), then reconnect on a mock.`;
+  }
+  return `${focus || "These areas"}: light polish — keep one refresher drive before test week so habits stay automatic.`;
+}
 
 function computeWeakAreaPenalty(assessment: AssessmentPayload): number {
+  const unique = Array.from(new Set(assessment.weakAreas));
   let penalty = 0;
-  for (const id of assessment.weakAreas) {
-    const gid = WEAK_AREA_TO_DVSA_GROUP[id];
-    penalty += BASE_WEAK_PENALTY * DVSA_GROUP_SCORE_WEIGHT[gid];
+  for (const id of unique) {
+    penalty += RISK_TIER_POINTS[productMeta(id).riskTier];
+  }
+  const set = new Set(unique);
+  for (const c of WEAK_AREA_CLUSTERS) {
+    if (set.has(c.a) && set.has(c.b)) penalty += c.penalty;
   }
   return penalty;
 }
 
-function pickSeverity(groupId: DvsaSkillGroupId, issues: string[]): GroupedRiskArea["severity"] {
-  const w = DVSA_GROUP_SCORE_WEIGHT[groupId];
-  if (groupId === "basics" && issues.some((i) => i.includes("Serious fault"))) return "high";
-  /** Manoeuvres: severity from how many distinct manoeuvres are flagged (each line = one manoeuvre). */
-  if (groupId === "manoeuvres") {
-    const n = issues.length;
-    if (n >= 4) return "high";
-    if (n >= 2) return "medium";
-    return "low";
-  }
-  if (w >= 1.28 && issues.length >= 1) return "high";
-  if (issues.length >= 3) return "high";
-  if (w >= 1.15 && issues.length >= 2) return "medium";
-  if (issues.length >= 2) return "medium";
-  if (w < 1.1) return "low";
-  return "medium";
-}
-
 function buildGroupedRiskAreas(assessment: AssessmentPayload): GroupedRiskArea[] {
-  const bucket: Partial<Record<DvsaSkillGroupId, string[]>> = {};
-
-  const push = (gid: DvsaSkillGroupId, line: string) => {
-    if (!bucket[gid]) bucket[gid] = [];
-    bucket[gid]!.push(line);
-  };
+  const buckets: Partial<Record<OfficialGroupKey, RiskBucket>> = {};
+  const uniqueWeak = Array.from(new Set(assessment.weakAreas));
 
   if (assessment.seriousFaults > 0) {
-    push(
-      "basics",
+    getBucket(buckets, "basics").highlights.push(
       `Serious fault(s) reported (${assessment.seriousFaults}) — treat as a priority with your instructor before test day.`,
     );
   }
 
   if (assessment.mockTestTaken === "yes" && assessment.mockTestResult === "fail") {
-    push(
-      "junctionsRoundaboutsCrossings",
+    getBucket(buckets, "junctions_roundabouts_crossings").highlights.push(
       "Mock test was a fail — isolate behaviours that could become serious faults under exam conditions.",
     );
   }
 
   if (assessment.drivingFaults >= 12) {
-    push(
-      "basics",
+    getBucket(buckets, "basics").highlights.push(
       `Higher driving-fault count (${assessment.drivingFaults}) in a representative session — suggests consistency needs work, not one-off slips.`,
     );
   }
 
-  for (const id of assessment.weakAreas) {
-    const gid = WEAK_AREA_TO_DVSA_GROUP[id];
-    const line = issueTemplates[id];
-    if (line) push(gid, line);
+  for (const id of uniqueWeak) {
+    const meta = productMeta(id);
+    const official = officialSkillById(meta.officialSkillId);
+    const chip: RiskAreaSkill = {
+      key: id,
+      label: weakAreaLabel(id),
+      officialSkillId: meta.officialSkillId,
+      officialSkillName: official?.name ?? "Driving skill",
+    };
+    getBucket(buckets, meta.groupKey).skills.set(id, chip);
   }
 
   const groups: GroupedRiskArea[] = [];
 
-  for (const gid of GROUP_ORDER) {
-    const issues = bucket[gid];
-    if (!issues?.length) continue;
-    const unique = Array.from(new Set(issues)).slice(0, 6);
+  for (const groupKey of OFFICIAL_GROUP_ORDER) {
+    const b = buckets[groupKey];
+    if (!b || (b.skills.size === 0 && b.highlights.length === 0)) continue;
+    const skills = Array.from(b.skills.values());
+    const highlights = b.highlights;
+    const severity = pickGroupSeverity(groupKey, skills, highlights);
+    const summary = buildGroupSummary(skills, severity, highlights);
     groups.push({
-      group: labelForSkillGroup(gid),
-      severity: pickSeverity(gid, unique),
-      issues: unique,
+      groupKey,
+      groupLabel: labelForOfficialGroup(groupKey),
+      severity,
+      skills,
+      summary,
+      highlights: highlights.length ? highlights : undefined,
     });
   }
 
   if (groups.length === 0) {
     groups.push({
-      group: labelForSkillGroup("basics"),
+      groupKey: "basics",
+      groupLabel: labelForOfficialGroup("basics"),
       severity: "low",
-      issues: [
-        "No major self-reported hotspots — still worth pressure-testing your weakest routine on a mock route near your test centre.",
-      ],
+      skills: [],
+      summary:
+        "No major self-reported hotspots — still worth one mock route near your test centre to pressure-test your default routines.",
     });
   }
 
-  return groups.slice(0, 8);
+  return sortGroupedRiskAreasByImpact(groups).slice(0, 8);
 }
 
 function buildNextSteps(assessment: AssessmentPayload): string[] {
   const steps: string[] = [];
+  const w = new Set(assessment.weakAreas);
 
   if (assessment.lessonsTaken < 15) {
     steps.push("Aim for enough guided mileage that independent driving feels predictable, not improvised.");
   }
 
-  if (assessment.weakAreas.includes("mirrors") || assessment.weakAreas.includes("observations")) {
+  if (w.has("mirrors")) {
     steps.push("Run a 20-minute drill each lesson: MSPSL on every pull-away, lane change, and approach to junctions.");
   }
 
-  if (assessment.weakAreas.includes("junctions")) {
+  if (w.has("junctions")) {
     steps.push("Repeat emerging scenarios with your instructor until your default is early observations, not late speed changes.");
+  }
+
+  if (w.has("roundabouts")) {
+    steps.push("Use one lesson block on roundabouts only: approach speed first, then lane choice, then observations on exit.");
+  }
+
+  if (w.has("movingOffSafely")) {
+    steps.push("Verbalise the six-point check on every move off until it takes under three seconds without rushing.");
+  }
+
+  if (w.has("lanePositioning") || w.has("speedControl")) {
+    steps.push("Pair positioning with speed: pick a reference point on the road and rehearse safe gaps in varied traffic.");
   }
 
   if (assessment.weakAreas.some((id) => isManoeuvreWeakArea(id))) {
     steps.push(
       "Book time for each manoeuvre you ticked: one verbal routine (mirrors → move → observations), then repeat until it feels automatic under test pace.",
     );
+  }
+
+  if (w.has("independentDriving")) {
+    steps.push("On independent routes, narrate decisions 30 seconds early so planning stays ahead of the car.");
+  }
+
+  if (w.has("countryRoads") || w.has("dualCarriageways") || w.has("motorways")) {
+    steps.push("Schedule at least one higher-speed road session to match how you will use slip roads and lane discipline near your test area.");
+  }
+
+  if (w.has("nightDriving") || w.has("weatherConditions")) {
+    steps.push("If conditions apply before your test, repeat the same junctions in rain or darkness so judgement stays consistent.");
   }
 
   if (assessment.mockTestTaken === "no") {
@@ -198,18 +295,18 @@ function buildSummary(assessment: AssessmentPayload, score: number): string {
       ? `Your most recent mock was a ${assessment.mockTestResult === "pass" ? "pass" : assessment.mockTestResult === "fail" ? "fail" : "not recorded"}.`
       : "You have not taken a mock yet — that is normal, but it leaves pressure untested.";
 
-  return `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine} Risks are grouped using common practical test skill themes for clarity — not an official DVSA product — and should be reviewed with your instructor alongside on-road performance.`;
+  return `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine} Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity — not an official DVSA product or score — and should be reviewed with your instructor alongside on-road performance.`;
 }
 
 /**
- * Deterministic mock scoring for MVP preview. Replace with model + persisted scoring later.
+ * Deterministic scoring: serious and driving faults plus weighted weak-area and cluster penalties.
  */
 export function computeMockReadiness(assessment: AssessmentPayload): DeterministicReadinessResult {
   let score = 78;
 
   score -= computeWeakAreaPenalty(assessment);
-  score -= assessment.seriousFaults * 12;
-  score -= assessment.drivingFaults * 2.0;
+  score -= assessment.seriousFaults * 14.5;
+  score -= assessment.drivingFaults * 1.65;
 
   score += (assessment.confidenceLevel - 6) * 1.8;
 

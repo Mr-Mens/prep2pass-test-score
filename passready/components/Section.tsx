@@ -20,10 +20,10 @@ export function Section({
   contentClassName = "",
 }: SectionProps) {
   return (
-    <section id={id} className={`py-20 sm:py-24 ${className}`.trim()}>
-      <div className={`mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 ${contentClassName}`.trim()}>
+    <section id={id} className={`py-14 sm:py-24 ${className}`.trim()}>
+      <div className={`mx-auto max-w-6xl px-3 sm:px-6 lg:px-8 ${contentClassName}`.trim()}>
         {(eyebrow || title || subtitle) && (
-          <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-14">
+          <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-14">
             {eyebrow ? (
               <p className="text-sm font-semibold uppercase tracking-wide text-brand-500">
                 {eyebrow}

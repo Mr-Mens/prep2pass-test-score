@@ -16,7 +16,11 @@ function requireEnv(name: string): string {
 
 export function getStripeServerClient(): Stripe {
   if (cachedStripe) return cachedStripe;
-  cachedStripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"), { apiVersion: API_VERSION });
+  const secretKey = requireEnv("STRIPE_SECRET_KEY");
+  if (!secretKey.startsWith("sk_")) {
+    throw new Error("STRIPE_SECRET_KEY is invalid");
+  }
+  cachedStripe = new Stripe(secretKey, { apiVersion: API_VERSION });
   return cachedStripe;
 }
 
@@ -37,6 +41,9 @@ export async function createCheckoutSession(params: {
   const config = getStripeConfig();
   if (!config.priceId) {
     throw new Error("STRIPE_PRICE_ID is not configured");
+  }
+  if (!config.priceId.startsWith("price_")) {
+    throw new Error("STRIPE_PRICE_ID is invalid");
   }
 
   const session = await stripe.checkout.sessions.create({

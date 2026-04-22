@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { createCheckoutSessionRequestSchema } from "@/lib/validation";
@@ -44,7 +45,34 @@ export async function POST(request: Request) {
       url: session.url,
       sessionId: session.id,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      const code = error.code ?? "STRIPE_ERROR";
+      const stripeType = error.type ?? "StripeError";
+      console.error("[checkout:create-session] stripe_error", {
+        type: stripeType,
+        code,
+        message: error.message,
+      });
+      const message =
+        code === "resource_missing"
+          ? "Checkout is temporarily unavailable, pricing is not configured correctly."
+          : code === "authentication_error"
+            ? "Checkout is temporarily unavailable, payment credentials are invalid."
+          : "Checkout is temporarily unavailable. Please try again in a moment.";
+      return jsonError(500, "STRIPE_SESSION_ERROR", message);
+    }
+
+    if (error instanceof Error) {
+      console.error("[checkout:create-session] config_or_internal_error", { message: error.message });
+      if (error.message.includes("STRIPE_PRICE_ID")) {
+        return jsonError(500, "CHECKOUT_CONFIG_ERROR", "Checkout is temporarily unavailable.");
+      }
+      if (error.message.includes("STRIPE_SECRET_KEY")) {
+        return jsonError(500, "CHECKOUT_CONFIG_ERROR", "Checkout is temporarily unavailable.");
+      }
+    }
+
     return jsonError(500, "INTERNAL_ERROR", "Unable to start checkout right now");
   }
 }

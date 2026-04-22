@@ -52,7 +52,8 @@ export async function createReport(input: CreateReportInput): Promise<ReportDbRe
   const { data, error } = await supabase.from("reports").insert(payload).select("*").single();
 
   if (error || !data) {
-    throw new Error("Failed to create report");
+    console.error("[reports] insert failed", error?.message ?? error);
+    throw new Error(`Failed to create report: ${error?.message ?? "unknown"}`);
   }
   return withMigratedWeakAreas(data as ReportDbRecord);
 }

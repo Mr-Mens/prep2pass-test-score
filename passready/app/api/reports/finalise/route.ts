@@ -1,6 +1,9 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
 import { retrieveCheckoutSession } from "@/lib/server/stripe";
+import { isSupabaseConfigured } from "@/lib/server/supabase";
 import {
   fromCheckoutSessionToPaymentInput,
   upsertPaymentFromCheckoutSession,
@@ -14,6 +17,13 @@ export const runtime = "nodejs";
 
 function jsonError(status: number, code: string, message: string) {
   return NextResponse.json({ success: false as const, error: { code, message } }, { status });
+}
+
+/** When Supabase is missing, allow completing checkout locally without persisting reports. */
+function allowPersistSkipWithoutSupabase(): boolean {
+  return (
+    process.env.NODE_ENV === "development" || process.env.SKIP_SUPABASE_REPORT_PERSIST === "true"
+  );
 }
 
 export async function GET() {
@@ -39,31 +49,58 @@ export async function POST(request: Request) {
       return jsonError(402, "PAYMENT_REQUIRED", "Payment is not confirmed");
     }
 
-    const existing = await getReportByStripeSessionId(session.id);
-    if (existing) {
-      return NextResponse.json({
-        success: true as const,
-        sessionId: session.id,
-        reportId: existing.id,
-        assessment: parsed.data.assessment,
-        result: {
-          readinessScore: existing.readiness_score,
-          readinessLabel: existing.readiness_label,
-          summary: existing.summary,
-          riskAreas: normalizeGroupedRiskAreas(existing.risk_areas),
-          nextSteps: existing.next_steps,
-          recommendedHours: existing.recommended_hours,
-          coachMessage: existing.coach_message,
-          metadata: {
-            source: existing.report_source === "ai" ? "ai" : "fallback",
-            model: existing.model_name ?? undefined,
-            generatedAt: existing.generated_at,
+    const supabaseOk = isSupabaseConfigured();
+    const skipDbPersist = !supabaseOk && allowPersistSkipWithoutSupabase();
+
+    if (!supabaseOk && !skipDbPersist) {
+      return jsonError(
+        503,
+        "SERVICE_UNAVAILABLE",
+        "Report storage is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, or set SKIP_SUPABASE_REPORT_PERSIST=true for local-only testing.",
+      );
+    }
+
+    if (supabaseOk) {
+      const existing = await getReportByStripeSessionId(session.id);
+      if (existing) {
+        return NextResponse.json({
+          success: true as const,
+          sessionId: session.id,
+          reportId: existing.id,
+          assessment: parsed.data.assessment,
+          result: {
+            readinessScore: existing.readiness_score,
+            readinessLabel: existing.readiness_label,
+            summary: existing.summary,
+            riskAreas: normalizeGroupedRiskAreas(existing.risk_areas),
+            nextSteps: existing.next_steps,
+            recommendedHours: existing.recommended_hours,
+            coachMessage: existing.coach_message,
+            metadata: {
+              source: existing.report_source === "ai" ? "ai" : "fallback",
+              model: existing.model_name ?? undefined,
+              generatedAt: existing.generated_at,
+            },
           },
-        },
-      });
+        });
+      }
     }
 
     const { assessment, result } = await scoreAssessment(parsed.data.assessment);
+
+    if (skipDbPersist) {
+      console.warn(
+        "[reports:finalise] skipping_db_persist: no Supabase config. Report exists in-app only until you add Supabase.",
+      );
+      return NextResponse.json({
+        success: true as const,
+        sessionId: session.id,
+        reportId: randomUUID(),
+        assessment,
+        result,
+      });
+    }
+
     await upsertPaymentFromCheckoutSession(fromCheckoutSessionToPaymentInput(session));
     const report = await createReport({
       stripeSessionId: session.id,
@@ -79,7 +116,35 @@ export async function POST(request: Request) {
       assessment,
       result,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error("[reports:finalise] stripe_error", {
+        type: error.type,
+        code: error.code,
+        message: error.message,
+      });
+      return jsonError(502, "STRIPE_ERROR", "Could not verify payment with Stripe.");
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[reports:finalise] error", { message });
+
+    if (message.includes("is not configured")) {
+      return jsonError(
+        503,
+        "SERVICE_UNAVAILABLE",
+        "Report storage is not configured. Add Supabase URL and service role key, then try again.",
+      );
+    }
+
+    if (message.includes("Failed to upsert payment") || message.includes("Failed to create report")) {
+      return jsonError(
+        503,
+        "DATABASE_ERROR",
+        "Could not save your report after payment. Check Supabase tables and credentials.",
+      );
+    }
+
     return jsonError(500, "INTERNAL_ERROR", "Unable to finalise report right now");
   }
 }

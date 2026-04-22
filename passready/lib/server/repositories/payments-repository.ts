@@ -55,7 +55,8 @@ export async function upsertPaymentFromCheckoutSession(input: UpsertPaymentInput
     .single();
 
   if (error || !data) {
-    throw new Error("Failed to upsert payment");
+    console.error("[payments] upsert failed", error?.message ?? error);
+    throw new Error(`Failed to upsert payment: ${error?.message ?? "unknown"}`);
   }
   return data as PaymentDbRecord;
 }

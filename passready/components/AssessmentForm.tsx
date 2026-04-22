@@ -4,11 +4,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
+import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { requestCheckoutSession } from "@/lib/api/create-checkout-session";
 import { PREMIUM_PRICE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { savePendingAssessment } from "@/lib/storage";
-import { assessmentSchema, type AssessmentFormValues } from "@/lib/validation";
+import {
+  assessmentDataSchema,
+  assessmentSchema,
+  type AssessmentFormValues,
+  type AssessmentPayload,
+  type ReadinessLabel,
+} from "@/lib/validation";
 
 import { Button } from "./Button";
 
@@ -38,6 +45,54 @@ const checkoutSubmitButtonClass = "w-full";
 
 const TOTAL_STEPS = 6;
 
+type ScorePreview = {
+  assessment: AssessmentPayload;
+  readinessScore: number;
+  readinessLabel: ReadinessLabel;
+};
+
+function readinessBadgeClass(label: ReadinessLabel) {
+  if (label === "Not Ready") return "bg-red-50 text-red-900 ring-red-200";
+  if (label === "Nearly Ready") return "bg-amber-50 text-amber-950 ring-amber-200";
+  return "bg-teal-50 text-teal-950 ring-teal-200";
+}
+
+function scorePreviewLine(label: ReadinessLabel): string {
+  if (label === "Not Ready") return "You have clear upside, focused coaching can move this quickly.";
+  if (label === "Nearly Ready") return "You are close, tightening consistency now can lift pass confidence.";
+  return "Strong baseline, finish with targeted polish before test day.";
+}
+
+function LockedPreviewBlock({
+  title,
+  lines,
+}: {
+  title: string;
+  lines: readonly string[];
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-brand-200/80 bg-brand-50/65 p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-sm font-semibold text-brand-900">{title}</p>
+        <span className="inline-flex items-center rounded-full border border-brand-300/80 bg-white/75 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-brand-600">
+          Locked
+        </span>
+      </div>
+      <div className="relative overflow-hidden rounded-lg border border-brand-200/70 bg-white/60 px-3 py-3">
+        <div className="space-y-2 opacity-35 blur-[4px] select-none" aria-hidden>
+          {lines.map((line) => (
+            <p key={line} className="text-sm leading-relaxed text-brand-700">
+              {line}
+            </p>
+          ))}
+        </div>
+        <div className="pointer-events-none absolute inset-0 bg-white/35 backdrop-blur-[3px]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white/95 via-white/80 to-transparent" />
+      </div>
+    </div>
+  );
+}
+
 function SectionHeader({
   step,
   title,
@@ -65,6 +120,8 @@ function SectionHeader({
 export function AssessmentForm() {
   const submitLock = useRef(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<ScorePreview | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
 
   const {
     register,
@@ -114,8 +171,11 @@ export function AssessmentForm() {
     submitLock.current = true;
     setSubmitError(null);
     try {
-      const parsed = assessmentSchema.safeParse(values);
-      if (!parsed.success) return;
+      const parsed = assessmentDataSchema.safeParse(values);
+      if (!parsed.success) {
+        setSubmitError("Please review your answers and try again.");
+        return;
+      }
 
       savePendingAssessment({
         version: 1,
@@ -123,7 +183,30 @@ export function AssessmentForm() {
         assessment: parsed.data,
       });
 
-      const checkout = await requestCheckoutSession(parsed.data);
+      const scored = await requestAssessmentScore(parsed.data);
+      setPreview({
+        assessment: parsed.data,
+        readinessScore: scored.result.readinessScore,
+        readinessLabel: scored.result.readinessLabel,
+      });
+    } catch (e) {
+      const message =
+        e instanceof ApiRequestError
+          ? e.message
+          : "We could not score your assessment. Check your connection and try again.";
+      setSubmitError(message);
+    } finally {
+      submitLock.current = false;
+    }
+  };
+
+  async function onUnlockFullReport() {
+    if (!preview || submitLock.current) return;
+    submitLock.current = true;
+    setUnlocking(true);
+    setSubmitError(null);
+    try {
+      const checkout = await requestCheckoutSession(preview.assessment);
       window.location.assign(checkout.url);
     } catch (e) {
       const message =
@@ -133,8 +216,94 @@ export function AssessmentForm() {
       setSubmitError(message);
     } finally {
       submitLock.current = false;
+      setUnlocking(false);
     }
-  };
+  }
+
+  if (preview) {
+    return (
+      <div className="space-y-6 pb-[calc(7.25rem+env(safe-area-inset-bottom))] sm:space-y-8 md:pb-0">
+        <section className="rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.13em] text-brand-500 sm:text-left">
+            Your TestReady Score
+          </p>
+          <div className="mt-5 flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
+            <p className="text-6xl font-semibold tracking-tight text-brand-950 tabular-nums">{preview.readinessScore}</p>
+            <span
+              className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ring-inset ${readinessBadgeClass(
+                preview.readinessLabel,
+              )}`}
+            >
+              {preview.readinessLabel}
+            </span>
+            <p className="max-w-prose text-sm leading-relaxed text-brand-700">
+              {scorePreviewLine(preview.readinessLabel)}
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-brand-500">Full report preview</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <LockedPreviewBlock
+              title="Risk Areas"
+              lines={[
+                "Junction timing and late observation patterns are raising avoidable faults.",
+                "Roundabout lane planning remains inconsistent under pressure.",
+              ]}
+            />
+            <LockedPreviewBlock
+              title="Coach Note"
+              lines={[
+                "Your base confidence is useful, but routine drift appears when pace rises.",
+                "Target one correction loop per lesson before adding complexity.",
+              ]}
+            />
+            <LockedPreviewBlock
+              title="Next Steps"
+              lines={[
+                "Run two high-frequency junction drills this week on familiar routes.",
+                "Use a structured mock reset before your next progress check.",
+              ]}
+            />
+            <LockedPreviewBlock
+              title="Lesson Guidance"
+              lines={[
+                "Recommended hours and session sequencing are personalised to your profile.",
+                "Unlock to view a lesson-by-lesson plan built around your score.",
+              ]}
+            />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8">
+          <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Unlock your full TestReady report</h2>
+          <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+            See exactly what could cause you to fail — and how to fix it before your test.
+          </p>
+          {submitError ? (
+            <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+              {submitError}
+            </p>
+          ) : null}
+          <div className="mt-6">
+            <Button
+              type="button"
+              variant="conversion"
+              disabled={unlocking}
+              className="w-full sm:w-auto sm:min-w-[18rem]"
+              onClick={onUnlockFullReport}
+            >
+              {unlocking ? "Starting checkout..." : "Unlock Full Report — £4.99"}
+            </Button>
+            <p className="mt-3 text-xs leading-relaxed text-brand-600">
+              Instant access • No subscription • Secure payment
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -476,7 +645,7 @@ export function AssessmentForm() {
           disabled={isSubmitting}
           className={checkoutSubmitButtonClass}
         >
-          {isSubmitting ? "Starting checkout…" : "Continue to Secure Checkout"}
+          {isSubmitting ? "Scoring..." : "See My TestReady Score"}
         </Button>
         <p className="text-center text-xs leading-relaxed text-brand-500">
           For information only, not a substitute for professional instruction. Your answers generate your
@@ -501,7 +670,7 @@ export function AssessmentForm() {
           disabled={isSubmitting}
           className={checkoutSubmitButtonClass}
         >
-          {isSubmitting ? "Starting checkout…" : "Continue to Secure Checkout"}
+          {isSubmitting ? "Scoring..." : "See My TestReady Score"}
         </Button>
         <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
           Information only, not a substitute for professional instruction

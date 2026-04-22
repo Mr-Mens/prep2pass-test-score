@@ -4,42 +4,34 @@ import { useState } from "react";
 
 import { Button } from "@/components/Button";
 
-type ReportSummary = {
-  id: string;
-  created_at: string;
-  readiness_score: number;
-  readiness_label: string;
-  report_source: string;
-};
-
 export function ReportLookupForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reports, setReports] = useState<ReportSummary[] | null>(null);
+  const [sent, setSent] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setReports(null);
+    setSent(false);
     try {
-      const res = await fetch("/api/reports/lookup", {
+      const res = await fetch("/api/reports/request-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
       const raw = (await res.json()) as
-        | { success: true; reports: ReportSummary[] }
+        | { success: true }
         | { success: false; error?: { message?: string } };
 
       if (!res.ok || !raw.success) {
-        setError(raw.success ? "Lookup failed" : raw.error?.message ?? "Lookup failed");
+        setError(raw.success ? "Request failed" : raw.error?.message ?? "Request failed");
         return;
       }
-      setReports(raw.reports);
+      setSent(true);
     } catch {
-      setError("Unable to look up reports right now. Please try again.");
+      setError("Unable to request access right now. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -64,47 +56,20 @@ export function ReportLookupForm() {
           placeholder="you@example.com"
         />
         <p className="mt-3 text-xs leading-relaxed text-brand-500/90">
-          Lookup is email-only for now; sign-in will replace this later.
+          We will email you a secure link to open your reports.
         </p>
         <div className="mt-5">
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-            {loading ? "Searching…" : "Find My Report"}
+            {loading ? "Sending link..." : "Email Me Access Link"}
           </Button>
         </div>
       </form>
 
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</div> : null}
-
-      {reports ? (
-        reports.length > 0 ? (
-          <div className="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-card">
-            <ul className="divide-y divide-brand-100">
-              {reports.map((r) => (
-                <li key={r.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-brand-950">
-                      {new Date(r.created_at).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                    <p className="text-xs text-brand-600">
-                      Score {r.readiness_score} · {r.readiness_label} · {r.report_source}
-                    </p>
-                  </div>
-                  <Button href={`/reports/${r.id}`} variant="secondary" className="w-full min-h-[48px] text-sm sm:w-auto sm:shrink-0">
-                    Open report
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-brand-100 bg-white px-4 py-3 text-sm text-brand-700">
-            No reports found for that email yet.
-          </div>
-        )
+      {sent ? (
+        <div className="rounded-xl border border-teal-200/80 bg-teal-50/80 px-4 py-3 text-sm text-teal-900">
+          Check your email to access your report.
+        </div>
       ) : null}
     </div>
   );

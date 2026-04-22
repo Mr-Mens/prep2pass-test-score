@@ -5,8 +5,7 @@ import { Section } from "@/components/Section";
 
 export const metadata: Metadata = {
   title: "Find My Report",
-  description:
-    "Find your saved Premium TestReady Score Reports. Enter the email you used at checkout.",
+  description: "Request a secure magic link to access your saved Premium TestReady Score Reports.",
 };
 
 export default function ReportLookupPage() {
@@ -16,7 +15,7 @@ export default function ReportLookupPage() {
       contentClassName="max-w-3xl"
       eyebrow="Find My Report"
       title="Open a saved report"
-      subtitle="Use the email from checkout. We list your recent Premium TestReady Score Reports with links to each full report."
+      subtitle="Use the email from checkout and we will send a secure access link to your inbox."
     >
       <ReportLookupForm />
     </Section>

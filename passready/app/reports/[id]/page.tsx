@@ -7,8 +7,9 @@ import { Section } from "@/components/Section";
 import { getReportById } from "@/lib/server/repositories/reports-repository";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
+import { verifyReportAccessToken } from "@/lib/server/report-access-token";
 
-type Props = { params: { id: string } };
+type Props = { params: { id: string }; searchParams?: { token?: string } };
 
 const paramsSchema = z.object({ id: z.string().uuid() });
 
@@ -24,12 +25,16 @@ function badgeClass(label: string) {
   return "bg-teal-50 text-teal-950 ring-teal-200";
 }
 
-export default async function ReportDetailPage({ params }: Props) {
+export default async function ReportDetailPage({ params, searchParams }: Props) {
   const parsed = paramsSchema.safeParse(params);
   if (!parsed.success) notFound();
+  const token = searchParams?.token ?? "";
+  const tokenState = verifyReportAccessToken(token);
+  if (!tokenState.valid) notFound();
 
   const report = await getReportById(parsed.data.id);
   if (!report) notFound();
+  if (report.email.toLowerCase() !== tokenState.email) notFound();
 
   const riskBlocks = normalizeGroupedRiskAreas(report.risk_areas as unknown);
 
@@ -81,8 +86,8 @@ export default async function ReportDetailPage({ params }: Props) {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button href="/report-lookup" className="w-full sm:w-auto sm:min-w-[12rem]">
-            Find My Report
+          <Button href={`/reports/access?token=${encodeURIComponent(token)}`} className="w-full sm:w-auto sm:min-w-[12rem]">
+            Back to my reports
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import "server-only";
 
 import { WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { OFFICIAL_SKILL_GROUPS } from "@/lib/dvsa-ready-to-pass-framework";
+import { mapMockTestReflectionSignals } from "@/lib/mock-test-reflection-map";
 import {
   aiReadinessReportSchema,
   type AssessmentPayload,
@@ -40,6 +41,7 @@ Rules:
 - summary and coachMessage should be concise.`;
 
 export async function generateReadinessReport({ assessment, deterministic }: GenerateArgs) {
+  const reflectionSignals = mapMockTestReflectionSignals(assessment);
   const manoeuvreLabels = assessment.weakAreas
     .filter((id) => isManoeuvreWeakArea(id))
     .map((id) => WEAK_AREA_OPTIONS.find((o) => o.id === id)?.label ?? id);
@@ -56,6 +58,16 @@ ${JSON.stringify(deterministic)}
 
 Official skill group titles (use matching groupLabel spelling):
 ${officialGroupTitles}
+
+Reflection signals for narrative enrichment (DO NOT alter score/label from these):
+${JSON.stringify(reflectionSignals)}
+
+Reflection usage rules:
+1) Prioritise structured categorySignals over extractedKeywords when both exist.
+2) Use reinforcedGroups to sharpen risk-area summaries.
+3) Use coachToneHints only to shape coachMessage tone.
+4) Use nextStepHints to make nextSteps more concrete.
+5) If reflection signals are empty, proceed with deterministic + weak areas only.
 
 Important constraints:
 1) Preserve readinessScore exactly as ${deterministic.readinessScore}.

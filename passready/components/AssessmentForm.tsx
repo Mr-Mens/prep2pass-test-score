@@ -18,6 +18,7 @@ import {
 } from "@/lib/validation";
 
 import { Button } from "./Button";
+import { MockTestReflectionSection } from "./MockTestReflectionSection";
 
 const fieldClass =
   "mt-1 block min-h-[50px] w-full rounded-xl border border-brand-200 bg-white px-4 py-3.5 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200 sm:min-h-0 sm:rounded-lg sm:px-3.5 sm:py-2.5";
@@ -144,6 +145,8 @@ export function AssessmentForm() {
       drivingFaults: "",
       confidenceLevel: 6,
       weakAreas: [],
+      mockReflectionCategories: [],
+      mockReflectionDetails: [],
       extraNotes: "",
     },
   });
@@ -476,6 +479,15 @@ export function AssessmentForm() {
       <fieldset className={sectionBox}>
         <SectionHeader
           step={4}
+          title="Tell us what happened in your mock test (optional)"
+          hint="This helps personalise your report. Keep it quick."
+        />
+        <MockTestReflectionSection control={control} register={register} setValue={setValue} errors={errors} />
+      </fieldset>
+
+      <fieldset className={sectionBox}>
+        <SectionHeader
+          step={5}
           title="Recent performance"
           hint="Use one recent lesson or mock that felt typical, not your best-ever day."
         />
@@ -533,7 +545,7 @@ export function AssessmentForm() {
 
       <fieldset className={sectionBox}>
         <SectionHeader
-          step={5}
+          step={6}
           title="Focus areas"
           hint="Tick skills that still wobble under test-like pressure. Honesty improves the snapshot."
         />
@@ -572,27 +584,6 @@ export function AssessmentForm() {
           )}
         />
         {errors.weakAreas ? <p className={errorClass}>{errors.weakAreas.message as string}</p> : null}
-      </fieldset>
-
-      <fieldset className={sectionBox}>
-        <SectionHeader
-          step={6}
-          title="Anything else?"
-          hint="Optional context your instructor would find useful: test centre, car type, nerves, and similar."
-        />
-        <div className="mt-6">
-          <label className={labelClass} htmlFor="extraNotes">
-            Extra notes (optional)
-          </label>
-          <textarea
-            id="extraNotes"
-            rows={5}
-            className={`${fieldClass} resize-y`}
-            placeholder="e.g. test centre, car type, nerves on independent driving, instructor focus this week…"
-            {...register("extraNotes")}
-          />
-          {errors.extraNotes ? <p className={errorClass}>{errors.extraNotes.message}</p> : null}
-        </div>
       </fieldset>
 
       <div className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8 sm:shadow-sm sm:ring-0">

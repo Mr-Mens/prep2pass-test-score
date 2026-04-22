@@ -7,11 +7,23 @@ import {
   riskAreaSkillSchema,
   riskSeveritySchema,
 } from "./readiness-risk-areas";
+import { MOCK_REFLECTION_CATEGORIES, MOCK_REFLECTION_SUB_OPTIONS } from "./mock-reflection";
 import { migrateWeakAreaIds } from "./weak-area-migration";
 
 type WeakAreaId = (typeof WEAK_AREA_OPTIONS)[number]["id"];
 
 const weakAreaIds = WEAK_AREA_OPTIONS.map((o) => o.id) as [WeakAreaId, ...WeakAreaId[]];
+const mockReflectionCategoryIds = MOCK_REFLECTION_CATEGORIES.map((o) => o.id) as [
+  (typeof MOCK_REFLECTION_CATEGORIES)[number]["id"],
+  ...(typeof MOCK_REFLECTION_CATEGORIES)[number]["id"][],
+];
+const mockReflectionSubOptionIds = MOCK_REFLECTION_SUB_OPTIONS.map((o) => o.id) as [
+  (typeof MOCK_REFLECTION_SUB_OPTIONS)[number]["id"],
+  ...(typeof MOCK_REFLECTION_SUB_OPTIONS)[number]["id"][],
+];
+const mockReflectionSubOptionCategoryById = new Map(
+  MOCK_REFLECTION_SUB_OPTIONS.map((opt) => [opt.id, opt.categoryId] as const),
+);
 
 const countedField = (label: string, max: number) =>
   z
@@ -59,10 +71,12 @@ export const assessmentSchema = z
       .default([])
       .transform((ids) => migrateWeakAreaIds(ids))
       .pipe(z.array(z.enum(weakAreaIds))),
+    mockReflectionCategories: z.array(z.enum(mockReflectionCategoryIds)).default([]),
+    mockReflectionDetails: z.array(z.enum(mockReflectionSubOptionIds)).default([]),
     extraNotes: z
       .string()
       .trim()
-      .max(2000, "Notes are too long")
+      .max(250, "Keep this under 250 characters")
       .optional()
       .transform((v) => (v === "" ? undefined : v)),
   })
@@ -101,6 +115,21 @@ export const assessmentSchema = z
         path: ["mockTestResult"],
       });
     }
+
+    if (data.mockReflectionDetails.length > 0) {
+      const selectedCategories = new Set(data.mockReflectionCategories);
+      for (const detailId of data.mockReflectionDetails) {
+        const requiredCategory = mockReflectionSubOptionCategoryById.get(detailId);
+        if (requiredCategory && !selectedCategories.has(requiredCategory)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Each selected detail must match a selected category",
+            path: ["mockReflectionDetails"],
+          });
+          break;
+        }
+      }
+    }
   });
 
 export type AssessmentFormValues = z.input<typeof assessmentSchema>;
@@ -124,6 +153,8 @@ export const assessmentDataSchema = z.object({
     .default([])
     .transform((ids) => migrateWeakAreaIds(ids))
     .pipe(z.array(z.enum(weakAreaIds))),
+  mockReflectionCategories: z.array(z.enum(mockReflectionCategoryIds)).optional().default([]),
+  mockReflectionDetails: z.array(z.enum(mockReflectionSubOptionIds)).optional().default([]),
   extraNotes: z.string().optional(),
 });
 

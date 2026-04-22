@@ -20,12 +20,15 @@ export default async function ReportsAccessPage({ searchParams }: Props) {
 
   if (!tokenState.valid) {
     return (
-      <Section className="bg-brand-50" contentClassName="max-w-3xl" eyebrow="Access link" title="Link expired or invalid">
+      <Section className="bg-brand-50" contentClassName="max-w-3xl" eyebrow="Access link" title="This link has expired">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-900">
-          Your secure link is invalid or has expired. Request a new link from report lookup.
+          This secure access link is invalid or has expired.
           <div className="mt-4">
-            <Link href="/report-lookup" className="font-semibold text-red-900 underline underline-offset-2">
-              Request a new link
+            <Link
+              href="/report-lookup"
+              className="inline-flex min-h-[44px] items-center rounded-xl border border-red-300 bg-white px-4 py-2 font-semibold text-red-900 shadow-sm"
+            >
+              Send me a new link
             </Link>
           </div>
         </div>

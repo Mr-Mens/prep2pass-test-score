@@ -10,11 +10,9 @@ export function ReportLookupForm() {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function requestLink() {
     setLoading(true);
     setError(null);
-    setSent(false);
     try {
       const res = await fetch("/api/reports/request-access", {
         method: "POST",
@@ -35,6 +33,12 @@ export function ReportLookupForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSent(false);
+    await requestLink();
   }
 
   return (
@@ -68,7 +72,12 @@ export function ReportLookupForm() {
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</div> : null}
       {sent ? (
         <div className="rounded-xl border border-teal-200/80 bg-teal-50/80 px-4 py-3 text-sm text-teal-900">
-          Check your email to access your report.
+          <p>Check your email. We’ve sent you a secure link to access your report.</p>
+          <div className="mt-3">
+            <Button type="button" variant="secondary" disabled={loading} onClick={requestLink} className="w-full sm:w-auto">
+              {loading ? "Sending..." : "Resend link"}
+            </Button>
+          </div>
         </div>
       ) : null}
     </div>

@@ -32,11 +32,54 @@ export async function sendReportAccessEmail({ toEmail, accessUrl }: Args): Promi
       to: [toEmail],
       subject: "Your Prep2Pass report access link",
       html: `
-        <p>Use this secure link to access your Prep2Pass reports:</p>
-        <p><a href="${accessUrl}">Open my reports</a></p>
-        <p>This link expires shortly for your security.</p>
-        <p>If you did not request this, you can ignore this email.</p>
-        <p>${getAppUrl()}</p>
+        <div style="margin:0;padding:0;background:#f4f7fb;font-family:Inter,Arial,sans-serif;color:#0f172a;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:24px 12px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #d7e2ee;border-radius:16px;overflow:hidden;">
+                  <tr>
+                    <td style="padding:20px 24px 8px 24px;">
+                      <p style="margin:0;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0f766e;">Prep2Pass</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 24px 4px 24px;">
+                      <h1 style="margin:0;font-size:24px;line-height:1.2;color:#0f172a;">Access your TestReady Score</h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 24px 0 24px;">
+                      <p style="margin:0;font-size:15px;line-height:1.6;color:#334155;">
+                        Click the button below to securely view your report. This link is private and will expire shortly.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:20px 24px 8px 24px;">
+                      <a
+                        href="${accessUrl}"
+                        style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;line-height:1;border-radius:12px;padding:14px 22px;"
+                      >
+                        View My Report
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 24px 18px 24px;">
+                      <p style="margin:0;font-size:13px;line-height:1.6;color:#475569;">
+                        Created by a DVSA-approved driving instructor.
+                      </p>
+                      <p style="margin:8px 0 0 0;font-size:13px;line-height:1.6;color:#475569;">
+                        If you didn’t request this, you can safely ignore this email.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:14px 0 0 0;font-size:12px;line-height:1.5;color:#64748b;">${getAppUrl()}</p>
+              </td>
+            </tr>
+          </table>
+        </div>
       `,
     }),
   });

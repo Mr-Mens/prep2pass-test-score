@@ -9,7 +9,7 @@ export function FaqItem({ question, answer }: FaqItemProps) {
       <summary className="cursor-pointer list-none text-sm font-semibold text-brand-950">
         {question}
       </summary>
-      <p className="mt-3 text-sm leading-relaxed text-brand-700">{answer}</p>
+      <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-brand-700">{answer}</p>
     </details>
   );
 }

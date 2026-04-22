@@ -9,7 +9,7 @@ import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readin
 export const metadata: Metadata = {
   title: "Sample Premium TestReady Score Report",
   description:
-    "Preview a realistic Premium TestReady Score Report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus.",
+    "Preview a realistic Premium TestReady Score Report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
 };
 
 const sampleRiskAreas: GroupedRiskArea[] = [
@@ -154,8 +154,8 @@ export default function SampleReportPage() {
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm text-amber-950">
           <p className="font-semibold">Example disclaimer</p>
           <p className="mt-2">
-            This sample is illustrative only. Prep2Pass is not DVSA guidance and does not guarantee pass/fail
-            outcomes.
+            This sample is illustrative only. Prep2Pass is created by a DVSA-approved driving instructor, is not
+            official DVSA guidance, and does not guarantee pass/fail outcomes.
           </p>
         </div>
 

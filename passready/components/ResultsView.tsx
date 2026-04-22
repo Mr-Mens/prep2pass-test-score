@@ -352,9 +352,9 @@ export function ResultsView() {
         <div className="rounded-2xl border border-amber-200/90 bg-amber-50/50 p-5 text-sm leading-relaxed text-amber-950 print:border-brand-200 print:bg-white">
           <p className="font-semibold text-amber-950">Disclaimer</p>
           <p className="mt-2 text-amber-950/95">
-            This TestReady Score report is guidance only. It is not driving instruction, not DVSA advice, and not a
-            guarantee of test outcomes. {SITE.name} combines scoring with optional AI wording; always review with your
-            instructor alongside how you drive.
+            This TestReady Score report is guidance only. It is not driving instruction, not official DVSA advice, and
+            not a guarantee of test outcomes. {SITE.name} is created by a DVSA-approved driving instructor and combines
+            scoring with optional AI wording. Always review with your instructor alongside how you drive.
           </p>
         </div>
 

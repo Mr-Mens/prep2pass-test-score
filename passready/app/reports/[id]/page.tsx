@@ -14,7 +14,8 @@ const paramsSchema = z.object({ id: z.string().uuid() });
 
 export const metadata: Metadata = {
   title: "Your TestReady Score Report",
-  description: "Saved Premium TestReady Score Report from Prep2Pass.",
+  description:
+    "Saved Premium TestReady Score Report from Prep2Pass. Created by a DVSA-approved driving instructor; not an official DVSA product.",
 };
 
 function badgeClass(label: string) {

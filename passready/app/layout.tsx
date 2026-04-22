@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     template: `%s · ${SITE.name}`,
   },
   description:
-    "TestReady Score by Prep2Pass: a clear UK learner assessment, practical risks, and next steps before your practical test.",
+    "TestReady Score by Prep2Pass: a clear UK learner assessment, practical risks, and next steps before your practical test. Created by a DVSA-approved driving instructor.",
   openGraph: {
     title: `TestReady Score by ${SITE.name}`,
     description:
-      "TestReady Score by Prep2Pass: a clear UK learner assessment, practical risks, and next steps before your practical test.",
+      "TestReady Score by Prep2Pass: a clear UK learner assessment, practical risks, and next steps before your practical test. Created by a DVSA-approved driving instructor.",
     type: "website",
     locale: "en_GB",
     siteName: SITE.name,

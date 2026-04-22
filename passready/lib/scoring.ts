@@ -295,7 +295,7 @@ function buildSummary(assessment: AssessmentPayload, score: number): string {
       ? `Your most recent mock was a ${assessment.mockTestResult === "pass" ? "pass" : assessment.mockTestResult === "fail" ? "fail" : "not recorded"}.`
       : "You have not taken a mock yet. That is normal, but it leaves pressure untested.";
 
-  return `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine} Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity. This is not an official DVSA product or score, and it should be reviewed with your instructor alongside on-road performance.`;
+  return `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine} Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity. Prep2Pass is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, and it should be reviewed with your instructor alongside on-road performance.`;
 }
 
 /**

@@ -11,8 +11,8 @@ export function Footer() {
         <div className="max-w-md">
           <p className="text-base font-semibold text-brand-950">{SITE.name}</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
-            Built for learner drivers in the UK first: clear signals, honest guidance, and a
-            calm path to test day.
+            Built by a DVSA-approved driving instructor for learner drivers in the UK: clear signals, honest guidance,
+            and a calm path to test day. Prep2Pass is independent and not affiliated with DVSA.
           </p>
         </div>
         <div className="flex flex-col gap-4 text-sm text-brand-700 sm:items-end">

@@ -7,7 +7,7 @@ import { PREMIUM_PRICE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "TestReady Score Assessment",
   description:
-    "Complete your TestReady Score Assessment, then pay once for your full report: score, risks, and next steps.",
+    "Complete your TestReady Score Assessment, then pay once for your full report: score, risks, and next steps. Created by a DVSA-approved driving instructor.",
 };
 
 const VALUE_BULLETS = [

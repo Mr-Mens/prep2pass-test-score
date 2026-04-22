@@ -12,7 +12,7 @@ import { PREMIUM_PRICE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "TestReady Score by Prep2Pass",
   description:
-    "Get your TestReady Score: a clear UK learner assessment with practical risks and next steps before your practical test.",
+    "Get your TestReady Score: a clear UK learner assessment with practical risks and next steps before your practical test. Created by a DVSA-approved driving instructor.",
 };
 
 export default function HomePage() {
@@ -23,6 +23,9 @@ export default function HomePage() {
           <div className="mx-auto flex w-full max-w-md flex-col items-center text-center md:max-w-2xl lg:max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500/90 lg:text-xs">
               Prep2Pass • TestReady Score
+            </p>
+            <p className="mt-2 max-w-md text-center text-[11px] font-medium leading-snug text-brand-600/90 lg:text-xs">
+              Created by a DVSA-approved driving instructor
             </p>
             <h1 className="mt-4 font-heading text-balance text-3xl font-semibold leading-[1.12] tracking-tight text-brand-950 md:mt-5 md:text-4xl lg:mt-6 lg:text-5xl">
               Know if you&apos;re ready to pass before you book your test
@@ -69,12 +72,12 @@ export default function HomePage() {
       <Section
         eyebrow="Trust & credibility"
         title="Built to give honest, practical guidance"
-        subtitle="No promises, no hype. Just structured insight you can use in real lessons."
+        subtitle="No promises, no hype. Created by a DVSA-approved driving instructor, with structured insight you can use in real lessons."
       >
         <div className="grid gap-4 md:grid-cols-3">
           <TrustBadge
             title="Built for learner drivers"
-            description="Designed around practical test prep, not generic driving tips."
+            description="Created by a DVSA-approved driving instructor around practical test prep, not generic driving tips."
           />
           <TrustBadge
             title="Practical, structured guidance"
@@ -150,22 +153,18 @@ export default function HomePage() {
       </Section>
 
       <Section className="bg-white" eyebrow="Customer-style examples" title="How learners describe the value">
-        {/* Placeholder-style testimonials. Replace with approved real testimonials before production use. */}
         <div className="grid gap-6 md:grid-cols-3">
           <TestimonialCard
             quote="It helped me explain to my instructor exactly what I was struggling with before my next lesson."
             person="Sample learner quote"
-            meta="Placeholder content"
           />
           <TestimonialCard
             quote="The risk breakdown made my practice sessions less random and more focused."
             person="Sample learner quote"
-            meta="Placeholder content"
           />
           <TestimonialCard
             quote="I liked seeing one score, then specific actions instead of vague confidence advice."
             person="Sample learner quote"
-            meta="Placeholder content"
           />
         </div>
       </Section>
@@ -175,7 +174,7 @@ export default function HomePage() {
           {[
             {
               q: "Is this official DVSA guidance?",
-              a: "No. Prep2Pass is independent guidance designed to support lesson planning and self-review.",
+              a: "No. Prep2Pass is an independent tool, created by a DVSA-approved driving instructor and designed around the skills assessed in the UK driving test.\n\nIt is designed to complement your instructor's advice, not replace it.",
             },
             {
               q: "Does this guarantee I will pass?",

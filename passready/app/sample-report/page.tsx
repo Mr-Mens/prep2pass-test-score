@@ -87,7 +87,7 @@ const sampleRiskAreas: GroupedRiskArea[] = [
 export default function SampleReportPage() {
   const sample = {
     readinessScore: 66,
-    readinessLabel: "Nearly Ready" as const,
+    readinessLabel: "Nearly Test Ready" as const,
     summary:
       "This sample learner shows solid lesson exposure but still has repeat risk patterns around observations at junctions and mirror routine under pressure. Confidence is improving, but consistency is not yet reliable enough for a high-certainty test outcome.",
     coachMessage:
@@ -102,9 +102,13 @@ export default function SampleReportPage() {
   };
 
   const badgeClass =
-    sample.readinessLabel === "Nearly Ready"
-      ? "bg-amber-50 text-amber-950 ring-amber-200"
-      : "bg-teal-50 text-teal-950 ring-teal-200";
+    sample.readinessLabel === "Nearly Test Ready"
+      ? "bg-sky-50 text-sky-950 ring-sky-200"
+      : sample.readinessLabel === "Building Consistency"
+        ? "bg-amber-50 text-amber-950 ring-amber-200"
+        : sample.readinessLabel === "Needs More Time"
+          ? "bg-red-50 text-red-900 ring-red-200"
+          : "bg-teal-50 text-teal-950 ring-teal-200";
 
   return (
     <Section

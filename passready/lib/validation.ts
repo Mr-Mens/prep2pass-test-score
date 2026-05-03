@@ -169,7 +169,12 @@ export type StoredAssessmentV1 = z.infer<typeof storedAssessmentSchema>;
 /** @deprecated Prefer PersistedAssessmentRecord; kept for backwards compatibility. */
 export type StoredAssessment = StoredAssessmentV1;
 
-export const readinessLabelSchema = z.enum(["Not Ready", "Nearly Ready", "Test Ready"]);
+export const readinessLabelSchema = z.enum([
+  "Needs More Time",
+  "Building Consistency",
+  "Nearly Test Ready",
+  "Test Ready",
+]);
 
 export type ReadinessLabel = z.infer<typeof readinessLabelSchema>;
 

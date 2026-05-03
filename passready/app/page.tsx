@@ -36,7 +36,7 @@ export default function HomePage() {
             <div
               className="mt-6 flex w-full max-w-[17.5rem] items-center justify-between gap-3 rounded-2xl border border-brand-200/40 bg-brand-50/40 px-4 py-3 ring-1 ring-black/[0.02] md:mt-7 lg:mt-8 lg:max-w-[20rem] lg:gap-4 lg:px-5 lg:py-4"
               role="group"
-              aria-label="Example TestReady Score: 72, Nearly Ready"
+              aria-label="Example TestReady Score: 72, Nearly Test Ready"
             >
               <div className="text-left">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-400/90 lg:text-[11px]">
@@ -47,7 +47,7 @@ export default function HomePage() {
                 </p>
               </div>
               <span className="shrink-0 rounded-full bg-teal-50/90 px-3 py-1 text-xs font-medium text-teal-900/90 ring-1 ring-teal-200/70 lg:px-4 lg:py-1.5 lg:text-sm">
-                Nearly Ready
+                Nearly Test Ready
               </span>
             </div>
             <div className="mt-9 flex w-full max-w-md justify-center md:mt-11 lg:mt-14 lg:max-w-none">

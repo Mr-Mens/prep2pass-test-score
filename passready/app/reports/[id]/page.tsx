@@ -20,8 +20,9 @@ export const metadata: Metadata = {
 };
 
 function badgeClass(label: string) {
-  if (label === "Not Ready") return "bg-red-50 text-red-900 ring-red-200";
-  if (label === "Nearly Ready") return "bg-amber-50 text-amber-950 ring-amber-200";
+  if (label === "Needs More Time") return "bg-red-50 text-red-900 ring-red-200";
+  if (label === "Building Consistency") return "bg-amber-50 text-amber-950 ring-amber-200";
+  if (label === "Nearly Test Ready") return "bg-sky-50 text-sky-950 ring-sky-200";
   return "bg-teal-50 text-teal-950 ring-teal-200";
 }
 

@@ -53,15 +53,20 @@ type ScorePreview = {
 };
 
 function readinessBadgeClass(label: ReadinessLabel) {
-  if (label === "Not Ready") return "bg-red-50 text-red-900 ring-red-200";
-  if (label === "Nearly Ready") return "bg-amber-50 text-amber-950 ring-amber-200";
+  if (label === "Needs More Time") return "bg-red-50 text-red-900 ring-red-200";
+  if (label === "Building Consistency") return "bg-amber-50 text-amber-950 ring-amber-200";
+  if (label === "Nearly Test Ready") return "bg-sky-50 text-sky-950 ring-sky-200";
   return "bg-teal-50 text-teal-950 ring-teal-200";
 }
 
 function scorePreviewLine(label: ReadinessLabel): string {
-  if (label === "Not Ready") return "You have clear upside, focused coaching can move this quickly.";
-  if (label === "Nearly Ready") return "You are close, tightening consistency now can lift pass confidence.";
-  return "Strong baseline, finish with targeted polish before test day.";
+  if (label === "Needs More Time")
+    return "Core safety themes need more seat time before a test date feels responsible.";
+  if (label === "Building Consistency")
+    return "Patterns are forming; keep drilling the same routines until they hold under pressure.";
+  if (label === "Nearly Test Ready")
+    return "You are close; tighten observations and mock pressure so test day feels familiar.";
+  return "Strong baseline; polish edge cases and keep one refresher mock before test week.";
 }
 
 function LockedPreviewBlock({

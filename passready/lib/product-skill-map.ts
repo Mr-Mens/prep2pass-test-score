@@ -229,22 +229,22 @@ export const PRODUCT_SKILL_MAP = {
   },
 } as const satisfies Record<WeakAreaId, ProductSkillMeta>;
 
-/** Penalty units per flagged product skill (deterministic; tune here). */
+/** Penalty units per flagged weak area (deterministic). Slightly softer than v1 so honest multi-tick profiles do not collapse the score. */
 export const RISK_TIER_POINTS: Record<RiskTier, number> = {
-  critical: 5.1,
-  high: 3.7,
-  medium: 2.6,
-  low: 1.5,
+  critical: 4.2,
+  high: 3.1,
+  medium: 2.2,
+  low: 1.2,
 };
 
-/** Common fail-pattern pairs: extra penalty when both are selected. */
+/** Correlated pairs: small extra nudge when both selected (capped again at score level in scoring.ts). */
 export const WEAK_AREA_CLUSTERS: readonly { a: WeakAreaId; b: WeakAreaId; penalty: number }[] = [
-  { a: "mirrors", b: "junctions", penalty: 2.7 },
-  { a: "junctions", b: "roundabouts", penalty: 2.5 },
-  { a: "speedControl", b: "lanePositioning", penalty: 2.3 },
-  { a: "movingOffSafely", b: "mirrors", penalty: 2.3 },
-  { a: "reverseBayParking", b: "parallelParking", penalty: 1.9 },
-  { a: "pullUpOnRightReverse", b: "movingOffSafely", penalty: 1.9 },
+  { a: "mirrors", b: "junctions", penalty: 2.2 },
+  { a: "junctions", b: "roundabouts", penalty: 2.0 },
+  { a: "speedControl", b: "lanePositioning", penalty: 1.9 },
+  { a: "movingOffSafely", b: "mirrors", penalty: 1.9 },
+  { a: "reverseBayParking", b: "parallelParking", penalty: 1.6 },
+  { a: "pullUpOnRightReverse", b: "movingOffSafely", penalty: 1.6 },
 ];
 
 export function productMeta(id: WeakAreaId): ProductSkillMeta {

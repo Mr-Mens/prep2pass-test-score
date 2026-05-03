@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       return jsonError(400, "VALIDATION_ERROR", "Assessment payload failed validation");
     }
 
-    const { assessment, result } = await scoreAssessment(parsed.data);
+    const { assessment, result } = await scoreAssessment(parsed.data, { useAiEnrichment: false });
 
     return NextResponse.json({
       success: true as const,

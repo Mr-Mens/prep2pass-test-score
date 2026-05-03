@@ -8,7 +8,7 @@ import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
 import { SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
-import { formatIsoDateUk, formatSubmittedAt } from "@/lib/formatting";
+import { formatIsoDateUk } from "@/lib/formatting";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
 import { loadPersistedRecord, saveScoredAssessment } from "@/lib/storage";
 import type { MockReadinessResult } from "@/lib/types";
@@ -204,24 +204,15 @@ export function ResultsView() {
     );
   }
 
-  const { submittedAt, result: report } = state.data;
-  const sourceLabel =
-    report.metadata.source === "ai" ? "Personalised with AI on top of your score" : "Structured from your assessment";
+  const { result: report } = state.data;
   const riskGroups = normalizeGroupedRiskAreas(report.riskAreas as unknown);
-  const metaLine = [
-    formatSubmittedAt(submittedAt),
-    sourceLabel,
-    report.metadata.model ? `Model: ${report.metadata.model}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
   return (
     <Section
       className="max-md:bg-transparent bg-brand-50 print:bg-white print:py-10"
       contentClassName="max-w-3xl"
       eyebrow="Prep2Pass"
-      subtitle="Structured from your answers, saved on this device for quick access."
+      subtitle="Test prep guidance from your answers, aligned with how ADIs teach. Use it with your instructor."
     >
       <div className="space-y-5 pb-32 sm:space-y-10 sm:pb-0 print:space-y-6 md:pb-0">
         {/* A: score summary */}
@@ -256,14 +247,13 @@ export function ResultsView() {
           <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
             <h3 className={sectionTitle}>Coach note</h3>
             <p className={sectionIntro}>
-              A concise takeaway you can read before your next lesson, grounded in your answers, not generic tips.
+              A concise takeaway before your next lesson, grounded in your answers and written to support what your instructor sees on the road.
             </p>
             <div className="mt-4 rounded-xl border border-teal-200/80 bg-teal-50/85 px-5 py-5 text-sm leading-relaxed text-teal-950 shadow-sm ring-1 ring-teal-200/50 print:border-teal-200 print:bg-teal-50/60 print:ring-0">
               {report.coachMessage}
             </div>
           </div>
 
-          <p className="mt-8 text-center text-xs leading-relaxed text-brand-500/85 sm:text-left">{metaLine}</p>
         </div>
 
         {/* B: risk areas */}

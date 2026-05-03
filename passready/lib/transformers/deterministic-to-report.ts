@@ -29,7 +29,7 @@ function fallbackCoachMessage(assessment: AssessmentPayload): string {
   return pickCopyVariant(salt, "coach:high", [
     "Strong self-belief helps, but keep one mock near test week so confidence does not replace early observations.",
     "High confidence is useful if it stays disciplined: rehearse the boring bits so test day feels familiar, not lucky.",
-    "Use your momentum to polish edge cases — busy roundabouts, tight gaps, and late instruction changes.",
+    "Use your momentum to polish edge cases: busy roundabouts, tight gaps, and late instruction changes.",
     "Stay curious on easier drives; complacency is where small habits slip before test week.",
   ]);
 }

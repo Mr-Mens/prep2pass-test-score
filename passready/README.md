@@ -111,9 +111,9 @@ Stripe:
 OpenAI:
 
 - `OPENAI_API_KEY` — server-side API key
-- `OPENAI_MODEL` — optional model override (`gpt-4o-mini` default)
+- `OPENAI_MODEL` — optional model override (`gpt-5.4-mini` default)
 
-If OpenAI is missing or fails, the app automatically falls back to deterministic scoring and still returns a full report.
+The free **`/api/assessment/score`** preview uses deterministic narrative only (same score/labels, no OpenAI) so a single paid **`/api/reports/finalise`** call is the main OpenAI usage per checkout. If OpenAI is missing or fails on finalise, the app falls back to deterministic copy and still returns a full report.
 
 ## Supabase setup
 

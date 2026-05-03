@@ -19,7 +19,7 @@ import type { DeterministicReadinessResult, ReadinessLabel } from "./validation"
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
 /**
- * Five-pillar model (UK ADI-style): each pillar is scored 0–100, then blended.
+ * Five-pillar model (UK ADI-style): each pillar is scored 0-100, then blended.
  * Safety is weighted highest; manoeuvre-only self-report is damped on safety/decision;
  * mock pass lifts test-day and independence; confidence and lesson count are light tail modifiers.
  */
@@ -97,7 +97,7 @@ function weakDecisionPenaltyUnits(ids: WeakAreaId[]): number {
     const u = tierUnits(id);
     if (id === "junctions" || id === "roundabouts" || id === "speedControl") sum += u * 1.18;
     else if (id === "mirrors") sum += u * 0.72;
-    else if (CORE_CONTROL_IDS.has(id) && id !== "speedControl") sum += u * 0.88;
+    else if (CORE_CONTROL_IDS.has(id)) sum += u * 0.88;
     else if (id === "independentDriving") sum += u * 1.15;
     else if (isManoeuvreWeakArea(id)) sum += u * 0.26;
     else sum += u * 0.8;
@@ -589,20 +589,20 @@ function buildNextSteps(assessment: AssessmentPayload, salt: number): string[] {
 function recommendLessonHours(score: number, lessonsTaken: number, salt: number): string {
   if (score >= 80) {
     return pickCopyVariant(salt, "hrs:80", [
-      "2–4 focused hours to polish test-day routines and core observations.",
-      "About 2–4 hours of deliberate polish: observations, junction timing, and one refresher mock if you can.",
+      "2 to 4 focused hours to polish test-day routines and core observations.",
+      "About 2 to 4 hours of deliberate polish: observations, junction timing, and one refresher mock if you can.",
     ]);
   }
   if (score >= 65) {
     return pickCopyVariant(salt, "hrs:65", [
-      "4–8 hours on your highest-impact risk themes, ideally with a mock in your test area.",
-      "Roughly 4–8 hours aimed at your top two risk themes, plus a mock route near your centre.",
+      "4 to 8 hours on your highest-impact risk themes, ideally with a mock in your test area.",
+      "Roughly 4 to 8 hours aimed at your top two risk themes, plus a mock route near your centre.",
     ]);
   }
   if (score >= 45) {
     return pickCopyVariant(salt, "hrs:45", [
-      "6–12 hours rebuilding consistency; agree priorities with your instructor week by week.",
-      "Plan 6–12 hours around repeatable weekly targets so habits tighten instead of resetting each drive.",
+      "6 to 12 hours rebuilding consistency; agree priorities with your instructor week by week.",
+      "Plan 6 to 12 hours around repeatable weekly targets so habits tighten instead of resetting each drive.",
     ]);
   }
   if (lessonsTaken < 10) {
@@ -631,18 +631,18 @@ function buildSummary(assessment: AssessmentPayload, score: number, salt: number
         ])
       : pickCopyVariant(salt, "sum:mockN", [
           "You have not taken a mock yet. That is normal, but it leaves pressure untested.",
-          "No mock on record yet — common early on, but exam-style pressure is still unknown until you schedule one.",
+          "No mock on record yet, which is common early on, but exam-style pressure is still unknown until you schedule one.",
         ]);
 
   const body = pickCopyVariant(salt, "sum:body", [
     `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine}`,
-    `Taking about ${assessment.lessonsTaken} lessons into account — with ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) from a representative session, and ${weakLabels} — TestReady Score sits at ${score}/100. Self-rated confidence is ${assessment.confidenceLevel}/10. ${mockLine}`,
+    `Taking about ${assessment.lessonsTaken} lessons into account, with ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) from a representative session, and ${weakLabels}, TestReady Score sits at ${score}/100. Self-rated confidence is ${assessment.confidenceLevel}/10. ${mockLine}`,
     `Across ${assessment.lessonsTaken} lessons, the snapshot flags ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, alongside ${weakLabels}. TestReady Score comes out at ${score}/100, with confidence self-rated ${assessment.confidenceLevel}/10. ${mockLine}`,
   ]);
 
   const footer = pickCopyVariant(salt, "sum:foot", [
     "Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity. Prep2Pass is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, and it should be reviewed with your instructor alongside on-road performance.",
-    "Risk areas follow common teaching groupings for readability. Prep2Pass is created by a DVSA-approved driving instructor; this is not an official DVSA product or score — use it with your instructor and what they see on the road.",
+    "Risk areas follow common teaching groupings for readability. Prep2Pass is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, so use it with your instructor and what they see on the road.",
   ]);
 
   return `${body} ${footer}`;

@@ -137,11 +137,15 @@ export async function POST(request: Request) {
       );
     }
 
-    if (message.includes("Failed to upsert payment") || message.includes("Failed to create report")) {
+    if (
+      message.includes("Failed to upsert payment") ||
+      message.includes("Failed to create report") ||
+      message.includes("Failed to fetch report")
+    ) {
       return jsonError(
         503,
         "DATABASE_ERROR",
-        "Could not save your report after payment. Check Supabase tables and credentials.",
+        "Could not read or save your report in Supabase. Confirm `reports` exists (see supabase/schema.sql), URL and service role key are correct, and check server logs for the Postgres/PostgREST error.",
       );
     }
 

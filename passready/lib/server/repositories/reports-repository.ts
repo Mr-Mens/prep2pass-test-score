@@ -24,7 +24,10 @@ function toDbPayload(input: CreateReportInput) {
     email: assessment.email,
     lessons_taken: assessment.lessonsTaken,
     test_booked: assessment.testBooked === "yes",
-    test_date: assessment.testDate ?? null,
+    test_date:
+      typeof assessment.testDate === "string" && assessment.testDate.trim() !== ""
+        ? assessment.testDate.trim()
+        : null,
     mock_test_taken: assessment.mockTestTaken === "yes",
     mock_test_result: assessment.mockTestResult,
     serious_faults: assessment.seriousFaults,
@@ -46,16 +49,35 @@ function toDbPayload(input: CreateReportInput) {
   };
 }
 
+function isUniqueStripeSessionViolation(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  if (error.code === "23505") return true;
+  const m = error.message ?? "";
+  return m.includes("duplicate key") && m.includes("stripe_session_id");
+}
+
 export async function createReport(input: CreateReportInput): Promise<ReportDbRecord> {
   const supabase = getSupabaseServerClient();
   const payload = toDbPayload(input);
   const { data, error } = await supabase.from("reports").insert(payload).select("*").single();
 
-  if (error || !data) {
-    console.error("[reports] insert failed", error?.message ?? error);
-    throw new Error(`Failed to create report: ${error?.message ?? "unknown"}`);
+  if (!error && data) {
+    return withMigratedWeakAreas(data as ReportDbRecord);
   }
-  return withMigratedWeakAreas(data as ReportDbRecord);
+
+  if (isUniqueStripeSessionViolation(error)) {
+    const existing = await getReportByStripeSessionId(input.stripeSessionId);
+    if (existing) {
+      console.warn("[reports] insert raced duplicate stripe_session_id; returning existing row", {
+        stripeSessionId: input.stripeSessionId,
+        reportId: existing.id,
+      });
+      return existing;
+    }
+  }
+
+  console.error("[reports] insert failed", error?.message ?? error);
+  throw new Error(`Failed to create report: ${error?.message ?? "unknown"}`);
 }
 
 export async function getReportByStripeSessionId(stripeSessionId: string): Promise<ReportDbRecord | null> {
@@ -67,7 +89,14 @@ export async function getReportByStripeSessionId(stripeSessionId: string): Promi
     .maybeSingle();
 
   if (error) {
-    throw new Error("Failed to fetch report");
+    console.error("[reports] getReportByStripeSessionId failed", {
+      stripeSessionId,
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw new Error(`Failed to fetch report: ${error.message}`);
   }
   return data ? withMigratedWeakAreas(data as ReportDbRecord) : null;
 }

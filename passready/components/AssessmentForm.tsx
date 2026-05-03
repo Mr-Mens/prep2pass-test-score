@@ -287,7 +287,7 @@ export function AssessmentForm() {
         <section className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8">
           <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Unlock your full TestReady report</h2>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-            See exactly what could cause you to fail — and how to fix it before your test.
+            See exactly what could cause you to fail, and how to fix it before your test.
           </p>
           {submitError ? (
             <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
@@ -302,7 +302,7 @@ export function AssessmentForm() {
               className="w-full sm:w-auto sm:min-w-[18rem]"
               onClick={onUnlockFullReport}
             >
-              {unlocking ? "Starting checkout..." : "Unlock Full Report — £4.99"}
+              {unlocking ? "Starting checkout..." : "Unlock Full Report (£4.99)"}
             </Button>
             <p className="mt-3 text-xs leading-relaxed text-brand-600">
               Instant access • No subscription • Secure payment

@@ -63,8 +63,7 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
             </span>
           </div>
           <p className="mt-4 text-sm text-brand-600/90">
-            Source: {report.report_source}
-            {report.model_name ? ` · ${report.model_name}` : ""}
+            Prep2Pass TestReady Score: guidance from your assessment, built to support what you do with your ADI. Not an official DVSA product.
           </p>
           <p className="mt-4 text-sm leading-relaxed text-brand-800">{report.summary}</p>
         </div>

@@ -12,8 +12,12 @@ import {
   loadPendingAssessment,
   saveScoredAssessment,
 } from "@/lib/storage";
+import type { FinaliseReportSuccess } from "@/lib/validation";
 
 type Status = "loading" | "error";
+
+/** One in-flight finalise per checkout session (avoids duplicate OpenAI calls under React Strict Mode). */
+const finalisePromises = new Map<string, Promise<FinaliseReportSuccess>>();
 
 export function CheckoutSuccessFlow() {
   const params = useSearchParams();
@@ -51,7 +55,15 @@ export function CheckoutSuccessFlow() {
         }
 
         setMessage("Payment confirmed. Building your Premium TestReady Score Report…");
-        const finalised = await requestFinaliseReport(sessionId, pending.assessment);
+        if (!finalisePromises.has(sessionId)) {
+          finalisePromises.set(
+            sessionId,
+            requestFinaliseReport(sessionId, pending.assessment).finally(() => {
+              finalisePromises.delete(sessionId);
+            }),
+          );
+        }
+        const finalised = await finalisePromises.get(sessionId)!;
 
         if (cancelled) return;
 

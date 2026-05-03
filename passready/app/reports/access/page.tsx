@@ -60,7 +60,7 @@ export default async function ReportsAccessPage({ searchParams }: Props) {
                     })}
                   </p>
                   <p className="text-xs text-brand-600">
-                    Score {report.readiness_score} · {report.readiness_label} · {report.report_source}
+                    Score {report.readiness_score} · {report.readiness_label}
                   </p>
                 </div>
                 <Link

@@ -140,7 +140,7 @@ export default function HomePage() {
             icon={<span aria-hidden>▦</span>}
           />
           <FeatureCard
-            title="Personalised next steps"
+            title="Focused next steps"
             description="Concrete actions for your next lessons so progress is visible week by week."
             icon={<span aria-hidden>→</span>}
           />

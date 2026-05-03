@@ -51,12 +51,14 @@ create index if not exists reports_email_idx on public.reports (email);
 create index if not exists reports_created_at_idx on public.reports (created_at desc);
 create index if not exists payments_created_at_idx on public.payments (created_at desc);
 
+-- search_path fixed: satisfies Supabase “function search_path mutable” (avoids search_path hijack).
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
-  new.updated_at = now();
+  new.updated_at := pg_catalog.now();
   return new;
 end;
 $$;
@@ -64,4 +66,4 @@ $$;
 drop trigger if exists reports_set_updated_at on public.reports;
 create trigger reports_set_updated_at
 before update on public.reports
-for each row execute procedure public.set_updated_at();
+for each row execute function public.set_updated_at();

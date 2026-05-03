@@ -52,7 +52,13 @@ export const assessmentSchema = z
     testBooked: z.enum(["yes", "no"], {
       required_error: "Select whether your test is booked",
     }),
-    testDate: z.string().optional(),
+    testDate: z
+      .string()
+      .optional()
+      .transform((v) => {
+        if (v == null || typeof v !== "string" || v.trim() === "") return undefined;
+        return v.trim();
+      }),
     mockTestTaken: z.enum(["yes", "no"], {
       required_error: "Select whether you have taken a mock test",
     }),
@@ -141,7 +147,13 @@ export const assessmentDataSchema = z.object({
   email: z.string().email(),
   lessonsTaken: z.number().int().min(0).max(400),
   testBooked: z.enum(["yes", "no"]),
-  testDate: z.string().optional(),
+  testDate: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (v == null || typeof v !== "string" || v.trim() === "") return undefined;
+      return v.trim();
+    }),
   mockTestTaken: z.enum(["yes", "no"]),
   mockTestResult: z.enum(["pass", "fail", "not_taken"]),
   seriousFaults: z.number().int().min(0).max(20),
@@ -219,6 +231,19 @@ export const aiReadinessReportSchema = z.object({
   coachMessage: z.string().min(1),
 });
 export type AiReadinessReport = z.infer<typeof aiReadinessReportSchema>;
+
+/**
+ * OpenAI JSON body: narrative fields only.
+ * Score/label from the model are ignored (often wrong by one point or legacy labels); the server always uses deterministic scoring.
+ */
+export const aiReadinessNarrativeOnlySchema = z.object({
+  summary: z.string().min(1),
+  riskAreas: riskAreasNormalizedSchema,
+  nextSteps: z.array(z.string().min(1)).min(2).max(6),
+  recommendedHours: z.string().min(1),
+  coachMessage: z.string().min(1),
+});
+export type AiReadinessNarrativeOnly = z.infer<typeof aiReadinessNarrativeOnlySchema>;
 
 /**
  * Final response shape returned by API and persisted in storage.

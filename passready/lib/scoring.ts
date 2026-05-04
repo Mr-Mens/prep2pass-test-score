@@ -19,10 +19,45 @@ import type { DeterministicReadinessResult, ReadinessLabel } from "./validation"
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
+/** Upper bound on headline score from lesson volume (evidence ceiling). Applied after pillar blend. */
+export function lessonBasedScoreCap(lessons: number): number {
+  if (lessons <= 5) return 45;
+  if (lessons <= 9) return 48;
+  if (lessons <= 15) return 60;
+  if (lessons <= 25) return 70;
+  if (lessons <= 35) return 80;
+  return 95;
+}
+
+/**
+ * Evidence guardrails: missing mock / missing fault counts, lesson ceiling, early-learner cap.
+ * Keeps sparse-input profiles from inheriting an unrealistically high blended pillar score.
+ */
+function applyReadinessEvidenceGuards(assessment: AssessmentPayload, composite: number): number {
+  let score = Math.round(composite);
+  score = clamp(score, 0, 100);
+
+  if (assessment.mockTestTaken === "no") score -= 5;
+  if (assessment.seriousFaults === 0 && assessment.drivingFaults === 0) score -= 5;
+
+  score = clamp(score, 0, 100);
+
+  score = Math.min(score, lessonBasedScoreCap(assessment.lessonsTaken));
+
+  // Below half a typical course load with no mock: do not present as ~50% “half ready” on headline alone.
+  if (assessment.lessonsTaken < 10 && assessment.mockTestTaken === "no") {
+    score = Math.min(score, 42);
+  }
+
+  return clamp(score, 0, 100);
+}
+
 /**
  * Five-pillar model (UK ADI-style): each pillar is scored 0-100, then blended.
  * Safety is weighted highest; manoeuvre-only self-report is damped on safety/decision;
- * mock pass lifts test-day and independence; confidence and lesson count are light tail modifiers.
+ * mock pass lifts test-day and independence; confidence is a capped tail nudge (±5).
+ * After blending, evidence guards cap by lesson count, penalise missing mock / missing fault counts,
+ * and hard-cap very early learners without a mock (below half a typical course load, headline stays under ~half without mock).
  */
 export const READINESS_PILLAR_WEIGHTS = {
   safety: 0.3,
@@ -238,11 +273,11 @@ function computePillarReadinessScore(assessment: AssessmentPayload): number {
 
   let composite = blendPillars(safety, consistency, decision, independence, testDay);
 
-  // Light modifiers only (not dominant).
-  composite += (assessment.confidenceLevel - 6) * 0.32;
+  // Self-rated confidence: light touch, hard-capped so it cannot dominate evidence-poor profiles.
+  composite += clamp((assessment.confidenceLevel - 6) * 1.25, -5, 5);
   composite += clamp((assessment.lessonsTaken - 18) * 0.024, -1.2, 2.0);
 
-  return clamp(Math.round(composite), 0, 100);
+  return applyReadinessEvidenceGuards(assessment, composite);
 }
 
 type RiskBucket = {

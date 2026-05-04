@@ -5,11 +5,82 @@ import { isManoeuvreWeakArea, type WeakAreaId } from "@/lib/product-skill-map";
 export const ESTIMATED_HOURS_TITLE = "Estimated hours to test readiness";
 
 export const ESTIMATED_HOURS_SUPPORTING =
-  "Based on your current level, most learners need a few more lessons to build consistency before test standard.";
+  "Most learners need a spread of guided hours before test standard. This band is a planning guide, not a promise about how fast you will progress.";
 
 export const ESTIMATED_HOURS_DISCLAIMER = "This is a guide, not a guarantee.";
 
-function baseBand(score: number): EstimatedLessonHours {
+/** Inputs needed for hour estimation (subset of {@link AssessmentPayload}). */
+export type EstimatedHoursInput = Pick<
+  AssessmentPayload,
+  "lessonsTaken" | "mockTestTaken" | "mockTestResult" | "seriousFaults" | "drivingFaults" | "weakAreas" | "confidenceLevel"
+>;
+
+export type EstimationPath = "minimal" | "partial" | "full";
+
+/**
+ * Which deterministic path applies. Not shown in the UI; keeps copy consistent while allowing sparse data.
+ *
+ * - **full**: mock taken or any fault count above zero → use readiness score + fault/weak adjustments.
+ * - **partial**: otherwise weak areas or very low / very high self-rated confidence → DVSA-style baseline plus light tweaks.
+ * - **minimal**: only lessons + mid confidence, no mock/fault/weak signals → DVSA public planning band vs lessons taken.
+ */
+export function resolveEstimationPath(input: EstimatedHoursInput): EstimationPath {
+  if (input.mockTestTaken === "yes" || input.seriousFaults > 0 || input.drivingFaults > 0) return "full";
+  if (input.weakAreas.length > 0 || input.confidenceLevel <= 3 || input.confidenceLevel >= 9) return "partial";
+  return "minimal";
+}
+
+function clampBand(min: number, max: number, openEndedHigh: boolean): EstimatedLessonHours {
+  let m = Math.max(0, Math.min(min, 72));
+  let M = Math.max(m + 2, Math.min(max, 78));
+  if (M <= m) M = m + 2;
+  return { min: m, max: M, openEndedHigh };
+}
+
+function ensureMinRange(min: number, max: number): { min: number; max: number } {
+  if (max <= min) return { min, max: min + 2 };
+  return { min, max };
+}
+
+/** DVSA public messaging often quotes a wide band of typical guided hours before test; we use it when fault/mock data is absent. */
+const DVSA_TYPICAL_TOTAL_MIN = 35;
+const DVSA_TYPICAL_TOTAL_MAX = 45;
+
+/**
+ * Minimal path: remaining hours ≈ typical total band minus lessons already taken.
+ * If the learner is already past the upper planning band, return a small “polish / maintenance” band.
+ */
+function estimateMinimal(lessonsTaken: number): EstimatedLessonHours {
+  let min = Math.max(0, DVSA_TYPICAL_TOTAL_MIN - lessonsTaken);
+  let max = Math.max(0, DVSA_TYPICAL_TOTAL_MAX - lessonsTaken);
+  if (max === 0 && min === 0 && lessonsTaken >= DVSA_TYPICAL_TOTAL_MIN - 5) {
+    return clampBand(0, 10, false);
+  }
+  const spread = ensureMinRange(min, Math.max(max, min + 2));
+  return clampBand(spread.min, spread.max, false);
+}
+
+/** Partial path: same baseline as minimal, then nudge for weak-area count and confidence extremes. */
+function estimatePartial(input: EstimatedHoursInput): EstimatedLessonHours {
+  const base = estimateMinimal(input.lessonsTaken);
+  let min = base.min;
+  let max = base.max;
+  const w = input.weakAreas.length;
+  min += Math.min(10, w * 2);
+  max += Math.min(16, 4 + Math.round(w * 2.5));
+  const c = input.confidenceLevel;
+  if (c <= 3) {
+    min += 2;
+    max += 6;
+  }
+  if (c >= 9) {
+    min = Math.max(0, min - 1);
+    max = Math.max(min + 2, max - 4);
+  }
+  return clampBand(min, max, false);
+}
+
+function baseBandFromScore(score: number): EstimatedLessonHours {
   if (score >= 80) return { min: 0, max: 5, openEndedHigh: false };
   if (score >= 65) return { min: 5, max: 12, openEndedHigh: false };
   if (score >= 50) return { min: 10, max: 20, openEndedHigh: false };
@@ -25,41 +96,31 @@ function hasCoreMirrorsOrJunctions(weakAreas: readonly WeakAreaId[]): boolean {
   return weakAreas.some((id) => id === "mirrors" || id === "junctions");
 }
 
-/**
- * Deterministic instructor-style range: readiness score drives the band; serious faults, high
- * driving-fault counts, and core weak areas (mirrors/junctions) add capped adjustments. Parking-only
- * weak-area selections apply minimal uplift.
- */
-export function computeEstimatedLessonHours(
-  assessment: Pick<AssessmentPayload, "seriousFaults" | "drivingFaults" | "weakAreas">,
-  readinessScore: number,
-): EstimatedLessonHours {
-  const base = baseBand(readinessScore);
+/** Full path: readiness score is primary; faults and weak areas apply capped adjustments (existing behaviour). */
+function estimateFull(input: EstimatedHoursInput, readinessScore: number): EstimatedLessonHours {
+  const base = baseBandFromScore(readinessScore);
   let min = base.min;
   let max = base.max;
   const openEndedHigh = base.openEndedHigh;
 
-  const weak = assessment.weakAreas;
+  const weak = input.weakAreas;
   const parkingOnly = parkingOnlyWeakAreas(weak);
   const scale = parkingOnly ? 0.45 : 1;
 
-  // Serious faults: +4–8 each, total capped (deterministic midpoint spread per fault).
-  const rawSeriousMin = assessment.seriousFaults * 4;
-  const rawSeriousMax = assessment.seriousFaults * 8;
+  const rawSeriousMin = input.seriousFaults * 4;
+  const rawSeriousMax = input.seriousFaults * 8;
   const seriousMin = Math.min(Math.round(rawSeriousMin * scale), 18);
   const seriousMax = Math.min(Math.round(rawSeriousMax * scale), 24);
   min += seriousMin;
   max += seriousMax;
 
-  // High driving faults (>8): +3–6 hours (widen range).
-  if (assessment.drivingFaults > 8) {
+  if (input.drivingFaults > 8) {
     const dm = Math.round(3 * scale);
     const dM = Math.round(6 * scale);
     min += dm;
     max += dM;
   }
 
-  // Core weak areas (mirrors/junctions): +3–6 once if present (not stacked per area).
   if (hasCoreMirrorsOrJunctions(weak)) {
     if (!parkingOnly) {
       min += 3;
@@ -70,7 +131,6 @@ export function computeEstimatedLessonHours(
     }
   }
 
-  // Cap combined uplift from adjustments above the score band (keeps estimates grounded).
   const maxUplift = 34;
   const uplift = Math.max(0, max - base.max);
   const upliftMin = Math.max(0, min - base.min);
@@ -81,12 +141,23 @@ export function computeEstimatedLessonHours(
     max = base.max + Math.round((max - base.max) * factor);
   }
 
-  if (max <= min) max = min + 2;
+  const spread = ensureMinRange(min, max);
+  return clampBand(spread.min, spread.max, openEndedHigh);
+}
 
-  min = Math.max(0, Math.min(min, 72));
-  max = Math.max(min + 2, Math.min(max, 78));
-
-  return { min, max, openEndedHigh };
+/**
+ * Deterministic hour band. Chooses minimal / partial / full from available signals; never exposes the mode in copy.
+ *
+ * Examples (deterministic): minimal ~35–45 total minus lessons; partial adds weak-area and confidence nudges; full uses score bands plus fault tweaks.
+ */
+export function computeEstimatedLessonHours(
+  input: EstimatedHoursInput,
+  readinessScore: number,
+): EstimatedLessonHours {
+  const path = resolveEstimationPath(input);
+  if (path === "full") return estimateFull(input, readinessScore);
+  if (path === "partial") return estimatePartial(input);
+  return estimateMinimal(input.lessonsTaken);
 }
 
 export function formatEstimatedLessonHoursMainLine(hours: EstimatedLessonHours): string {
@@ -94,16 +165,11 @@ export function formatEstimatedLessonHoursMainLine(hours: EstimatedLessonHours):
   return `You may need around ${hours.min} to ${hi} more hours of lessons`;
 }
 
-/** Same numbers as the headline estimate, for the "Lesson guidance" narrative (no second band). */
 export function hourBandPhrase(hours: EstimatedLessonHours): string {
   if (hours.openEndedHigh) return `${hours.min} to ${hours.max} or more`;
   return `${hours.min} to ${hours.max}`;
 }
 
-/**
- * Instructor-style paragraph tied to {@link computeEstimatedLessonHours} so it never contradicts the headline range.
- */
-/** Stable salt for saved reports when full assessment is not loaded (variant only; band is unchanged). */
 export function reportNarrativeSalt(reportId: string): number {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < reportId.length; i++) {

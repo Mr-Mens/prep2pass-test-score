@@ -39,6 +39,8 @@ export type {
   VerifyCheckoutSessionSuccess,
 } from "./validation";
 
+export type { EstimatedHoursInput, EstimationPath } from "./estimated-lesson-hours";
+
 export type { GroupedRiskArea } from "./validation";
 
 /** Placeholder for a future persisted report row. */

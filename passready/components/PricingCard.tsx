@@ -5,6 +5,7 @@ const DEFAULT_BULLETS = [
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
+  "A realistic band for how many more lesson hours you may need before test readiness",
 ] as const;
 
 type PricingCardProps = {

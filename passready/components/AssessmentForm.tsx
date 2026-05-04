@@ -40,6 +40,7 @@ const CHECKOUT_VALUE_BULLETS = [
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
+  "A realistic band for how many more lesson hours you may need before test readiness",
 ] as const;
 
 const checkoutSubmitButtonClass = "w-full";
@@ -277,8 +278,8 @@ export function AssessmentForm() {
             <LockedPreviewBlock
               title="Lesson Guidance"
               lines={[
-                "Recommended hours and session sequencing are personalised to your profile.",
-                "Unlock to view a lesson-by-lesson plan built around your score.",
+                "Estimated hours to test readiness and how to use that band with your instructor.",
+                "Unlock after checkout to see the full Premium report, including this section.",
               ]}
             />
           </div>
@@ -287,7 +288,12 @@ export function AssessmentForm() {
         <section className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8">
           <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Unlock your full TestReady report</h2>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-            See exactly what could cause you to fail, and how to fix it before your test.
+            See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic band
+            for how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
+          </p>
+          <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
+            Full detail, including the lesson-hour estimate, is in your Premium TestReady Score Report and unlocks after
+            a one-time payment.
           </p>
           {submitError ? (
             <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
@@ -499,30 +505,36 @@ export function AssessmentForm() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div>
             <label className={labelClass} htmlFor="seriousFaults">
-              Serious faults
+              Serious faults <span className="font-normal text-brand-500">(optional)</span>
             </label>
             <input
               id="seriousFaults"
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
               className={fieldClass}
+              placeholder="Leave blank if you do not have a count"
               {...register("seriousFaults")}
             />
-            <p className={hintClass}>Must be zero or positive. Serious faults weigh heavily in scoring.</p>
+            <p className={hintClass}>
+              From one recent marked session if you have it. Leave blank otherwise; your score still works without it.
+            </p>
             {errors.seriousFaults ? <p className={errorClass}>{errors.seriousFaults.message}</p> : null}
           </div>
           <div>
             <label className={labelClass} htmlFor="drivingFaults">
-              Driving faults
+              Driving faults <span className="font-normal text-brand-500">(optional)</span>
             </label>
             <input
               id="drivingFaults"
-              type="number"
-              min={0}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
               className={fieldClass}
+              placeholder="Leave blank if you do not have a count"
               {...register("drivingFaults")}
             />
-            <p className={hintClass}>From the same session as serious faults above.</p>
+            <p className={hintClass}>Same session as serious faults, when you have both counts.</p>
             {errors.drivingFaults ? <p className={errorClass}>{errors.drivingFaults.message}</p> : null}
           </div>
           <div className="sm:col-span-2">
@@ -599,7 +611,11 @@ export function AssessmentForm() {
           Unlock your TestReady Score
         </h2>
         <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-          See exactly what could cause you to fail, and how to fix it before your test.
+          See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic band for
+          how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
+        </p>
+        <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
+          Everything listed below is included in your Premium report once checkout completes (not in the free preview).
         </p>
         <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
           {CHECKOUT_VALUE_BULLETS.map((line) => (

@@ -7,7 +7,7 @@ import { PREMIUM_PRICE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "TestReady Score Assessment",
   description:
-    "Complete your TestReady Score Assessment, then pay once for your full report: score, risks, and next steps. Created by a DVSA-approved driving instructor.",
+    "Complete your TestReady Score Assessment, then pay once for your full Premium report: score, risks, next steps, coach note, and a rough lesson-hour band. Created by a DVSA-approved driving instructor.",
 };
 
 const VALUE_BULLETS = [
@@ -15,6 +15,7 @@ const VALUE_BULLETS = [
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
+  "A realistic band for how many more lesson hours you may need before test readiness",
 ] as const;
 
 export default function AssessmentPage() {
@@ -38,7 +39,7 @@ export default function AssessmentPage() {
           ))}
         </ul>
         <p className="mt-6 border-t border-brand-100 pt-5 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
-          {PREMIUM_PRICE} one-time • Instant report after checkout
+          {PREMIUM_PRICE} one-time • Full Premium report after checkout, including lesson-hour estimate
         </p>
       </div>
       <AssessmentForm />

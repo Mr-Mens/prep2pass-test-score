@@ -6,8 +6,11 @@ import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
 import { PREMIUM_PRICE } from "@/lib/constants";
-import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
-import type { AssessmentPayload } from "@/lib/validation";
+import {
+  buildRecommendedHoursNarrative,
+  computeEstimatedLessonHours,
+  type EstimatedHoursInput,
+} from "@/lib/estimated-lesson-hours";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
 
 export const metadata: Metadata = {
@@ -88,10 +91,15 @@ const sampleRiskAreas: GroupedRiskArea[] = [
   },
 ];
 
-const sampleHoursAssessment: Pick<AssessmentPayload, "seriousFaults" | "drivingFaults" | "weakAreas"> = {
+/** Illustrates full path: mock taken so hours follow score-driven logic. */
+const sampleHoursInput: EstimatedHoursInput = {
+  lessonsTaken: 28,
+  mockTestTaken: "yes",
+  mockTestResult: "fail",
   seriousFaults: 0,
-  drivingFaults: 7,
+  drivingFaults: 6,
   weakAreas: ["mirrors", "junctions", "independentDriving", "reverseBayParking", "parallelParking"],
+  confidenceLevel: 6,
 };
 
 export default function SampleReportPage() {
@@ -110,7 +118,7 @@ export default function SampleReportPage() {
     ],
   };
 
-  const sampleEstimatedHours = computeEstimatedLessonHours(sampleHoursAssessment, sampleCore.readinessScore);
+  const sampleEstimatedHours = computeEstimatedLessonHours(sampleHoursInput, sampleCore.readinessScore);
   const sample = {
     ...sampleCore,
     recommendedHours: buildRecommendedHoursNarrative(sampleEstimatedHours, 42),

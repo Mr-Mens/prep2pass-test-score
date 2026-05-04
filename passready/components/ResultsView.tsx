@@ -219,7 +219,7 @@ export function ResultsView() {
       className="max-md:bg-transparent bg-brand-50 print:bg-white print:py-10"
       contentClassName="max-w-3xl"
       eyebrow="Prep2Pass"
-      subtitle="Test prep guidance from your answers, aligned with how ADIs teach. Use it with your instructor."
+      subtitle="Test prep guidance based on your answers, guided by an ADI. Use it with your instructor."
     >
       <div className="space-y-5 pb-32 sm:space-y-10 sm:pb-0 print:space-y-6 md:pb-0">
         {/* A: score summary */}
@@ -337,10 +337,7 @@ export function ResultsView() {
         {/* Snapshot */}
         <div className={`${reportCard} print:break-inside-avoid`}>
           <h2 className={sectionTitle}>Your assessment snapshot</h2>
-          <p className={sectionIntro}>
-            The answers this report is based on. Cached on this device (local key{" "}
-            <span className="font-mono text-[11px] text-brand-700">passready_assessment</span>, v2) for convenience.
-          </p>
+          <p className={sectionIntro}>The answers you gave when you completed this assessment.</p>
           <dl className="mt-6 space-y-4">
             {snapshotRows.map((row) => (
               <div key={row.k}>

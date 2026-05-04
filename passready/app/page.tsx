@@ -106,7 +106,7 @@ export default function HomePage() {
             {
               step: "02",
               title: "Unlock your TestReady Score",
-              body: `Pay ${PREMIUM_PRICE} once through secure checkout for your full report: score, risks, and next steps.`,
+              body: `Pay ${PREMIUM_PRICE} once through secure checkout for your full Premium report: score, risks, next steps, coach note, and a rough lesson-hour band for planning with your instructor.`,
             },
             {
               step: "03",
@@ -126,7 +126,7 @@ export default function HomePage() {
       <Section
         eyebrow="Premium TestReady Score Report"
         title="What you unlock after checkout"
-        subtitle="Structured, instructor-style guidance, not generic tips."
+        subtitle="These are included in your Premium report once payment completes, including the lesson-hour band and full narrative sections."
       >
         <div className="grid gap-6 md:grid-cols-2">
           <FeatureCard
@@ -145,8 +145,8 @@ export default function HomePage() {
             icon={<span aria-hidden>→</span>}
           />
           <FeatureCard
-            title="Coach note + hour guidance"
-            description="Clear coaching message plus realistic lesson-hour recommendation for your stage."
+            title="Coach note + lesson-hour band"
+            description="Instructor-style takeaway plus a realistic range of how many more lesson hours you may need. Both unlock in your Premium report after checkout."
             icon={<span aria-hidden>✓</span>}
           />
         </div>
@@ -182,7 +182,7 @@ export default function HomePage() {
             },
             {
               q: "What happens after I pay?",
-              a: "Your payment is verified securely, then your Premium TestReady Score Report is generated and shown in-app.",
+              a: "Your payment is verified securely, then your Premium TestReady Score Report is generated and shown in-app, including the lesson-hour estimate and full coach narrative.",
             },
             {
               q: "Is this better than asking my instructor?",

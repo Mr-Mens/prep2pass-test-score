@@ -40,6 +40,26 @@ const countedField = (label: string, max: number) =>
         .max(max, "Enter a realistic value"),
     );
 
+/** Blank or missing counts as 0 so fault fields stay optional for learners who do not have session data. */
+const optionalNonNegativeIntStringField = (label: string, max: number) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => (v == null ? "" : v).trim())
+    .superRefine((s, ctx) => {
+      if (s === "") return;
+      if (!/^\d+$/.test(s)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Use a whole number for ${label}, or leave blank` });
+        return;
+      }
+      const n = Number.parseInt(s, 10);
+      if (n > max) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Enter a realistic value for ${label} (max ${max})` });
+      }
+    })
+    .transform((s) => (s === "" ? 0 : Number.parseInt(s, 10)))
+    .pipe(z.number().int().min(0).max(max));
+
 export const assessmentSchema = z
   .object({
     fullName: z
@@ -65,8 +85,8 @@ export const assessmentSchema = z
     mockTestResult: z.enum(["pass", "fail", "not_taken"], {
       required_error: "Select a mock test outcome",
     }),
-    seriousFaults: countedField("Enter serious faults", 20),
-    drivingFaults: countedField("Enter driving faults", 30),
+    seriousFaults: optionalNonNegativeIntStringField("Serious faults", 20),
+    drivingFaults: optionalNonNegativeIntStringField("Driving faults", 30),
     confidenceLevel: z.coerce
       .number({ invalid_type_error: "Pick a number from 1 to 10" })
       .int("Use a whole number")

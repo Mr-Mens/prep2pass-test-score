@@ -12,6 +12,7 @@ import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import {
   buildRecommendedHoursNarrative,
   computeEstimatedLessonHours,
+  type EstimatedHoursInput,
   reportNarrativeSalt,
 } from "@/lib/estimated-lesson-hours";
 import { verifyReportAccessToken } from "@/lib/server/report-access-token";
@@ -48,14 +49,16 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
 
   const riskBlocks = normalizeGroupedRiskAreas(report.risk_areas as unknown);
   const weakAreas = migrateWeakAreaIds(report.weak_areas) as AssessmentPayload["weakAreas"];
-  const estimatedHours = computeEstimatedLessonHours(
-    {
-      seriousFaults: report.serious_faults,
-      drivingFaults: report.driving_faults,
-      weakAreas,
-    },
-    report.readiness_score,
-  );
+  const hoursInput: EstimatedHoursInput = {
+    lessonsTaken: report.lessons_taken,
+    mockTestTaken: report.mock_test_taken ? "yes" : "no",
+    mockTestResult: report.mock_test_result as AssessmentPayload["mockTestResult"],
+    seriousFaults: report.serious_faults,
+    drivingFaults: report.driving_faults,
+    weakAreas,
+    confidenceLevel: report.confidence_level,
+  };
+  const estimatedHours = computeEstimatedLessonHours(hoursInput, report.readiness_score);
   const recommendedHoursNarrative = buildRecommendedHoursNarrative(estimatedHours, reportNarrativeSalt(report.id));
 
   return (

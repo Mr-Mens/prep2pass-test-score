@@ -7,7 +7,16 @@ import { Section } from "@/components/Section";
 import { getReportById } from "@/lib/server/repositories/reports-repository";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
+import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
+import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
+import {
+  buildRecommendedHoursNarrative,
+  computeEstimatedLessonHours,
+  reportNarrativeSalt,
+} from "@/lib/estimated-lesson-hours";
 import { verifyReportAccessToken } from "@/lib/server/report-access-token";
+import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
+import type { AssessmentPayload } from "@/lib/validation";
 
 type Props = { params: { id: string }; searchParams?: { token?: string } };
 
@@ -38,6 +47,16 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
   if (report.email.toLowerCase() !== tokenState.email) notFound();
 
   const riskBlocks = normalizeGroupedRiskAreas(report.risk_areas as unknown);
+  const weakAreas = migrateWeakAreaIds(report.weak_areas) as AssessmentPayload["weakAreas"];
+  const estimatedHours = computeEstimatedLessonHours(
+    {
+      seriousFaults: report.serious_faults,
+      drivingFaults: report.driving_faults,
+      weakAreas,
+    },
+    report.readiness_score,
+  );
+  const recommendedHoursNarrative = buildRecommendedHoursNarrative(estimatedHours, reportNarrativeSalt(report.id));
 
   return (
     <Section
@@ -65,7 +84,9 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
           <p className="mt-4 text-sm text-brand-600/90">
             Prep2Pass TestReady Score: guidance from your assessment, built to support what you do with your ADI. Not an official DVSA product.
           </p>
-          <p className="mt-4 text-sm leading-relaxed text-brand-800">{report.summary}</p>
+          <ReportSummaryDebrief className="mt-6">
+            <p>{report.summary}</p>
+          </ReportSummaryDebrief>
         </div>
 
         <div className="rounded-2xl border border-teal-200/80 bg-teal-50/80 p-6 shadow-card ring-1 ring-teal-200/45 sm:p-8">
@@ -82,7 +103,10 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
               <li key={item}>{item}</li>
             ))}
           </ol>
-          <p className="mt-4 text-sm font-medium text-brand-800">Recommended hours: {report.recommended_hours}</p>
+          <div className="mt-6">
+            <EstimatedLessonHoursBlock hours={estimatedHours} />
+          </div>
+          <p className="mt-6 text-sm font-medium leading-relaxed text-brand-800">{recommendedHoursNarrative}</p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">

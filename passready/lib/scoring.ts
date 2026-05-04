@@ -1,3 +1,4 @@
+import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
 import { WEAK_AREA_OPTIONS, type WeakAreaId } from "./constants";
 import {
   labelForOfficialGroup,
@@ -586,37 +587,6 @@ function buildNextSteps(assessment: AssessmentPayload, salt: number): string[] {
   return Array.from(new Set(steps)).slice(0, 6);
 }
 
-function recommendLessonHours(score: number, lessonsTaken: number, salt: number): string {
-  if (score >= 80) {
-    return pickCopyVariant(salt, "hrs:80", [
-      "2 to 4 focused hours to polish test-day routines and core observations.",
-      "About 2 to 4 hours of deliberate polish: observations, junction timing, and one refresher mock if you can.",
-    ]);
-  }
-  if (score >= 65) {
-    return pickCopyVariant(salt, "hrs:65", [
-      "4 to 8 hours on your highest-impact risk themes, ideally with a mock in your test area.",
-      "Roughly 4 to 8 hours aimed at your top two risk themes, plus a mock route near your centre.",
-    ]);
-  }
-  if (score >= 45) {
-    return pickCopyVariant(salt, "hrs:45", [
-      "6 to 12 hours rebuilding consistency; agree priorities with your instructor week by week.",
-      "Plan 6 to 12 hours around repeatable weekly targets so habits tighten instead of resetting each drive.",
-    ]);
-  }
-  if (lessonsTaken < 10) {
-    return pickCopyVariant(salt, "hrs:lt10", [
-      "Allow enough structured hours that independent routines feel predictable before locking a test date.",
-      "Build a solid base of guided hours first so independent driving stops feeling improvised.",
-    ]);
-  }
-  return pickCopyVariant(salt, "hrs:default", [
-    "Continue guided practice with clear weekly targets; revisit this score after a few focused lessons.",
-    "Keep weekly lesson goals small and measurable, then rescore after a short block of practice.",
-  ]);
-}
-
 function buildSummary(assessment: AssessmentPayload, score: number, salt: number): string {
   const weakLabels =
     assessment.weakAreas.length > 0
@@ -657,7 +627,8 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
   const copySalt = reportCopySalt(assessment);
   const riskAreas = buildGroupedRiskAreas(assessment, copySalt);
   const nextSteps = buildNextSteps(assessment, copySalt);
-  const recommendedHours = recommendLessonHours(score, assessment.lessonsTaken, copySalt);
+  const estimatedLessonHours = computeEstimatedLessonHours(assessment, score);
+  const recommendedHours = buildRecommendedHoursNarrative(estimatedLessonHours, copySalt);
   const summary = buildSummary(assessment, score, copySalt);
 
   return {
@@ -665,6 +636,7 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
     readinessLabel,
     riskAreas,
     recommendedHours,
+    estimatedLessonHours,
     summary,
     nextSteps,
   };

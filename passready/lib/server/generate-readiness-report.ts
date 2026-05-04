@@ -45,7 +45,7 @@ Safety and compliance:
 
 JSON shape:
 - Return STRICT JSON only with keys:
-  readinessScore, readinessLabel, summary, riskAreas, nextSteps, recommendedHours, coachMessage
+  readinessScore, readinessLabel, summary, riskAreas, nextSteps, coachMessage
 - Set readinessScore and readinessLabel exactly to the deterministic baseline values in the user message (same number and label string).
 - riskAreas: array of 2-6 objects. Each object MUST have:
   "groupKey" (string, snake_case key, one of: basics, control_and_positioning, observation_signalling_planning, junctions_roundabouts_crossings, manoeuvres, road_types, driving_conditions, following_routes),
@@ -56,7 +56,7 @@ JSON shape:
   optional "highlights" (array of 0-3 extra bullet strings for context).
 - For Manoeuvres, include separate skill entries per manoeuvre (forward bay, reverse bay, pull up on right, parallel) when the learner flagged them. Never only the word "manoeuvres" without specifics.
 - nextSteps: 3-6 concrete actions (spoken instructor tone: what you want them to do next week).
-- recommendedHours: one line, "you"-focused where natural (e.g. "You are looking at about…").`;
+- Do **not** include lesson-hour estimates or ranges in JSON (the app adds those deterministically so they never conflict).`;
 
 export async function generateReadinessReport({ assessment, deterministic }: GenerateArgs) {
   /** Omit template summary so the model writes fresh prose instead of echoing `buildSummary`. */
@@ -64,7 +64,6 @@ export async function generateReadinessReport({ assessment, deterministic }: Gen
     readinessScore: deterministic.readinessScore,
     readinessLabel: deterministic.readinessLabel,
     riskAreas: deterministic.riskAreas,
-    recommendedHours: deterministic.recommendedHours,
     nextSteps: deterministic.nextSteps,
   };
 
@@ -104,7 +103,7 @@ Important constraints:
 1) Preserve readinessScore exactly as ${deterministic.readinessScore}.
 2) Preserve readinessLabel exactly as "${deterministic.readinessLabel}".
 3) Align riskAreas with the deterministic grouping (same groupKey / skills keys where possible); enrich summary and highlights to be specific and practical.
-4) Enrich summary, nextSteps, recommendedHours, and coachMessage. The opening **summary** must sound like **you** talking to **${first}** beside the car: second person, debrief rhythm, no third-person report phrasing. Do not mirror generic report templates.
+4) Enrich summary, nextSteps, and coachMessage. The opening **summary** must sound like **you** talking to **${first}** beside the car: second person, debrief rhythm, no third-person report phrasing. Do not mirror generic report templates.
 5) Never mention artificial intelligence, chatbots, or language models in any string value.
 6) Return JSON only.`;
 
@@ -129,6 +128,7 @@ Important constraints:
     ...parsed.data,
     readinessScore: deterministic.readinessScore,
     readinessLabel: deterministic.readinessLabel,
+    recommendedHours: deterministic.recommendedHours,
     model: getOpenAiConfig().model,
   };
 }

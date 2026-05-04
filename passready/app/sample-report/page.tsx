@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 
 import { Button } from "@/components/Button";
+import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
+import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
 import { PREMIUM_PRICE } from "@/lib/constants";
+import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
+import type { AssessmentPayload } from "@/lib/validation";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
 
 export const metadata: Metadata = {
@@ -84,8 +88,14 @@ const sampleRiskAreas: GroupedRiskArea[] = [
   },
 ];
 
+const sampleHoursAssessment: Pick<AssessmentPayload, "seriousFaults" | "drivingFaults" | "weakAreas"> = {
+  seriousFaults: 0,
+  drivingFaults: 7,
+  weakAreas: ["mirrors", "junctions", "independentDriving", "reverseBayParking", "parallelParking"],
+};
+
 export default function SampleReportPage() {
-  const sample = {
+  const sampleCore = {
     readinessScore: 66,
     readinessLabel: "Nearly Test Ready" as const,
     summary:
@@ -98,7 +108,12 @@ export default function SampleReportPage() {
       "Complete one full mock in your test area and review only the faults that repeat.",
       "Schedule one confidence-maintenance drive close to test week.",
     ],
-    recommendedHours: "4-8 focused hours, including one mock test.",
+  };
+
+  const sampleEstimatedHours = computeEstimatedLessonHours(sampleHoursAssessment, sampleCore.readinessScore);
+  const sample = {
+    ...sampleCore,
+    recommendedHours: buildRecommendedHoursNarrative(sampleEstimatedHours, 42),
   };
 
   const badgeClass =
@@ -133,7 +148,9 @@ export default function SampleReportPage() {
               {sample.readinessLabel}
             </span>
           </div>
-          <p className="mt-4 text-sm leading-relaxed text-brand-800">{sample.summary}</p>
+          <ReportSummaryDebrief className="mt-6">
+            <p>{sample.summary}</p>
+          </ReportSummaryDebrief>
         </div>
 
         <div className="rounded-2xl border border-teal-200/80 bg-teal-50/80 p-6 shadow-card ring-1 ring-teal-200/45 print:border-teal-200 print:shadow-none print:ring-0">
@@ -150,7 +167,10 @@ export default function SampleReportPage() {
               <li key={item}>{item}</li>
             ))}
           </ol>
-          <p className="mt-4 text-sm font-medium text-brand-800">
+          <div className="mt-6">
+            <EstimatedLessonHoursBlock hours={sampleEstimatedHours} />
+          </div>
+          <p className="mt-6 text-sm font-medium text-brand-800">
             Recommended lesson guidance: {sample.recommendedHours}
           </p>
         </div>

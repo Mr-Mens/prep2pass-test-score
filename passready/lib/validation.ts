@@ -203,6 +203,13 @@ const riskAreasNormalizedSchema = z
 /**
  * Core deterministic scoring output. Used as the base signal and fallback source of truth.
  */
+export const estimatedLessonHoursSchema = z.object({
+  min: z.number().int().min(0).max(120),
+  max: z.number().int().min(0).max(120),
+  openEndedHigh: z.boolean(),
+});
+export type EstimatedLessonHours = z.infer<typeof estimatedLessonHoursSchema>;
+
 export const deterministicReadinessResultSchema = z.object({
   readinessScore: z.number().int().min(0).max(100),
   readinessLabel: readinessLabelSchema,
@@ -210,6 +217,8 @@ export const deterministicReadinessResultSchema = z.object({
   recommendedHours: z.string(),
   summary: z.string(),
   nextSteps: z.array(z.string()),
+  /** Present on new scores; optional for older persisted deterministic snapshots. */
+  estimatedLessonHours: estimatedLessonHoursSchema.optional(),
 });
 
 export type DeterministicReadinessResult = z.infer<typeof deterministicReadinessResultSchema>;
@@ -229,6 +238,8 @@ export const aiReadinessReportSchema = z.object({
   nextSteps: z.array(z.string().min(1)).min(2).max(6),
   recommendedHours: z.string().min(1),
   coachMessage: z.string().min(1),
+  /** Deterministic range; optional on older cached API payloads. */
+  estimatedLessonHours: estimatedLessonHoursSchema.optional(),
 });
 export type AiReadinessReport = z.infer<typeof aiReadinessReportSchema>;
 
@@ -240,7 +251,6 @@ export const aiReadinessNarrativeOnlySchema = z.object({
   summary: z.string().min(1),
   riskAreas: riskAreasNormalizedSchema,
   nextSteps: z.array(z.string().min(1)).min(2).max(6),
-  recommendedHours: z.string().min(1),
   coachMessage: z.string().min(1),
 });
 export type AiReadinessNarrativeOnly = z.infer<typeof aiReadinessNarrativeOnlySchema>;

@@ -44,7 +44,8 @@ export async function scoreAssessment(
       summary: aiReport.summary,
       riskAreas: aiReport.riskAreas,
       nextSteps: aiReport.nextSteps,
-      recommendedHours: aiReport.recommendedHours,
+      recommendedHours: deterministic.recommendedHours,
+      estimatedLessonHours: deterministic.estimatedLessonHours,
       coachMessage: aiReport.coachMessage,
       metadata: {
         source: "ai",

@@ -11,6 +11,7 @@ export type {
   AssessmentScoreApiResponse,
   AssessmentScoreApiSuccess,
   DeterministicReadinessResult,
+  EstimatedLessonHours,
   MockReadinessResult,
   PersistedAssessmentRecord,
   PersistedAssessmentRecordV2,

@@ -4,11 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { Button } from "@/components/Button";
+import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
+import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
 import { SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { formatIsoDateUk } from "@/lib/formatting";
+import { reportCopySalt } from "@/lib/deterministic-report-copy";
+import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
 import { loadPersistedRecord, saveScoredAssessment } from "@/lib/storage";
 import type { MockReadinessResult } from "@/lib/types";
@@ -204,8 +208,11 @@ export function ResultsView() {
     );
   }
 
-  const { result: report } = state.data;
+  const { result: report, assessment } = state.data;
   const riskGroups = normalizeGroupedRiskAreas(report.riskAreas as unknown);
+  const estimatedHours =
+    report.estimatedLessonHours ?? computeEstimatedLessonHours(assessment, report.readinessScore);
+  const lessonHoursNarrative = buildRecommendedHoursNarrative(estimatedHours, reportCopySalt(assessment));
 
   return (
     <Section
@@ -240,9 +247,9 @@ export function ResultsView() {
             </span>
           </div>
 
-          <p className="mx-auto mt-8 max-w-prose text-center text-base leading-relaxed text-brand-800 sm:mx-0 sm:text-left">
-            {report.summary}
-          </p>
+          <ReportSummaryDebrief>
+            <p>{report.summary}</p>
+          </ReportSummaryDebrief>
 
           <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
             <h3 className={sectionTitle}>Coach note</h3>
@@ -289,10 +296,14 @@ export function ResultsView() {
         <div className={`${reportCard} print:break-inside-avoid`}>
           <h2 className={sectionTitle}>Lesson guidance</h2>
           <p className={sectionIntro}>
-            A realistic steer on how much focused time often helps at this stage. Use it to plan with your instructor,
-            not as a fixed rule.
+            The headline range and the note below use the same calculation, so the hours always match. Use both to plan
+            with your instructor, not as a fixed rule.
           </p>
-          <p className="mt-5 text-sm font-medium leading-relaxed text-brand-900">{report.recommendedHours}</p>
+          <div className="mt-5">
+            <EstimatedLessonHoursBlock hours={estimatedHours} />
+          </div>
+          <p className="mt-2 text-xs font-medium text-brand-600">How to use that time</p>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-brand-900">{lessonHoursNarrative}</p>
         </div>
 
         {/* E: use this report well */}

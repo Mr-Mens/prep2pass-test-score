@@ -48,6 +48,7 @@ export function deterministicToReport(
     riskAreas: deterministic.riskAreas,
     nextSteps: deterministic.nextSteps,
     recommendedHours: deterministic.recommendedHours,
+    estimatedLessonHours: deterministic.estimatedLessonHours,
     coachMessage: fallbackCoachMessage(assessment),
     metadata: {
       source: options.source,

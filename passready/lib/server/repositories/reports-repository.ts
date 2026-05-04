@@ -127,6 +127,40 @@ export async function getReportById(id: string): Promise<ReportDbRecord | null> 
   return data ? withMigratedWeakAreas(data as ReportDbRecord) : null;
 }
 
+export type ScoreHistoryRow = {
+  id: string;
+  created_at: string;
+  readiness_score: number;
+  readiness_label: string;
+};
+
+/** Ordered oldest → newest for progress charts. */
+export async function listScoreHistoryByEmail(email: string): Promise<ScoreHistoryRow[]> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, created_at, readiness_score, readiness_label")
+    .eq("email", email)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("[reports] listScoreHistoryByEmail failed", error.message);
+    throw new Error("Failed to fetch score history");
+  }
+  return (data as ScoreHistoryRow[]) ?? [];
+}
+
+export async function countReportsByEmail(email: string): Promise<number> {
+  const supabase = getSupabaseServerClient();
+  const { count, error } = await supabase
+    .from("reports")
+    .select("id", { count: "exact", head: true })
+    .eq("email", email);
+
+  if (error) throw new Error("Failed to count reports");
+  return count ?? 0;
+}
+
 export async function getReportsByEmail(email: string): Promise<ReportDbRecord[]> {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase

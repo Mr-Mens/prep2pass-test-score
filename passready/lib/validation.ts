@@ -67,7 +67,11 @@ export const assessmentSchema = z
       .trim()
       .min(2, "Enter your full name")
       .max(120, "Name is too long"),
-    email: z.string().trim().email("Enter a valid email address"),
+    email: z
+      .string()
+      .trim()
+      .email("Enter a valid email address")
+      .transform((s) => s.toLowerCase()),
     lessonsTaken: countedField("Enter approximate lessons", 400),
     testBooked: z.enum(["yes", "no"], {
       required_error: "Select whether your test is booked",
@@ -164,7 +168,7 @@ export type AssessmentPayload = z.output<typeof assessmentSchema>;
 /** Normalised assessment as persisted (localStorage / future API). */
 export const assessmentDataSchema = z.object({
   fullName: z.string().min(1),
-  email: z.string().email(),
+  email: z.string().email().transform((s) => s.trim().toLowerCase()),
   lessonsTaken: z.number().int().min(0).max(400),
   testBooked: z.enum(["yes", "no"]),
   testDate: z
@@ -339,17 +343,64 @@ export const pendingAssessmentRecordSchema = z.object({
 });
 export type PendingAssessmentRecord = z.infer<typeof pendingAssessmentRecordSchema>;
 
+export const checkoutPriceTierSchema = z.enum(["single", "lifetime"]);
+
 export const createCheckoutSessionRequestSchema = z.object({
   assessment: assessmentDataSchema,
+  tier: checkoutPriceTierSchema,
 });
 export type CreateCheckoutSessionRequest = z.infer<typeof createCheckoutSessionRequestSchema>;
+export type CheckoutPriceTier = z.infer<typeof checkoutPriceTierSchema>;
 
-export const createCheckoutSessionSuccessSchema = z.object({
-  success: z.literal(true),
-  url: z.string().url(),
-  sessionId: z.string(),
-});
+export const createCheckoutSessionSuccessSchema = z.discriminatedUnion("skipCheckout", [
+  z.object({
+    success: z.literal(true),
+    skipCheckout: z.literal(true),
+    entitlementToken: z.string().min(1),
+  }),
+  z.object({
+    success: z.literal(true),
+    skipCheckout: z.literal(false),
+    url: z.string().url(),
+    sessionId: z.string(),
+  }),
+]);
 export type CreateCheckoutSessionSuccess = z.infer<typeof createCheckoutSessionSuccessSchema>;
+
+export const entitlementLookupRequestSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email()
+    .transform((s) => s.toLowerCase()),
+});
+
+export const entitlementLookupSuccessSchema = z.object({
+  success: z.literal(true),
+  hasLifetimeAccess: z.boolean(),
+  hasPurchasedSingleReport: z.boolean(),
+  reportCount: z.number().int().min(0),
+});
+export type EntitlementLookupSuccess = z.infer<typeof entitlementLookupSuccessSchema>;
+
+/** Same shape as email lookup for entitlements — normalised on parse. */
+export const progressRequestSchema = entitlementLookupRequestSchema;
+
+export const progressEntrySchema = z.object({
+  reportId: z.string().uuid(),
+  recordedAt: z.string(),
+  score: z.number().int(),
+  label: z.string(),
+});
+export type ProgressEntry = z.infer<typeof progressEntrySchema>;
+
+export const progressSuccessSchema = z.object({
+  success: z.literal(true),
+  hasLifetimeAccess: z.boolean(),
+  reportCount: z.number().int().min(0),
+  entries: z.array(progressEntrySchema),
+});
+export type ProgressSuccess = z.infer<typeof progressSuccessSchema>;
 
 export const createCheckoutSessionErrorSchema = z.object({
   success: z.literal(false),
@@ -427,10 +478,17 @@ export const paymentDbRecordSchema = z.object({
 });
 export type PaymentDbRecord = z.infer<typeof paymentDbRecordSchema>;
 
-export const finaliseReportRequestSchema = z.object({
-  sessionId: z.string().min(1),
-  assessment: assessmentDataSchema,
-});
+export const finaliseReportRequestSchema = z
+  .object({
+    sessionId: z.string().min(1).optional(),
+    entitlementToken: z.string().min(1).optional(),
+    assessment: assessmentDataSchema,
+  })
+  .refine(
+    (d) =>
+      (Boolean(d.sessionId) && !d.entitlementToken) || (!d.sessionId && Boolean(d.entitlementToken)),
+    { message: "Provide either sessionId or entitlementToken" },
+  );
 export type FinaliseReportRequest = z.infer<typeof finaliseReportRequestSchema>;
 
 export const finaliseReportSuccessSchema = z.object({

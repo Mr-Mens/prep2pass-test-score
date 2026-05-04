@@ -7,7 +7,7 @@ import { PricingCard } from "@/components/PricingCard";
 import { Section } from "@/components/Section";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { TrustBadge } from "@/components/TrustBadge";
-import { PREMIUM_PRICE } from "@/lib/constants";
+import { PRICING } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "TestReady Score by Prep2Pass",
@@ -60,11 +60,16 @@ export default function HomePage() {
               </Button>
             </div>
             <p className="mt-5 text-[11px] leading-snug text-brand-400/90 md:mt-5 lg:mt-6 lg:text-xs">
-              £4.99 one-time • Instant report
+              {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime · Instant after checkout
             </p>
           </div>
           <div className="mx-auto mt-14 max-w-sm md:mt-16 md:max-w-md lg:mt-20 lg:max-w-md">
-            <PricingCard price={PREMIUM_PRICE} />
+            <PricingCard
+              primaryPrice={PRICING.single.display}
+              primarySub="One-off Premium report"
+              secondaryPrice={PRICING.lifetime.display}
+              secondarySub="Unlimited Premium reports for your email"
+            />
           </div>
         </div>
       </section>
@@ -106,7 +111,7 @@ export default function HomePage() {
             {
               step: "02",
               title: "Unlock your TestReady Score",
-              body: `Pay ${PREMIUM_PRICE} once through secure checkout for your full Premium report: score, risks, next steps, coach note, and a rough lesson-hour band for planning with your instructor.`,
+              body: `Pay ${PRICING.single.display} for one report or ${PRICING.lifetime.display} for unlimited reports through secure checkout: score, risks, next steps, coach note, and a rough lesson-hour band for planning with your instructor.`,
             },
             {
               step: "03",
@@ -198,7 +203,7 @@ export default function HomePage() {
             },
             {
               q: "How much does it cost?",
-              a: `It is ${PREMIUM_PRICE} as a one-time payment. There is no subscription.`,
+              a: `Choose ${PRICING.single.display} for a single Premium report or ${PRICING.lifetime.display} for unlimited reports on your email. There is no subscription.`,
             },
           ].map((item) => (
             <FaqItem key={item.q} question={item.q} answer={item.a} />
@@ -210,7 +215,7 @@ export default function HomePage() {
         className="bg-white"
         eyebrow="Ready?"
         title="Get your TestReady Score"
-        subtitle={`A few minutes to assess. ${PREMIUM_PRICE} one-time unlocks your full report.`}
+        subtitle={`A few minutes to assess. From ${PRICING.single.display} one-off or ${PRICING.lifetime.display} lifetime unlimited.`}
       >
         <div className="mx-auto max-w-md px-2 pt-1 text-center">
           <Button

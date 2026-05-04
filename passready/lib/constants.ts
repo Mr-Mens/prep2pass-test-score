@@ -4,7 +4,18 @@ export const SITE = {
   locale: "en-GB",
 } as const;
 
-export const PREMIUM_PRICE = "£4.99";
+/** One-off vs lifetime TestReady Score unlock (Stripe Price IDs map to these in env). */
+export const PRICING = {
+  single: { display: "£3.99", label: "One-off report", hint: "Single Premium report for this assessment" },
+  lifetime: {
+    display: "£9.99",
+    label: "Lifetime unlimited",
+    hint: "Unlimited Premium reports — track progress over time",
+  },
+} as const;
+
+/** @deprecated use PRICING.single.display */
+export const PREMIUM_PRICE = PRICING.single.display;
 
 export { WEAK_AREA_OPTIONS, type WeakAreaId } from "./product-skill-map";
 

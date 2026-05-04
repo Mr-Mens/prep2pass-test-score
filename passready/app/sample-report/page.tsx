@@ -5,7 +5,7 @@ import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBloc
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
-import { PREMIUM_PRICE } from "@/lib/constants";
+import { PRICING } from "@/lib/constants";
 import {
   buildRecommendedHoursNarrative,
   computeEstimatedLessonHours,
@@ -203,7 +203,9 @@ export default function SampleReportPage() {
             Back to home
           </Button>
         </div>
-        <p className="text-xs text-brand-500/90">Premium TestReady Score Report · {PREMIUM_PRICE} one-time.</p>
+        <p className="text-xs text-brand-500/90">
+          Premium TestReady Score Report · {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime.
+        </p>
       </div>
     </Section>
   );

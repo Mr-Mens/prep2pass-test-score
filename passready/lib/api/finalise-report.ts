@@ -7,13 +7,19 @@ import {
 } from "@/lib/validation";
 
 export async function requestFinaliseReport(
-  sessionId: string,
-  assessment: AssessmentPayload,
+  input:
+    | { sessionId: string; assessment: AssessmentPayload }
+    | { entitlementToken: string; assessment: AssessmentPayload },
 ): Promise<FinaliseReportSuccess> {
+  const body =
+    "entitlementToken" in input
+      ? { entitlementToken: input.entitlementToken, assessment: input.assessment }
+      : { sessionId: input.sessionId, assessment: input.assessment };
+
   const res = await fetch("/api/reports/finalise", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId, assessment }),
+    body: JSON.stringify(body),
   });
 
   let raw: unknown;

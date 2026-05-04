@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { AssessmentForm } from "@/components/AssessmentForm";
 import { Section } from "@/components/Section";
-import { PREMIUM_PRICE } from "@/lib/constants";
+import { PRICING } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "TestReady Score Assessment",
@@ -39,7 +39,8 @@ export default function AssessmentPage() {
           ))}
         </ul>
         <p className="mt-6 border-t border-brand-100 pt-5 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
-          {PREMIUM_PRICE} one-time • Full Premium report after checkout, including lesson-hour estimate
+          {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime · Full Premium report after checkout,
+          including lesson-hour estimate
         </p>
       </div>
       <AssessmentForm />

@@ -3,16 +3,18 @@ import {
   createCheckoutSessionErrorSchema,
   createCheckoutSessionSuccessSchema,
   type AssessmentPayload,
+  type CheckoutPriceTier,
   type CreateCheckoutSessionSuccess,
 } from "@/lib/validation";
 
 export async function requestCheckoutSession(
   assessment: AssessmentPayload,
+  tier: CheckoutPriceTier,
 ): Promise<CreateCheckoutSessionSuccess> {
   const res = await fetch("/api/checkout/create-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ assessment }),
+    body: JSON.stringify({ assessment, tier }),
   });
 
   let raw: unknown;

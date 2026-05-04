@@ -2,8 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { requestEntitlementLookup } from "@/lib/api/entitlement-lookup";
+import { requestProgress } from "@/lib/api/progress";
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { Button } from "@/components/Button";
+import { ProgressTrackingSection } from "@/components/ProgressTrackingSection";
 import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
@@ -16,7 +19,12 @@ import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/l
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
 import { loadPersistedRecord, saveScoredAssessment } from "@/lib/storage";
 import type { MockReadinessResult } from "@/lib/types";
-import type { AssessmentPayload, PersistedAssessmentRecordV2, StoredAssessmentV1 } from "@/lib/validation";
+import type {
+  AssessmentPayload,
+  PersistedAssessmentRecordV2,
+  ProgressSuccess,
+  StoredAssessmentV1,
+} from "@/lib/validation";
 
 const reportCard =
   "rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8 sm:ring-0 print:border-brand-200 print:shadow-none";
@@ -49,8 +57,15 @@ type ViewState =
   | { status: "ready"; data: ReadyPayload }
   | { status: "migration_error"; message: string; legacy: StoredAssessmentV1 };
 
+type ProgressUiState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "ready"; data: ProgressSuccess }
+  | { kind: "off" };
+
 export function ResultsView() {
   const [state, setState] = useState<ViewState>({ status: "loading" });
+  const [progressUi, setProgressUi] = useState<ProgressUiState>({ kind: "idle" });
 
   const upgradeLegacyRecord = useCallback(async (legacy: StoredAssessmentV1) => {
     setState({ status: "loading" });
@@ -112,6 +127,44 @@ export function ResultsView() {
       cancelled = true;
     };
   }, [upgradeLegacyRecord]);
+
+  useEffect(() => {
+    if (state.status !== "ready") {
+      setProgressUi({ kind: "idle" });
+      return;
+    }
+    const email = state.data.assessment.email;
+    let cancelled = false;
+    setProgressUi({ kind: "loading" });
+
+    requestProgress(email)
+      .then((data) => {
+        if (cancelled) return;
+        setProgressUi({ kind: "ready", data });
+      })
+      .catch(async () => {
+        if (cancelled) return;
+        try {
+          const fallback = await requestEntitlementLookup(email);
+          if (cancelled) return;
+          const synthetic: ProgressSuccess = {
+            success: true,
+            hasLifetimeAccess: fallback.hasLifetimeAccess,
+            reportCount: fallback.reportCount,
+            entries: [],
+          };
+          setProgressUi({ kind: "ready", data: synthetic });
+        } catch {
+          if (!cancelled) {
+            setProgressUi({ kind: "off" });
+          }
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state]);
 
   const snapshotRows = useMemo(() => {
     if (state.status !== "ready") return [];
@@ -250,6 +303,17 @@ export function ResultsView() {
           <ReportSummaryDebrief>
             <p>{report.summary}</p>
           </ReportSummaryDebrief>
+
+          {progressUi.kind === "idle" ? null : progressUi.kind === "loading" ? (
+            <ProgressTrackingSection status="loading" />
+          ) : progressUi.kind === "off" ? null : (
+            <ProgressTrackingSection
+              status="ready"
+              hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
+              entries={progressUi.data.entries}
+              currentScore={report.readinessScore}
+            />
+          )}
 
           <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
             <h3 className={sectionTitle}>Coach note</h3>

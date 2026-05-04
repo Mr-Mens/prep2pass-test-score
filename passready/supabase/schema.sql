@@ -3,6 +3,7 @@
 
 create extension if not exists "pgcrypto";
 
+-- Saved Premium reports (also backs lifetime progress timeline: score history per email).
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -50,6 +51,17 @@ create table if not exists public.payments (
 create index if not exists reports_email_idx on public.reports (email);
 create index if not exists reports_created_at_idx on public.reports (created_at desc);
 create index if not exists payments_created_at_idx on public.payments (created_at desc);
+
+-- One row per email: lifetime buyers get unlimited report finalisation (see app entitlements).
+create table if not exists public.customer_entitlements (
+  email text primary key,
+  lifetime_access boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists customer_entitlements_lifetime_idx
+  on public.customer_entitlements (lifetime_access)
+  where lifetime_access = true;
 
 -- search_path fixed: satisfies Supabase “function search_path mutable” (avoids search_path hijack).
 create or replace function public.set_updated_at()

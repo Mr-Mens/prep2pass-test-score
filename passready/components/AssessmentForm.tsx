@@ -1,19 +1,26 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { requestCheckoutSession } from "@/lib/api/create-checkout-session";
-import { PREMIUM_PRICE, WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { requestFinaliseReport } from "@/lib/api/finalise-report";
+import { PRICING, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
-import { savePendingAssessment } from "@/lib/storage";
+import {
+  clearPendingAssessment,
+  savePendingAssessment,
+  saveScoredAssessment,
+} from "@/lib/storage";
 import {
   assessmentDataSchema,
   assessmentSchema,
   type AssessmentFormValues,
   type AssessmentPayload,
+  type CheckoutPriceTier,
   type ReadinessLabel,
 } from "@/lib/validation";
 
@@ -125,10 +132,12 @@ function SectionHeader({
 }
 
 export function AssessmentForm() {
+  const router = useRouter();
   const submitLock = useRef(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [preview, setPreview] = useState<ScorePreview | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [checkoutTier, setCheckoutTier] = useState<CheckoutPriceTier>("single");
 
   const {
     register,
@@ -175,6 +184,13 @@ export function AssessmentForm() {
     }
   }, [testBooked, setValue]);
 
+  useEffect(() => {
+    if (!preview) return;
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search).get("checkout");
+    if (q === "lifetime") setCheckoutTier("lifetime");
+  }, [preview]);
+
   const onSubmit: SubmitHandler<AssessmentFormValues> = async (values) => {
     if (submitLock.current) return;
     submitLock.current = true;
@@ -215,7 +231,23 @@ export function AssessmentForm() {
     setUnlocking(true);
     setSubmitError(null);
     try {
-      const checkout = await requestCheckoutSession(preview.assessment);
+      const checkout = await requestCheckoutSession(preview.assessment, checkoutTier);
+      if (checkout.skipCheckout) {
+        setSubmitError(null);
+        const finalised = await requestFinaliseReport({
+          entitlementToken: checkout.entitlementToken,
+          assessment: preview.assessment,
+        });
+        saveScoredAssessment({
+          version: 2,
+          submittedAt: new Date().toISOString(),
+          assessment: finalised.assessment,
+          result: finalised.result,
+        });
+        clearPendingAssessment();
+        router.replace("/results");
+        return;
+      }
       window.location.assign(checkout.url);
     } catch (e) {
       const message =
@@ -292,26 +324,60 @@ export function AssessmentForm() {
             for how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
           </p>
           <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
-            Full detail, including the lesson-hour estimate, is in your Premium TestReady Score Report and unlocks after
-            a one-time payment.
+            Choose a one-off report or lifetime unlimited — both unlock the full Premium TestReady Score Report after
+            checkout (lifetime skips payment once your email has unlimited access).
           </p>
           {submitError ? (
             <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
               {submitError}
             </p>
           ) : null}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setCheckoutTier("single")}
+              className={`rounded-2xl border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:p-5 ${
+                checkoutTier === "single"
+                  ? "border-teal-600 bg-teal-50/90 ring-2 ring-teal-600/25"
+                  : "border-brand-200 bg-brand-50/40 hover:border-brand-300"
+              }`}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">{PRICING.single.label}</p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-brand-950">{PRICING.single.display}</p>
+              <p className="mt-1 text-xs leading-relaxed text-brand-600">{PRICING.single.hint}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCheckoutTier("lifetime")}
+              className={`rounded-2xl border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:p-5 ${
+                checkoutTier === "lifetime"
+                  ? "border-teal-600 bg-teal-50/90 ring-2 ring-teal-600/25"
+                  : "border-brand-200 bg-brand-50/40 hover:border-brand-300"
+              }`}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">
+                {PRICING.lifetime.label}
+              </p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-brand-950">{PRICING.lifetime.display}</p>
+              <p className="mt-1 text-xs leading-relaxed text-brand-600">{PRICING.lifetime.hint}</p>
+            </button>
+          </div>
           <div className="mt-6">
             <Button
               type="button"
               variant="conversion"
               disabled={unlocking}
-              className="w-full sm:w-auto sm:min-w-[18rem]"
-              onClick={onUnlockFullReport}
+              className="w-full min-h-[52px] sm:min-w-[18rem]"
+              onClick={() => void onUnlockFullReport()}
             >
-              {unlocking ? "Starting checkout..." : "Unlock Full Report (£4.99)"}
+              {unlocking
+                ? "Please wait…"
+                : checkoutTier === "lifetime"
+                  ? `Continue — ${PRICING.lifetime.display}`
+                  : `Continue — ${PRICING.single.display}`}
             </Button>
             <p className="mt-3 text-xs leading-relaxed text-brand-600">
-              Instant access • No subscription • Secure payment
+              Instant access • No subscription • Secure checkout with Stripe
             </p>
           </div>
         </section>
@@ -628,10 +694,16 @@ export function AssessmentForm() {
           ))}
         </ul>
         <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2 border-t border-brand-100 pt-6">
-          <p>
-            <span className="text-3xl font-semibold tracking-tight text-brand-950">{PREMIUM_PRICE}</span>
-            <span className="ml-2 text-sm font-medium text-brand-600">one-time</span>
-          </p>
+          <div>
+            <p className="text-sm font-medium text-brand-800">
+              <span className="text-3xl font-semibold tracking-tight text-brand-950">{PRICING.single.display}</span>
+              <span className="ml-2 text-brand-600">one-off</span>
+            </p>
+            <p className="mt-2 text-sm font-medium text-brand-800">
+              <span className="text-3xl font-semibold tracking-tight text-brand-950">{PRICING.lifetime.display}</span>
+              <span className="ml-2 text-brand-600">lifetime unlimited</span>
+            </p>
+          </div>
         </div>
         <p className="mt-4 text-xs leading-relaxed text-brand-600">
           Secure payment powered by Stripe · No subscription · No hidden charges

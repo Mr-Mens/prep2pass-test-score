@@ -2,6 +2,7 @@ import "server-only";
 
 import type Stripe from "stripe";
 
+import { normalizeEmail } from "@/lib/normalize-email";
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 import type { PaymentDbRecord } from "@/lib/validation";
 
@@ -29,7 +30,7 @@ export function fromCheckoutSessionToPaymentInput(session: Stripe.Checkout.Sessi
     amountTotal: session.amount_total ?? null,
     currency: session.currency ?? null,
     paymentStatus: session.payment_status ?? "unpaid",
-    customerEmail: session.customer_email ?? null,
+    customerEmail: session.customer_email ? normalizeEmail(session.customer_email) : null,
     fullName: session.customer_details?.name ?? null,
     rawMetadata: asRecord(session.metadata),
   };

@@ -58,7 +58,7 @@ export function CheckoutSuccessFlow() {
         if (!finalisePromises.has(sessionId)) {
           finalisePromises.set(
             sessionId,
-            requestFinaliseReport(sessionId, pending.assessment).finally(() => {
+            requestFinaliseReport({ sessionId, assessment: pending.assessment }).finally(() => {
               finalisePromises.delete(sessionId);
             }),
           );

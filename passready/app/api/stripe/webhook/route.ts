@@ -2,6 +2,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
+import { normalizeEmail } from "@/lib/normalize-email";
+import { setLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
 import {
   fromCheckoutSessionToPaymentInput,
   upsertPaymentFromCheckoutSession,
@@ -33,6 +35,19 @@ export async function POST(request: Request) {
         sessionId: session.id,
         paymentStatus: session.payment_status,
       });
+
+      const tier = session.metadata?.tier;
+      const emailRaw = session.customer_email ?? session.customer_details?.email;
+      if (session.payment_status === "paid" && tier === "lifetime" && emailRaw) {
+        try {
+          await setLifetimeAccess(normalizeEmail(emailRaw));
+        } catch (e) {
+          console.error("stripe_webhook_lifetime_entitlement_failed", {
+            sessionId: session.id,
+            message: e instanceof Error ? e.message : String(e),
+          });
+        }
+      }
     } catch {
       // Keep webhook resilient even if persistence is temporarily unavailable.
       console.error("stripe_webhook_payment_upsert_failed", { sessionId: session.id });

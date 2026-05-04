@@ -9,7 +9,12 @@ const DEFAULT_BULLETS = [
 ] as const;
 
 type PricingCardProps = {
-  price: string;
+  /** @deprecated use primaryPrice */
+  price?: string;
+  primaryPrice?: string;
+  primarySub?: string;
+  secondaryPrice?: string;
+  secondarySub?: string;
   /** Product name shown as card title */
   productTitle?: string;
   bullets?: readonly string[];
@@ -19,17 +24,35 @@ type PricingCardProps = {
 
 export function PricingCard({
   price,
+  primaryPrice,
+  primarySub = "One-off report",
+  secondaryPrice,
+  secondarySub = "Lifetime unlimited",
   productTitle = "TestReady Score",
   bullets = DEFAULT_BULLETS,
   ctaHref = "/assessment",
   ctaLabel = "Get My TestReady Score",
 }: PricingCardProps) {
+  const oneOff = primaryPrice ?? price ?? "";
+  const showDual = Boolean(secondaryPrice);
+
   return (
     <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] sm:p-8 sm:ring-0">
       <div className="border-b border-brand-100 pb-6">
         <h3 className="text-base font-semibold tracking-tight text-brand-950">{productTitle}</h3>
-        <p className="mt-5 text-4xl font-semibold tracking-tight text-brand-950 sm:text-5xl">{price}</p>
-        <p className="mt-2 text-sm font-medium text-brand-600">One-time payment</p>
+        <div className="mt-5 space-y-4">
+          <div>
+            <p className="text-4xl font-semibold tracking-tight text-brand-950 sm:text-5xl">{oneOff}</p>
+            <p className="mt-1 text-sm font-medium text-brand-600">{primarySub}</p>
+          </div>
+          {showDual ? (
+            <div className="border-t border-brand-100 pt-4">
+              <p className="text-3xl font-semibold tracking-tight text-brand-950 sm:text-4xl">{secondaryPrice}</p>
+              <p className="mt-1 text-sm font-medium text-brand-600">{secondarySub}</p>
+            </div>
+          ) : null}
+        </div>
+        <p className="mt-4 text-sm font-medium text-brand-600">Secure checkout · No subscription</p>
       </div>
 
       <ul className="mt-6 space-y-3 text-sm leading-relaxed text-brand-800">

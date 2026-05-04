@@ -2,7 +2,11 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
+import { normalizeEmail } from "@/lib/normalize-email";
+import { signLifetimeFinaliseToken } from "@/lib/server/entitlement-token";
+import { getLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
 import { createCheckoutSession } from "@/lib/server/stripe";
+import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createCheckoutSessionRequestSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -29,11 +33,36 @@ export async function POST(request: Request) {
       return jsonError(400, "VALIDATION_ERROR", "Checkout payload failed validation");
     }
 
+    const emailNormalized = normalizeEmail(parsed.data.assessment.email);
+    const supabaseOk = isSupabaseConfigured();
+
+    if (supabaseOk) {
+      const lifetime = await getLifetimeAccess(emailNormalized);
+      if (lifetime) {
+        try {
+          const entitlementToken = signLifetimeFinaliseToken(emailNormalized);
+          return NextResponse.json({
+            success: true as const,
+            skipCheckout: true as const,
+            entitlementToken,
+          });
+        } catch (e) {
+          console.error("[checkout:create-session] entitlement_token_failed", e);
+          return jsonError(
+            503,
+            "ENTITLEMENT_CONFIG_ERROR",
+            "Lifetime access is temporarily unavailable. Please try again shortly.",
+          );
+        }
+      }
+    }
+
     const assessmentId = randomUUID();
     const session = await createCheckoutSession({
       assessmentId,
       email: parsed.data.assessment.email,
       weakAreaCount: parsed.data.assessment.weakAreas.length,
+      tier: parsed.data.tier,
     });
 
     if (!session.url || !session.id) {
@@ -42,6 +71,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true as const,
+      skipCheckout: false as const,
       url: session.url,
       sessionId: session.id,
     });
@@ -59,16 +89,17 @@ export async function POST(request: Request) {
           ? "Checkout is temporarily unavailable, pricing is not configured correctly."
           : code === "authentication_error"
             ? "Checkout is temporarily unavailable, payment credentials are invalid."
-          : "Checkout is temporarily unavailable. Please try again in a moment.";
+            : "Checkout is temporarily unavailable. Please try again in a moment.";
       return jsonError(500, "STRIPE_SESSION_ERROR", message);
     }
 
     if (error instanceof Error) {
       console.error("[checkout:create-session] config_or_internal_error", { message: error.message });
-      if (error.message.includes("STRIPE_PRICE_ID")) {
-        return jsonError(500, "CHECKOUT_CONFIG_ERROR", "Checkout is temporarily unavailable.");
-      }
-      if (error.message.includes("STRIPE_SECRET_KEY")) {
+      if (
+        error.message.includes("STRIPE_PRICE_ID") ||
+        error.message.includes("STRIPE_SECRET_KEY") ||
+        error.message.includes("ENTITLEMENT_TOKEN_SECRET")
+      ) {
         return jsonError(500, "CHECKOUT_CONFIG_ERROR", "Checkout is temporarily unavailable.");
       }
     }

@@ -3,8 +3,12 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { normalizeEmail } from "@/lib/normalize-email";
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { verifyLifetimeFinaliseToken } from "@/lib/server/entitlement-token";
-import { setLifetimeAccess, getLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
+import {
+  getLifetimeAccessByUserId,
+  setLifetimeAccessByUserId,
+} from "@/lib/server/repositories/entitlements-repository";
 import {
   fromCheckoutSessionToPaymentInput,
   upsertPaymentFromCheckoutSession,
@@ -23,11 +27,13 @@ function jsonError(status: number, code: string, message: string) {
   return NextResponse.json({ success: false as const, error: { code, message } }, { status });
 }
 
-/** When Supabase is missing, allow completing checkout locally without persisting reports. */
+function stripeMetadataUserId(session: Stripe.Checkout.Session): string | null {
+  const raw = session.metadata?.supabase_user_id;
+  return typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : null;
+}
+
 function allowPersistSkipWithoutSupabase(): boolean {
-  return (
-    process.env.NODE_ENV === "development" || process.env.SKIP_SUPABASE_REPORT_PERSIST === "true"
-  );
+  return process.env.NODE_ENV === "development" || process.env.SKIP_SUPABASE_REPORT_PERSIST === "true";
 }
 
 function buildExistingReportResponse(
@@ -63,6 +69,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
+    }
+
     let body: unknown;
     try {
       body = await request.json();
@@ -76,6 +87,12 @@ export async function POST(request: Request) {
     }
 
     const { assessment } = parsed.data;
+
+    const assessmentEmail = normalizeEmail(assessment.email);
+    if (assessmentEmail !== auth.email) {
+      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your signed-in Prep2Pass account.");
+    }
+
     const supabaseOk = isSupabaseConfigured();
     const skipDbPersist = !supabaseOk && allowPersistSkipWithoutSupabase();
 
@@ -88,15 +105,20 @@ export async function POST(request: Request) {
     }
 
     if (parsed.data.sessionId) {
-      return await finaliseWithStripeSession(parsed.data.sessionId, assessment, supabaseOk, skipDbPersist);
+      return await finaliseWithStripeSession(
+        parsed.data.sessionId,
+        assessment,
+        supabaseOk,
+        skipDbPersist,
+        auth.userId,
+        auth.email,
+      );
     }
 
-    return await finaliseWithEntitlementToken(
-      parsed.data.entitlementToken!,
-      assessment,
-      supabaseOk,
-      skipDbPersist,
-    );
+    return await finaliseWithEntitlementToken(parsed.data.entitlementToken!, assessment, supabaseOk, skipDbPersist, {
+      userId: auth.userId,
+      email: auth.email,
+    });
   } catch (error) {
     if (error instanceof Stripe.errors.StripeError) {
       console.error("[reports:finalise] stripe_error", {
@@ -126,7 +148,7 @@ export async function POST(request: Request) {
       return jsonError(
         503,
         "DATABASE_ERROR",
-        "Could not read or save your report in Supabase. Confirm `reports` exists (see supabase/schema.sql), URL and service role key are correct, and check server logs for the Postgres/PostgREST error.",
+        "Could not read or save your report in Supabase. Confirm tables exist (see supabase/), URL and service role key are correct, then check server logs.",
       );
     }
 
@@ -139,10 +161,17 @@ async function finaliseWithStripeSession(
   assessment: AssessmentPayload,
   supabaseOk: boolean,
   skipDbPersist: boolean,
+  userId: string,
+  userEmailNormalized: string,
 ) {
   const session = await retrieveCheckoutSession(sessionId);
   if (session.payment_status !== "paid") {
     return jsonError(402, "PAYMENT_REQUIRED", "Payment is not confirmed");
+  }
+
+  const ownerId = stripeMetadataUserId(session);
+  if (!ownerId || ownerId !== userId) {
+    return jsonError(403, "CHECKOUT_OWNERSHIP", "This checkout is not tied to your account.");
   }
 
   const emailFromStripe = session.customer_email
@@ -150,15 +179,19 @@ async function finaliseWithStripeSession(
     : session.customer_details?.email
       ? normalizeEmail(session.customer_details.email)
       : null;
-  if (emailFromStripe && emailFromStripe !== assessment.email) {
-    return jsonError(403, "EMAIL_MISMATCH", "This checkout session does not match this assessment email.");
+  if (emailFromStripe && emailFromStripe !== userEmailNormalized) {
+    return jsonError(
+      403,
+      "EMAIL_MISMATCH",
+      "The email on your Stripe checkout does not match your signed-in Prep2Pass account.",
+    );
   }
 
   if (supabaseOk) {
     const tier = session.metadata?.tier;
-    if (tier === "lifetime" && emailFromStripe) {
+    if (tier === "lifetime") {
       try {
-        await setLifetimeAccess(emailFromStripe);
+        await setLifetimeAccessByUserId(userId);
       } catch (e) {
         console.error("[reports:finalise] set_lifetime_failed", e);
       }
@@ -166,6 +199,12 @@ async function finaliseWithStripeSession(
 
     const existing = await getReportByStripeSessionId(session.id);
     if (existing) {
+      const okOwnership = existing.user_id
+        ? existing.user_id === userId
+        : normalizeEmail(existing.email) === userEmailNormalized;
+      if (!okOwnership) {
+        return jsonError(403, "REPORT_OWNERSHIP", "This report belongs to another account.");
+      }
       return NextResponse.json(buildExistingReportResponse(session.id, existing, assessment));
     }
   }
@@ -187,6 +226,7 @@ async function finaliseWithStripeSession(
 
   await upsertPaymentFromCheckoutSession(fromCheckoutSessionToPaymentInput(session));
   const report = await createReport({
+    userId,
     stripeSessionId: session.id,
     paymentStatus: session.payment_status ?? "paid",
     assessment: scoredAssessment,
@@ -207,20 +247,21 @@ async function finaliseWithEntitlementToken(
   assessment: AssessmentPayload,
   supabaseOk: boolean,
   skipDbPersist: boolean,
+  caller: { userId: string; email: string },
 ) {
   const payload = verifyLifetimeFinaliseToken(entitlementToken);
   if (!payload) {
-    return jsonError(401, "INVALID_ENTITLEMENT", "Your session expired. Start checkout again from the assessment.");
+    return jsonError(401, "INVALID_ENTITLEMENT", "Your session expired. Complete checkout again.");
   }
 
-  if (payload.email !== assessment.email) {
-    return jsonError(403, "EMAIL_MISMATCH", "This unlock link does not match this assessment email.");
+  if (payload.email !== caller.email || payload.userId !== caller.userId) {
+    return jsonError(403, "ENTITLEMENT_MISMATCH", "This unlock does not belong to your account.");
   }
 
   if (supabaseOk) {
-    const ok = await getLifetimeAccess(assessment.email);
+    const ok = await getLifetimeAccessByUserId(caller.userId);
     if (!ok) {
-      return jsonError(403, "LIFETIME_REQUIRED", "Lifetime access is not active for this email.");
+      return jsonError(403, "LIFETIME_REQUIRED", "Lifetime access is not active for your account.");
     }
   } else if (!skipDbPersist) {
     return jsonError(
@@ -246,6 +287,7 @@ async function finaliseWithEntitlementToken(
   }
 
   const report = await createReport({
+    userId: caller.userId,
     stripeSessionId: syntheticSessionId,
     paymentStatus: "paid",
     assessment: scoredAssessment,

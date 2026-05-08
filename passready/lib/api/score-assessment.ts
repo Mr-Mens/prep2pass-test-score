@@ -15,6 +15,7 @@ export async function requestAssessmentScore(
 ): Promise<AssessmentScoreApiSuccess> {
   const res = await fetch("/api/assessment/score", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(assessment),
   });

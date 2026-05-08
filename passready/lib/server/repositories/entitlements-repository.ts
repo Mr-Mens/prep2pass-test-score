@@ -3,43 +3,10 @@ import "server-only";
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 
 export type CustomerEntitlementRow = {
-  email: string;
+  user_id: string;
   lifetime_access: boolean;
   updated_at: string;
 };
-
-export async function getLifetimeAccess(emailNormalized: string): Promise<boolean> {
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("customer_entitlements")
-    .select("lifetime_access")
-    .eq("email", emailNormalized)
-    .maybeSingle();
-
-  if (error) {
-    console.error("[entitlements] getLifetimeAccess failed", error.message);
-    throw new Error("Failed to read entitlements");
-  }
-  const row = data as { lifetime_access: boolean } | null;
-  return row?.lifetime_access === true;
-}
-
-export async function setLifetimeAccess(emailNormalized: string): Promise<void> {
-  const supabase = getSupabaseServerClient();
-  const { error } = await supabase.from("customer_entitlements").upsert(
-    {
-      email: emailNormalized,
-      lifetime_access: true,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "email" },
-  );
-
-  if (error) {
-    console.error("[entitlements] setLifetimeAccess failed", error.message);
-    throw new Error("Failed to save lifetime access");
-  }
-}
 
 export type EntitlementLookupResult = {
   hasLifetimeAccess: boolean;
@@ -47,23 +14,54 @@ export type EntitlementLookupResult = {
   reportCount: number;
 };
 
+/** Lifetime unlock for Stripe / finalise flows keyed to the signed-in Supabase account. */
+export async function getLifetimeAccessByUserId(userId: string): Promise<boolean> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("user_entitlements")
+    .select("lifetime_access")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[entitlements] getLifetimeAccessByUserId failed", error.message);
+    throw new Error("Failed to read entitlements");
+  }
+  const row = data as { lifetime_access: boolean } | null;
+  return row?.lifetime_access === true;
+}
+
+export async function setLifetimeAccessByUserId(userId: string): Promise<void> {
+  const supabase = getSupabaseServerClient();
+  const { error } = await supabase.from("user_entitlements").upsert(
+    {
+      user_id: userId,
+      lifetime_access: true,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    console.error("[entitlements] setLifetimeAccessByUserId failed", error.message);
+    throw new Error("Failed to save lifetime access");
+  }
+}
+
 function paymentLooksLikeSinglePurchase(rawMetadata: Record<string, unknown> | null): boolean {
   const tier = rawMetadata?.tier;
   if (tier === "lifetime") return false;
   if (tier === "single") return true;
-  return true;
+  return rawMetadata?.upgradeOnly !== "true";
 }
 
-export async function getEntitlementLookup(emailNormalized: string): Promise<EntitlementLookupResult> {
+export async function getEntitlementLookupForUser(userId: string): Promise<EntitlementLookupResult> {
   const supabase = getSupabaseServerClient();
 
   const [entRes, reportsCountRes, paymentsRes] = await Promise.all([
-    supabase.from("customer_entitlements").select("lifetime_access").eq("email", emailNormalized).maybeSingle(),
-    supabase
-      .from("reports")
-      .select("id", { count: "exact", head: true })
-      .eq("email", emailNormalized),
-    supabase.from("payments").select("raw_metadata, payment_status").eq("customer_email", emailNormalized),
+    supabase.from("user_entitlements").select("lifetime_access").eq("user_id", userId).maybeSingle(),
+    supabase.from("reports").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    supabase.from("payments").select("raw_metadata, payment_status").eq("user_id", userId),
   ]);
 
   if (entRes.error) throw new Error("Failed to read entitlements");

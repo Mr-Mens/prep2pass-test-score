@@ -17,13 +17,7 @@ type Props =
       hasLifetimeAccess: boolean;
       entries: ProgressEntry[];
       currentScore: number;
-      /** When provided, each entry becomes a link to the saved report. */
-      viewToken?: string;
     };
-
-function reportHref(reportId: string, viewToken: string): string {
-  return `/reports/${reportId}?token=${encodeURIComponent(viewToken)}`;
-}
 
 export function ProgressTrackingSection(props: Props) {
   if (props.status === "loading") {
@@ -36,13 +30,10 @@ export function ProgressTrackingSection(props: Props) {
   }
 
   const { hasLifetimeAccess, entries, currentScore } = props;
-  const viewToken = props.status === "ready" ? props.viewToken : undefined;
 
   if (hasLifetimeAccess) {
     const improvement =
-      entries.length >= 2
-        ? entries[entries.length - 1]!.score - entries[entries.length - 2]!.score
-        : null;
+      entries.length >= 2 ? entries[entries.length - 1]!.score - entries[entries.length - 2]!.score : null;
 
     const rowBase =
       "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50/50 px-4 py-3 text-sm";
@@ -54,8 +45,8 @@ export function ProgressTrackingSection(props: Props) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">Lifetime feature</p>
         <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Your progress</h2>
         <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
-          Each Premium report saved under your email appears here with the date so you can compare readiness over time.
-          {viewToken ? " Tap any entry to open that report and compare the detail." : ""}
+          Each Premium report saved on your Prep2Pass account appears here so you can compare readiness over time. Tap any
+          entry to open that report securely.
         </p>
 
         {entries.length === 0 ? (
@@ -75,30 +66,21 @@ export function ProgressTrackingSection(props: Props) {
                   </span>
                 );
 
-                if (viewToken) {
-                  return (
-                    <li key={e.reportId}>
-                      <Link
-                        href={reportHref(e.reportId, viewToken)}
-                        className={`group ${rowBase} ${rowInteractive}`}
-                        aria-label={`Open report from ${date}, score ${e.score} out of 100`}
-                      >
-                        {dateLabel}
-                        <span className="flex items-center gap-2">
-                          {scoreLabel}
-                          <span aria-hidden className="text-brand-400 transition group-hover:translate-x-0.5">
-                            ›
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                }
-
                 return (
-                  <li key={e.reportId} className={rowBase}>
-                    {dateLabel}
-                    {scoreLabel}
+                  <li key={e.reportId}>
+                    <Link
+                      href={`/reports/${e.reportId}`}
+                      className={`group ${rowBase} ${rowInteractive}`}
+                      aria-label={`Open report from ${date}, score ${e.score} out of 100`}
+                    >
+                      {dateLabel}
+                      <span className="flex items-center gap-2">
+                        {scoreLabel}
+                        <span aria-hidden className="text-brand-400 transition group-hover:translate-x-0.5">
+                          ›
+                        </span>
+                      </span>
+                    </Link>
                   </li>
                 );
               })}
@@ -107,8 +89,7 @@ export function ProgressTrackingSection(props: Props) {
             <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-3 text-sm leading-relaxed text-teal-950">
               <p className="font-semibold text-teal-950">Previous vs current</p>
               <p className="mt-1">
-                This report:{" "}
-                <span className="font-semibold tabular-nums">{currentScore}</span> out of 100.
+                This report: <span className="font-semibold tabular-nums">{currentScore}</span> out of 100.
               </p>
               {improvement !== null ? (
                 <p className="mt-2 font-medium">
@@ -137,11 +118,10 @@ export function ProgressTrackingSection(props: Props) {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_40%,rgba(20,184,166,0.06))]" />
       <p className="relative text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">Progress tracking</p>
       <p className="relative mt-2 text-base font-semibold tracking-tight text-brand-950">
-        Track your progress over time with unlimited access
+        Track progress over time with lifetime access
       </p>
       <p className="relative mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-        Lifetime unlock keeps a private timeline of your TestReady scores so you can see improvement between lessons.
-        Only available with unlimited access.
+        Lifetime unlock keeps a private timeline of your Test Ready scores so you can see improvement between lessons.
       </p>
       <Button
         href="/upgrade"

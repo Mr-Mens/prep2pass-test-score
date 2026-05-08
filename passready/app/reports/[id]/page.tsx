@@ -1,32 +1,32 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
 import { Button } from "@/components/Button";
-import { Section } from "@/components/Section";
-import { getReportById } from "@/lib/server/repositories/reports-repository";
-import { RiskAreasSection } from "@/components/RiskAreasSection";
-import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
 import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
+import { RiskAreasSection } from "@/components/RiskAreasSection";
+import { Section } from "@/components/Section";
 import {
   buildRecommendedHoursNarrative,
   computeEstimatedLessonHours,
   type EstimatedHoursInput,
   reportNarrativeSalt,
 } from "@/lib/estimated-lesson-hours";
-import { verifyReportAccessToken } from "@/lib/server/report-access-token";
+import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
+import { getReportByIdForUser } from "@/lib/server/repositories/reports-repository";
+import { getServerAuthUser } from "@/lib/supabase/server";
 import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
 import type { AssessmentPayload } from "@/lib/validation";
 
-type Props = { params: { id: string }; searchParams?: { token?: string } };
+type Props = { params: { id: string } };
 
 const paramsSchema = z.object({ id: z.string().uuid() });
 
 export const metadata: Metadata = {
-  title: "Your TestReady Score Report",
+  title: "Your Test Ready Score report",
   description:
-    "Saved Premium TestReady Score Report from Prep2Pass. Created by a DVSA-approved driving instructor; not an official DVSA product.",
+    "Saved Premium Test Ready Score report from Prep2Pass. Created by a DVSA-approved driving instructor; not an official DVSA product.",
 };
 
 function badgeClass(label: string) {
@@ -36,16 +36,17 @@ function badgeClass(label: string) {
   return "bg-teal-50 text-teal-950 ring-teal-200";
 }
 
-export default async function ReportDetailPage({ params, searchParams }: Props) {
+export default async function ReportDetailPage({ params }: Props) {
   const parsed = paramsSchema.safeParse(params);
   if (!parsed.success) notFound();
-  const token = searchParams?.token ?? "";
-  const tokenState = verifyReportAccessToken(token);
-  if (!tokenState.valid) notFound();
 
-  const report = await getReportById(parsed.data.id);
+  const sessionUser = await getServerAuthUser();
+  if (!sessionUser?.emailConfirmedAt) {
+    redirect(`/login?next=${encodeURIComponent(`/reports/${parsed.data.id}`)}`);
+  }
+
+  const report = await getReportByIdForUser(parsed.data.id, sessionUser.id);
   if (!report) notFound();
-  if (report.email.toLowerCase() !== tokenState.email) notFound();
 
   const riskBlocks = normalizeGroupedRiskAreas(report.risk_areas as unknown);
   const weakAreas = migrateWeakAreaIds(report.weak_areas) as AssessmentPayload["weakAreas"];
@@ -66,15 +67,20 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
       className="bg-brand-50"
       contentClassName="max-w-3xl"
       eyebrow="Saved report"
-      title="Your TestReady Score Report"
-      subtitle={`Created ${new Date(report.created_at).toLocaleString("en-GB")}. Pulled from your saved Prep2Pass records.`}
+      title="Your Test Ready Score report"
+      subtitle={`Created ${new Date(report.created_at).toLocaleString(
+        "en-GB",
+      )}. Stored securely against your Prep2Pass account.`}
     >
       <div className="space-y-8">
         <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-brand-600/90">Readiness score</p>
-              <p className="mt-2 text-5xl font-semibold tracking-tight text-brand-950">{report.readiness_score}</p>
+              <p className="mt-2 font-heading text-5xl font-semibold tabular-nums tracking-tight text-brand-950">
+                {report.readiness_score}
+                <span className="text-3xl font-semibold text-brand-400">/100</span>
+              </p>
             </div>
             <span
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${badgeClass(
@@ -85,7 +91,8 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
             </span>
           </div>
           <p className="mt-4 text-sm text-brand-600/90">
-            Prep2Pass TestReady Score: guidance from your assessment, built to support what you do with your ADI. Not an official DVSA product.
+            Prep2Pass Test Ready Score: guidance from your assessment, built to support what you do with your driving
+            instructor. Not an official DVSA product.
           </p>
           <ReportSummaryDebrief className="mt-6">
             <p>{report.summary}</p>
@@ -113,7 +120,7 @@ export default async function ReportDetailPage({ params, searchParams }: Props) 
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button href={`/reports/access?token=${encodeURIComponent(token)}`} className="w-full sm:w-auto sm:min-w-[12rem]">
+          <Button href="/my-reports" className="w-full sm:w-auto sm:min-w-[12rem]">
             Back to my reports
           </Button>
         </div>

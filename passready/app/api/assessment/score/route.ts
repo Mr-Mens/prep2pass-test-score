@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { normalizeEmail } from "@/lib/normalize-email";
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { scoreAssessment } from "@/lib/services/assessment-service";
 import { assessmentDataSchema } from "@/lib/validation";
 
@@ -15,6 +17,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
+    }
+
     let body: unknown;
     try {
       body = await request.json();
@@ -25,6 +32,11 @@ export async function POST(request: Request) {
     const parsed = assessmentDataSchema.safeParse(body);
     if (!parsed.success) {
       return jsonError(400, "VALIDATION_ERROR", "Assessment payload failed validation");
+    }
+
+    const assessmentEmail = normalizeEmail(parsed.data.email);
+    if (assessmentEmail !== auth.email) {
+      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Prep2Pass account.");
     }
 
     const { assessment, result } = await scoreAssessment(parsed.data, { useAiEnrichment: false });

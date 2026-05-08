@@ -7,6 +7,7 @@ import { normalizeEmail } from "@/lib/normalize-email";
 export type LifetimeFinalisePayload = {
   typ: "lifetime_finalise";
   email: string;
+  userId: string;
   exp: number;
 };
 
@@ -25,10 +26,11 @@ function signBody(body: string): string {
 }
 
 /** Short-lived token so lifetime users can finalise without a new Stripe session. */
-export function signLifetimeFinaliseToken(email: string): string {
+export function signLifetimeFinaliseToken(email: string, userId: string): string {
   const payload: LifetimeFinalisePayload = {
     typ: "lifetime_finalise",
     email: normalizeEmail(email),
+    userId,
     exp: Date.now() + TTL_MS,
   };
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
@@ -47,7 +49,12 @@ export function verifyLifetimeFinaliseToken(token: string): LifetimeFinalisePayl
     const b = Buffer.from(expected);
     if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
     const raw = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as LifetimeFinalisePayload;
-    if (raw.typ !== "lifetime_finalise" || typeof raw.email !== "string" || typeof raw.exp !== "number") {
+    if (
+      raw.typ !== "lifetime_finalise" ||
+      typeof raw.email !== "string" ||
+      typeof raw.userId !== "string" ||
+      typeof raw.exp !== "number"
+    ) {
       return null;
     }
     if (raw.exp < Date.now()) return null;

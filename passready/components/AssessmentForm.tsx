@@ -131,7 +131,13 @@ function SectionHeader({
   );
 }
 
-export function AssessmentForm() {
+export type AssessmentFormProps = {
+  /** When set (signed-in Prep2Pass account email), email is read-only */
+  lockedAccountEmail?: string;
+  prefilledFullName?: string;
+};
+
+export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: AssessmentFormProps = {}) {
   const router = useRouter();
   const submitLock = useRef(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -149,8 +155,8 @@ export function AssessmentForm() {
   } = useForm<AssessmentFormValues>({
     resolver: zodResolver(assessmentSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
+      fullName: prefilledFullName ?? "",
+      email: lockedAccountEmail ?? "",
       lessonsTaken: "",
       testBooked: undefined,
       testDate: "",
@@ -395,7 +401,7 @@ export function AssessmentForm() {
         <SectionHeader
           step={1}
           title="About you"
-          hint="Used on-device for now; checkout email can power delivery of your Premium TestReady Score Report later."
+          hint="We use this to personalise your report and keep it saved securely to your Prep2Pass account."
         />
         <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div className="sm:col-span-1">
@@ -412,12 +418,17 @@ export function AssessmentForm() {
             <input
               id="email"
               type="email"
-              className={fieldClass}
+              className={lockedAccountEmail ? fieldDisabledClass : fieldClass}
               autoComplete="email"
               inputMode="email"
+              readOnly={Boolean(lockedAccountEmail)}
               {...register("email")}
             />
-            <p className={hintClass}>Used for report delivery after checkout. Not shared beyond Prep2Pass in this MVP.</p>
+            <p className={hintClass}>
+              {lockedAccountEmail
+                ? "This is your Prep2Pass account email. It stays on every report you save."
+                : "Used for secure storage on your Prep2Pass account after checkout."}
+            </p>
             {errors.email ? <p className={errorClass}>{errors.email.message}</p> : null}
           </div>
         </div>

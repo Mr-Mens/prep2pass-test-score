@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { createReportAccessToken } from "@/lib/server/report-access-token";
-import { getLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import {
-  countReportsByEmail,
-  listScoreHistoryByEmail,
+  countReportsByUserId,
+  listScoreHistoryByUserId,
 } from "@/lib/server/repositories/reports-repository";
+import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
-import { progressRequestSchema } from "@/lib/validation";
+import { entitlementLookupRequestSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
@@ -21,19 +21,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    let body: unknown;
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
+    }
+
     try {
-      body = await request.json();
+      const body = await request.json();
+      entitlementLookupRequestSchema.parse(body ?? {});
     } catch {
-      return jsonError(400, "INVALID_JSON", "Request body must be valid JSON");
+      return jsonError(400, "VALIDATION_ERROR", "Invalid request shape");
     }
-
-    const parsed = progressRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return jsonError(400, "VALIDATION_ERROR", "Invalid email");
-    }
-
-    const email = parsed.data.email;
 
     if (!isSupabaseConfigured()) {
       return NextResponse.json({
@@ -44,8 +42,8 @@ export async function POST(request: Request) {
       });
     }
 
-    const reportCount = await countReportsByEmail(email);
-    const lifetime = await getLifetimeAccess(email);
+    const reportCount = await countReportsByUserId(auth.userId);
+    const lifetime = await getLifetimeAccessByUserId(auth.userId);
 
     if (!lifetime) {
       return NextResponse.json({
@@ -56,7 +54,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const rows = await listScoreHistoryByEmail(email);
+    const rows = await listScoreHistoryByUserId(auth.userId);
     const entries = rows.map((r) => ({
       reportId: r.id,
       recordedAt: r.created_at,
@@ -64,19 +62,11 @@ export async function POST(request: Request) {
       label: r.readiness_label,
     }));
 
-    let viewToken: string | undefined;
-    try {
-      viewToken = createReportAccessToken(email);
-    } catch (err) {
-      console.warn("[progress] could not mint viewToken", err);
-    }
-
     return NextResponse.json({
       success: true as const,
       hasLifetimeAccess: true,
       reportCount,
       entries,
-      ...(viewToken ? { viewToken } : {}),
     });
   } catch (e) {
     console.error("[progress]", e);

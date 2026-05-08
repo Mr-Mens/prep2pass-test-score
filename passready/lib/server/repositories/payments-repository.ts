@@ -15,11 +15,19 @@ type UpsertPaymentInput = {
   customerEmail: string | null;
   fullName: string | null;
   rawMetadata: Record<string, unknown> | null;
+  userId: string | null;
 };
 
 function asRecord(value: Stripe.Metadata | null | undefined): Record<string, unknown> | null {
   if (!value) return null;
   return Object.fromEntries(Object.entries(value));
+}
+
+function metadataUserId(value: Stripe.Metadata | null): string | null {
+  if (!value || typeof value !== "object") return null;
+  const meta = value as Record<string, string>;
+  const v = meta.supabase_user_id;
+  return typeof v === "string" && v.trim() !== "" ? v.trim() : null;
 }
 
 export function fromCheckoutSessionToPaymentInput(session: Stripe.Checkout.Session): UpsertPaymentInput {
@@ -33,6 +41,7 @@ export function fromCheckoutSessionToPaymentInput(session: Stripe.Checkout.Sessi
     customerEmail: session.customer_email ? normalizeEmail(session.customer_email) : null,
     fullName: session.customer_details?.name ?? null,
     rawMetadata: asRecord(session.metadata),
+    userId: metadataUserId(session.metadata ?? null),
   };
 }
 
@@ -47,6 +56,7 @@ export async function upsertPaymentFromCheckoutSession(input: UpsertPaymentInput
     customer_email: input.customerEmail,
     full_name: input.fullName,
     raw_metadata: input.rawMetadata,
+    user_id: input.userId,
   };
 
   const { data, error } = await supabase

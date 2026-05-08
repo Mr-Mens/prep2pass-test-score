@@ -8,6 +8,7 @@ import {
 export async function requestVerifyCheckoutSession(sessionId: string): Promise<VerifyCheckoutSessionSuccess> {
   const res = await fetch("/api/checkout/verify-session", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ sessionId }),
   });

@@ -2,8 +2,8 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-import { normalizeEmail } from "@/lib/normalize-email";
-import { getLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
+import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { upgradeCheckoutRequestSchema } from "@/lib/validation";
@@ -20,22 +20,20 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    let body: unknown;
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
+    }
+
     try {
-      body = await request.json();
+      const body = await request.json();
+      upgradeCheckoutRequestSchema.parse(body ?? {});
     } catch {
-      return jsonError(400, "INVALID_JSON", "Request body must be valid JSON");
+      return jsonError(400, "VALIDATION_ERROR", "Invalid request shape");
     }
-
-    const parsed = upgradeCheckoutRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return jsonError(400, "VALIDATION_ERROR", "Upgrade payload failed validation");
-    }
-
-    const email = normalizeEmail(parsed.data.email);
 
     if (isSupabaseConfigured()) {
-      const already = await getLifetimeAccess(email);
+      const already = await getLifetimeAccessByUserId(auth.userId);
       if (already) {
         return NextResponse.json({ success: true as const, alreadyHasLifetime: true as const });
       }
@@ -43,9 +41,10 @@ export async function POST(request: Request) {
 
     const session = await createCheckoutSession({
       assessmentId: randomUUID(),
-      email,
+      email: auth.email,
       weakAreaCount: 0,
       tier: "lifetime",
+      userId: auth.userId,
       flowMode: "upgrade",
     });
 
@@ -70,10 +69,7 @@ export async function POST(request: Request) {
     }
     if (error instanceof Error) {
       console.error("[checkout:upgrade] error", { message: error.message });
-      if (
-        error.message.includes("STRIPE_PRICE_ID") ||
-        error.message.includes("STRIPE_SECRET_KEY")
-      ) {
+      if (error.message.includes("STRIPE_PRICE_ID") || error.message.includes("STRIPE_SECRET_KEY")) {
         return jsonError(500, "CHECKOUT_CONFIG_ERROR", "Upgrade checkout is temporarily unavailable.");
       }
     }

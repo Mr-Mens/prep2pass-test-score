@@ -367,13 +367,8 @@ export const createCheckoutSessionSuccessSchema = z.discriminatedUnion("skipChec
 ]);
 export type CreateCheckoutSessionSuccess = z.infer<typeof createCheckoutSessionSuccessSchema>;
 
-export const entitlementLookupRequestSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email()
-    .transform((s) => s.toLowerCase()),
-});
+/** Authenticated endpoints that used to accept email now use the cookie session only. */
+export const entitlementLookupRequestSchema = z.object({}).strict();
 
 export const entitlementLookupSuccessSchema = z.object({
   success: z.literal(true),
@@ -383,14 +378,9 @@ export const entitlementLookupSuccessSchema = z.object({
 });
 export type EntitlementLookupSuccess = z.infer<typeof entitlementLookupSuccessSchema>;
 
-export const upgradeCheckoutRequestSchema = z.object({
-  fullName: z.string().trim().min(2, "Enter your name").max(120, "Name is too long"),
-  email: z
-    .string()
-    .trim()
-    .email("Enter a valid email address")
-    .transform((s) => s.toLowerCase()),
-});
+/** Upgrade checkout is started only for the verified signed-in session. */
+export const upgradeCheckoutRequestSchema = z.object({}).strict();
+
 export type UpgradeCheckoutRequest = z.infer<typeof upgradeCheckoutRequestSchema>;
 
 export const upgradeCheckoutSuccessSchema = z.discriminatedUnion("alreadyHasLifetime", [
@@ -415,7 +405,6 @@ export type ConfirmUpgradeRequest = z.infer<typeof confirmUpgradeRequestSchema>;
 export const confirmUpgradeSuccessSchema = z.object({
   success: z.literal(true),
   hasLifetimeAccess: z.literal(true),
-  email: z.string().email(),
 });
 export type ConfirmUpgradeSuccess = z.infer<typeof confirmUpgradeSuccessSchema>;
 
@@ -476,6 +465,7 @@ export const reportDbRecordSchema = z.object({
   updated_at: z.string(),
   stripe_session_id: z.string(),
   payment_status: z.string(),
+  user_id: z.string().uuid().nullable().optional(),
   full_name: z.string(),
   email: z.string(),
   lessons_taken: z.number().int(),
@@ -513,6 +503,7 @@ export const paymentDbRecordSchema = z.object({
   customer_email: z.string().nullable(),
   full_name: z.string().nullable(),
   raw_metadata: z.record(z.unknown()).nullable(),
+  user_id: z.string().uuid().nullable().optional(),
 });
 export type PaymentDbRecord = z.infer<typeof paymentDbRecordSchema>;
 

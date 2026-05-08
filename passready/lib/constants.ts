@@ -4,6 +4,13 @@ export const SITE = {
   locale: "en-GB",
 } as const;
 
+/** Full-wordmark asset (gauge + lettering); served from `/public`. */
+export const BRAND_LOGO = {
+  src: "/brand/test-ready-score-logo.png",
+  width: 1024,
+  height: 682,
+} as const;
+
 /** One-off vs lifetime TestReady Score unlock (Stripe Price IDs map to these in env). */
 export const PRICING = {
   single: { display: "£3.99", label: "One-off report", hint: "Single Premium report for this assessment" },

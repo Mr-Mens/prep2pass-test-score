@@ -1,52 +1,48 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/Button";
 import { requestUpgradeCheckout } from "@/lib/api/upgrade-to-lifetime";
 import { PRICING } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
-import { loadPersistedRecord } from "@/lib/storage";
+
+type Account = { email: string } | null;
 
 type Status = "ready" | "submitting" | "error";
 
-const fieldClass =
-  "mt-1 block min-h-[50px] w-full rounded-xl border border-brand-200 bg-white px-4 py-3.5 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200";
-const labelClass = "text-sm font-medium text-brand-900";
-
 export function UpgradeFlow() {
   const router = useRouter();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [account, setAccount] = useState<Account>(null);
   const [status, setStatus] = useState<Status>("ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const record = loadPersistedRecord();
-    if (!record) return;
-    if (record.version === 2) {
-      setFullName(record.assessment.fullName ?? "");
-      setEmail(record.assessment.email ?? "");
-    } else if (record.version === 1) {
-      setFullName(record.data.fullName ?? "");
-      setEmail(record.data.email ?? "");
-    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        const raw = (await res.json()) as { user?: { email?: string } | null };
+        if (!cancelled && raw.user?.email) {
+          setAccount({ email: raw.user.email });
+        }
+      } catch {
+        /* silent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const valid = useMemo(() => {
-    if (!fullName.trim() || fullName.trim().length < 2) return false;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return false;
-    return true;
-  }, [fullName, email]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid || status === "submitting") return;
+    if (status === "submitting") return;
     setStatus("submitting");
     setErrorMessage(null);
     try {
-      const res = await requestUpgradeCheckout({ fullName: fullName.trim(), email: email.trim() });
+      const res = await requestUpgradeCheckout();
       if (res.alreadyHasLifetime) {
         router.replace("/results?upgrade=already");
         return;
@@ -63,16 +59,24 @@ export function UpgradeFlow() {
     <div className="rounded-2xl border-2 border-teal-300/80 bg-gradient-to-br from-teal-50/95 via-white to-brand-50/60 p-5 shadow-card ring-1 ring-teal-600/[0.07] sm:p-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">Lifetime upgrade</p>
       <h1 className="mt-2 font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">
-        Unlock unlimited TestReady reports
+        Unlock unlimited Premium reports
       </h1>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-brand-700">
-        One payment of {PRICING.lifetime.display} adds lifetime access to your email. Generate fresh Premium reports
-        whenever you retake the assessment, plus the progress timeline on your results page.
+        One payment of {PRICING.lifetime.display} adds lifetime access to your Prep2Pass account. Generate fresh Premium
+        reports whenever you retake the assessment, plus the progress timeline on your results page.
       </p>
+
+      {account ? (
+        <p className="mt-4 rounded-xl border border-brand-100 bg-white/80 px-4 py-3 text-sm text-brand-800">
+          Signed in as <span className="font-semibold">{account.email}</span>
+        </p>
+      ) : (
+        <p className="mt-4 text-sm text-brand-600">Loading your account details…</p>
+      )}
 
       <ul className="mt-5 space-y-2 text-sm leading-relaxed text-brand-800">
         {[
-          "Unlimited Premium TestReady reports",
+          "Unlimited Premium Test Ready Score reports",
           "Score history with date-stamped progress",
           "No subscription, no extra charges",
         ].map((line) => (
@@ -86,36 +90,6 @@ export function UpgradeFlow() {
       </ul>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <div>
-          <label className={labelClass} htmlFor="upgrade-name">
-            Full name
-          </label>
-          <input
-            id="upgrade-name"
-            className={fieldClass}
-            autoComplete="name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="upgrade-email">
-            Email
-          </label>
-          <input
-            id="upgrade-email"
-            type="email"
-            className={fieldClass}
-            autoComplete="email"
-            inputMode="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <p className="mt-1 text-xs leading-relaxed text-brand-500">
-            Lifetime access is granted to this email. Use the same email you used for your report.
-          </p>
-        </div>
-
         {errorMessage ? (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
             {errorMessage}
@@ -126,7 +100,7 @@ export function UpgradeFlow() {
           <Button
             type="submit"
             variant="conversion"
-            disabled={!valid || status === "submitting"}
+            disabled={status === "submitting"}
             className="w-full min-h-[52px] sm:w-auto sm:min-w-[18rem]"
           >
             {status === "submitting" ? "Starting checkout..." : `Pay ${PRICING.lifetime.display} and unlock`}
@@ -136,7 +110,7 @@ export function UpgradeFlow() {
           </Button>
         </div>
         <p className="text-xs leading-relaxed text-brand-500">
-          Secure payment powered by Stripe. No subscription. No hidden charges.
+          Secure payment powered by Stripe. No subscription. Your reports stay linked to your Prep2Pass account.
         </p>
       </form>
     </div>

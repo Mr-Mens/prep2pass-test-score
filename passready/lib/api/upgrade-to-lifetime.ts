@@ -3,17 +3,15 @@ import {
   confirmUpgradeSuccessSchema,
   upgradeCheckoutSuccessSchema,
   type ConfirmUpgradeSuccess,
-  type UpgradeCheckoutRequest,
   type UpgradeCheckoutSuccess,
 } from "@/lib/validation";
 
-export async function requestUpgradeCheckout(
-  input: UpgradeCheckoutRequest,
-): Promise<UpgradeCheckoutSuccess> {
+export async function requestUpgradeCheckout(): Promise<UpgradeCheckoutSuccess> {
   const res = await fetch("/api/checkout/upgrade", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify({}),
   });
 
   let raw: unknown;
@@ -35,6 +33,7 @@ export async function requestUpgradeCheckout(
 export async function requestConfirmUpgrade(sessionId: string): Promise<ConfirmUpgradeSuccess> {
   const res = await fetch("/api/entitlements/confirm-upgrade", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ sessionId }),
   });

@@ -70,9 +70,8 @@ export function LandingPricing() {
       </div>
 
       <p className="text-center text-xs leading-relaxed text-brand-600 lg:col-span-2">
-        Your report is linked to your secure account so only you can access it.
-        {" · "}
-        Payments are processed securely through Stripe.
+        Secure account · Your Premium reports remain private inside Prep2Pass and are not reopened by stray public links ·
+        Stripe handles card payments securely.
       </p>
     </div>
   );

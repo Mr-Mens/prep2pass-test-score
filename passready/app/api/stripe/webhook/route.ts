@@ -2,8 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
-import { normalizeEmail } from "@/lib/normalize-email";
-import { setLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
+import { setLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import {
   fromCheckoutSessionToPaymentInput,
   upsertPaymentFromCheckoutSession,
@@ -31,25 +30,29 @@ export async function POST(request: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     try {
       await upsertPaymentFromCheckoutSession(fromCheckoutSessionToPaymentInput(session));
+
       console.log("stripe_webhook_checkout_completed", {
         sessionId: session.id,
         paymentStatus: session.payment_status,
       });
 
       const tier = session.metadata?.tier;
-      const emailRaw = session.customer_email ?? session.customer_details?.email;
-      if (session.payment_status === "paid" && tier === "lifetime" && emailRaw) {
+      const userIdRaw = session.metadata?.supabase_user_id;
+      const userId = typeof userIdRaw === "string" && userIdRaw.trim().length ? userIdRaw.trim() : null;
+
+      if (session.payment_status === "paid" && tier === "lifetime" && userId) {
         try {
-          await setLifetimeAccess(normalizeEmail(emailRaw));
+          await setLifetimeAccessByUserId(userId);
         } catch (e) {
           console.error("stripe_webhook_lifetime_entitlement_failed", {
             sessionId: session.id,
             message: e instanceof Error ? e.message : String(e),
           });
         }
+      } else if (session.payment_status === "paid" && tier === "lifetime" && !userId) {
+        console.warn("stripe_webhook_lifetime_missing_supabase_user", { sessionId: session.id });
       }
     } catch {
-      // Keep webhook resilient even if persistence is temporarily unavailable.
       console.error("stripe_webhook_payment_upsert_failed", { sessionId: session.id });
     }
   }

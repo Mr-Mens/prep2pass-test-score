@@ -1,11 +1,12 @@
 import { ApiRequestError } from "@/lib/errors";
 import { progressSuccessSchema, type ProgressSuccess } from "@/lib/validation";
 
-export async function requestProgress(email: string): Promise<ProgressSuccess> {
+export async function requestProgress(): Promise<ProgressSuccess> {
   const res = await fetch("/api/progress", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({}),
   });
 
   let raw: unknown;

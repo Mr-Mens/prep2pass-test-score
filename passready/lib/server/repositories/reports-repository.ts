@@ -9,6 +9,7 @@ function withMigratedWeakAreas(row: ReportDbRecord): ReportDbRecord {
 }
 
 type CreateReportInput = {
+  userId: string;
   stripeSessionId: string;
   paymentStatus: string;
   assessment: AssessmentPayload;
@@ -18,6 +19,7 @@ type CreateReportInput = {
 function toDbPayload(input: CreateReportInput) {
   const { assessment, result } = input;
   return {
+    user_id: input.userId,
     stripe_session_id: input.stripeSessionId,
     payment_status: input.paymentStatus,
     full_name: assessment.fullName,
@@ -127,6 +129,18 @@ export async function getReportById(id: string): Promise<ReportDbRecord | null> 
   return data ? withMigratedWeakAreas(data as ReportDbRecord) : null;
 }
 
+export async function getReportByIdForUser(reportId: string, userId: string): Promise<ReportDbRecord | null> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select("*")
+    .eq("id", reportId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error("Failed to fetch report");
+  return data ? withMigratedWeakAreas(data as ReportDbRecord) : null;
+}
+
 export type ScoreHistoryRow = {
   id: string;
   created_at: string;
@@ -135,54 +149,54 @@ export type ScoreHistoryRow = {
 };
 
 /** Ordered oldest → newest for progress charts. */
-export async function listScoreHistoryByEmail(email: string): Promise<ScoreHistoryRow[]> {
+export async function listScoreHistoryByUserId(userId: string): Promise<ScoreHistoryRow[]> {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("reports")
     .select("id, created_at, readiness_score, readiness_label")
-    .eq("email", email)
+    .eq("user_id", userId)
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("[reports] listScoreHistoryByEmail failed", error.message);
+    console.error("[reports] listScoreHistoryByUserId failed", error.message);
     throw new Error("Failed to fetch score history");
   }
   return (data as ScoreHistoryRow[]) ?? [];
 }
 
-export async function countReportsByEmail(email: string): Promise<number> {
+export async function countReportsByUserId(userId: string): Promise<number> {
   const supabase = getSupabaseServerClient();
   const { count, error } = await supabase
     .from("reports")
     .select("id", { count: "exact", head: true })
-    .eq("email", email);
+    .eq("user_id", userId);
 
   if (error) throw new Error("Failed to count reports");
   return count ?? 0;
 }
 
-export async function getReportsByEmail(email: string): Promise<ReportDbRecord[]> {
+export async function getReportsByUserId(userId: string): Promise<ReportDbRecord[]> {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("reports")
     .select("*")
-    .eq("email", email)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (error) throw new Error("Failed to fetch reports by email");
+  if (error) throw new Error("Failed to fetch reports for user");
   return ((data as ReportDbRecord[]) ?? []).map(withMigratedWeakAreas);
 }
 
-export async function getReportSummaryByEmail(email: string): Promise<ReportSummaryItem[]> {
+export async function getReportSummaryByUserId(userId: string): Promise<ReportSummaryItem[]> {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("reports")
     .select("id,created_at,readiness_score,readiness_label,report_source")
-    .eq("email", email)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (error) throw new Error("Failed to fetch report summary by email");
+  if (error) throw new Error("Failed to fetch report summary for user");
   return (data as ReportSummaryItem[]) ?? [];
 }

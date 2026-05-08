@@ -3,8 +3,9 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { normalizeEmail } from "@/lib/normalize-email";
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { signLifetimeFinaliseToken } from "@/lib/server/entitlement-token";
-import { getLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
+import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createCheckoutSessionRequestSchema } from "@/lib/validation";
@@ -21,6 +22,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
+    }
+
     let body: unknown;
     try {
       body = await request.json();
@@ -33,14 +39,18 @@ export async function POST(request: Request) {
       return jsonError(400, "VALIDATION_ERROR", "Checkout payload failed validation");
     }
 
-    const emailNormalized = normalizeEmail(parsed.data.assessment.email);
+    const assessmentEmail = normalizeEmail(parsed.data.assessment.email);
+    if (assessmentEmail !== auth.email) {
+      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Prep2Pass account.");
+    }
+
     const supabaseOk = isSupabaseConfigured();
 
     if (supabaseOk) {
-      const lifetime = await getLifetimeAccess(emailNormalized);
+      const lifetime = await getLifetimeAccessByUserId(auth.userId);
       if (lifetime) {
         try {
-          const entitlementToken = signLifetimeFinaliseToken(emailNormalized);
+          const entitlementToken = signLifetimeFinaliseToken(auth.email, auth.userId);
           return NextResponse.json({
             success: true as const,
             skipCheckout: true as const,
@@ -63,6 +73,7 @@ export async function POST(request: Request) {
       email: parsed.data.assessment.email,
       weakAreaCount: parsed.data.assessment.weakAreas.length,
       tier: parsed.data.tier,
+      userId: auth.userId,
     });
 
     if (!session.url || !session.id) {

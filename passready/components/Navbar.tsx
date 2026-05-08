@@ -1,17 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { SITE } from "@/lib/constants";
+import { BRAND_LOGO, SITE } from "@/lib/constants";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { Button } from "./Button";
 
 const links = [
   { href: "/", label: "Home" },
   { href: "/sample-report", label: "Sample report" },
-  { href: "/report-lookup", label: "My reports" },
+  { href: "/my-reports", label: "My reports" },
 ] as const;
 
 const mobileNavItemBase =
@@ -29,30 +31,123 @@ function mobileNavCtaClass(active: boolean) {
   }`;
 }
 
+type MePayload = {
+  user: {
+    email: string;
+    emailConfirmedAt: string | null;
+    lifetimeAccess?: boolean;
+  } | null;
+};
+
+type NavAuth =
+  /** Session / entitlement lookup still in flight */
+  | { phase: "loading" }
+  /** Signed out or email unconfirmed — show public CTAs only */
+  | { phase: "guest" }
+  /** Verified email — show signed-in shortcuts */
+  | { phase: "member"; lifetime: boolean };
+
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [navAuth, setNavAuth] = useState<NavAuth>({ phase: "loading" });
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const raw = (await res.json()) as MePayload;
+      const u = raw.user;
+      if (!u?.emailConfirmedAt) {
+        setNavAuth({ phase: "guest" });
+        return;
+      }
+      setNavAuth({ phase: "member", lifetime: Boolean(u.lifetimeAccess) });
+    } catch {
+      setNavAuth({ phase: "guest" });
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [pathname, refresh]);
+
+  async function signOut() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    setNavAuth({ phase: "guest" });
+    setOpen(false);
+    window.location.assign("/");
+  }
+
+  function AuthDesktop() {
+    if (navAuth.phase === "loading") {
+      return <div className="ml-2 h-11 w-24 animate-pulse rounded-xl bg-brand-50" aria-hidden />;
+    }
+    if (navAuth.phase === "guest") {
+      return (
+        <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+              pathname.startsWith("/login") ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
+            }`}
+          >
+            Sign In
+          </Link>
+          <Button href="/assessment" className="!min-h-[44px] !px-4 !py-2.5 !text-sm">
+            Get My Test Ready Score
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-2">
+        {navAuth.lifetime ? (
+          <Link
+            href="/dashboard"
+            className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+              pathname.startsWith("/dashboard") ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
+            }`}
+          >
+            Dashboard
+          </Link>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="rounded-xl px-3 py-2.5 text-sm font-semibold text-brand-900 hover:bg-brand-50"
+        >
+          Sign Out
+        </button>
+      </div>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-brand-200/60 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:border-brand-100/80 md:shadow-none">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex min-h-[44px] min-w-0 items-center gap-2 rounded-xl pr-2"
+          className="flex min-h-[44px] min-w-0 max-w-[min(280px,calc(100vw-9rem))] items-center rounded-xl py-1 pr-2"
           onClick={() => setOpen(false)}
-          aria-label={`${SITE.name}, home`}
+          aria-label={`Test Ready Score by ${SITE.name}, home`}
         >
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-950 text-sm font-bold text-white shadow-sm">
-            P2
-          </span>
-          <span className="font-heading text-sm font-semibold tracking-tight text-brand-950 sm:text-base">
-            {SITE.name}
-          </span>
+          <Image
+            src={BRAND_LOGO.src}
+            alt=""
+            width={BRAND_LOGO.width}
+            height={BRAND_LOGO.height}
+            sizes="260px"
+            className="h-9 w-auto object-contain object-left sm:h-10"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
           {links.map((l) => {
-            const active = pathname === l.href;
+            const active =
+              pathname === l.href ||
+              (l.href === "/my-reports" && (pathname.startsWith("/my-reports") || pathname.startsWith("/reports")));
             return (
               <Link
                 key={l.href}
@@ -65,12 +160,9 @@ export function Navbar() {
               </Link>
             );
           })}
-          <Button
-            href="/assessment"
-            className="ml-2 !min-h-[44px] !px-4 !py-2.5 !text-sm"
-          >
-            Get My Test Ready Score
-          </Button>
+          <div className="ml-2">
+            <AuthDesktop />
+          </div>
         </nav>
 
         <div className="flex items-center md:hidden">
@@ -96,6 +188,43 @@ export function Navbar() {
           style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         >
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-3 py-3 sm:px-6" aria-label="Mobile primary">
+            {navAuth.phase === "loading" ? (
+              <div className={`${mobileNavItemBase} h-12 animate-pulse rounded-xl bg-brand-50`} aria-hidden />
+            ) : navAuth.phase === "member" ? (
+              <button
+                type="button"
+                className={`${mobileNavItemBase} font-semibold text-brand-900 hover:bg-brand-50`}
+                onClick={() => void signOut()}
+              >
+                Sign Out
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={mobileNavLinkClass(pathname.startsWith("/login"))}
+                  onClick={() => setOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className={mobileNavLinkClass(pathname.startsWith("/signup"))}
+                  onClick={() => setOpen(false)}
+                >
+                  Create account
+                </Link>
+              </>
+            )}
+            {navAuth.phase === "member" && navAuth.lifetime ? (
+              <Link
+                href="/dashboard"
+                className={mobileNavLinkClass(pathname.startsWith("/dashboard"))}
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+            ) : null}
             <Link
               href="/assessment"
               className={mobileNavCtaClass(pathname === "/assessment")}
@@ -104,7 +233,9 @@ export function Navbar() {
               Get My Test Ready Score
             </Link>
             {links.map((l) => {
-              const active = pathname === l.href;
+              const active =
+                pathname === l.href ||
+                (l.href === "/my-reports" && pathname.startsWith("/reports"));
               return (
                 <Link
                   key={l.href}

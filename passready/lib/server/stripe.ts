@@ -57,6 +57,8 @@ export async function createCheckoutSession(params: {
   email?: string;
   weakAreaCount: number;
   tier: CheckoutPriceTier;
+  /** Signed-in Prep2Pass user (Supabase auth id). Wired into Stripe metadata for secure fulfilment. */
+  userId?: string;
   /** "upgrade" = lifetime entitlement only, no new report. Defaults to "report". */
   flowMode?: CheckoutFlowMode;
 }) {
@@ -82,6 +84,7 @@ export async function createCheckoutSession(params: {
       weakAreaCount: String(params.weakAreaCount),
       tier: params.tier,
       upgradeOnly: flowMode === "upgrade" ? "true" : "false",
+      ...(params.userId ? { supabase_user_id: params.userId } : {}),
     },
   });
 

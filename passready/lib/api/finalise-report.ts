@@ -18,6 +18,7 @@ export async function requestFinaliseReport(
 
   const res = await fetch("/api/reports/finalise", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });

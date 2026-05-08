@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getEntitlementLookup } from "@/lib/server/repositories/entitlements-repository";
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
+import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { entitlementLookupRequestSchema } from "@/lib/validation";
 
@@ -16,16 +17,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonError(400, "INVALID_JSON", "Request body must be valid JSON");
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
     }
 
-    const parsed = entitlementLookupRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return jsonError(400, "VALIDATION_ERROR", "Invalid email");
+    try {
+      const body = await request.json();
+      entitlementLookupRequestSchema.parse(body ?? {});
+    } catch {
+      return jsonError(400, "VALIDATION_ERROR", "Invalid request shape");
     }
 
     if (!isSupabaseConfigured()) {
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const summary = await getEntitlementLookup(parsed.data.email);
+    const summary = await getEntitlementLookupForUser(auth.userId);
     return NextResponse.json({ success: true as const, ...summary });
   } catch (e) {
     console.error("[entitlements:lookup]", e);

@@ -148,11 +148,10 @@ export function ResultsView() {
       setProgressUi({ kind: "idle" });
       return;
     }
-    const email = state.data.assessment.email;
     let cancelled = false;
     setProgressUi({ kind: "loading" });
 
-    requestProgress(email)
+    requestProgress()
       .then((data) => {
         if (cancelled) return;
         setProgressUi({ kind: "ready", data });
@@ -160,7 +159,7 @@ export function ResultsView() {
       .catch(async () => {
         if (cancelled) return;
         try {
-          const fallback = await requestEntitlementLookup(email);
+          const fallback = await requestEntitlementLookup();
           if (cancelled) return;
           const synthetic: ProgressSuccess = {
             success: true,
@@ -343,7 +342,6 @@ export function ResultsView() {
               hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
               entries={progressUi.data.entries}
               currentScore={report.readinessScore}
-              viewToken={progressUi.data.viewToken}
             />
           )}
 

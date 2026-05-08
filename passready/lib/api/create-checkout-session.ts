@@ -13,6 +13,7 @@ export async function requestCheckoutSession(
 ): Promise<CreateCheckoutSessionSuccess> {
   const res = await fetch("/api/checkout/create-session", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ assessment, tier }),
   });

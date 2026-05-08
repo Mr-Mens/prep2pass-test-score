@@ -4,11 +4,12 @@ import {
   type EntitlementLookupSuccess,
 } from "@/lib/validation";
 
-export async function requestEntitlementLookup(email: string): Promise<EntitlementLookupSuccess> {
+export async function requestEntitlementLookup(): Promise<EntitlementLookupSuccess> {
   const res = await fetch("/api/entitlements/lookup", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({}),
   });
 
   let raw: unknown;

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
+import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { retrieveCheckoutSession } from "@/lib/server/stripe";
 import { verifyCheckoutSessionRequestSchema } from "@/lib/validation";
 
@@ -15,6 +17,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireVerifiedApiUser();
+    if (!auth.ok) {
+      return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
+    }
+
     let body: unknown;
     try {
       body = await request.json();
@@ -28,6 +35,14 @@ export async function POST(request: Request) {
     }
 
     const session = await retrieveCheckoutSession(parsed.data.sessionId);
+
+    const ownerIdRaw = session.metadata?.supabase_user_id;
+    const ownerId = typeof ownerIdRaw === "string" && ownerIdRaw.trim().length ? ownerIdRaw.trim() : null;
+
+    if (!ownerId || ownerId !== auth.userId) {
+      return jsonError(403, "CHECKOUT_OWNERSHIP", "This checkout is not tied to your account.");
+    }
+
     const paid = session.payment_status === "paid";
 
     return NextResponse.json({
@@ -35,7 +50,10 @@ export async function POST(request: Request) {
       paid,
       sessionId: session.id,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      return jsonError(502, "STRIPE_ERROR", "Unable to verify payment with Stripe.");
+    }
     return jsonError(500, "INTERNAL_ERROR", "Unable to verify checkout session");
   }
 }

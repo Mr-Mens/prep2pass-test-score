@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import { AssessmentForm } from "@/components/AssessmentForm";
 import { Section } from "@/components/Section";
 import { PRICING } from "@/lib/constants";
+import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "TestReady Score Assessment",
+  title: "Test Ready Score Assessment",
   description:
-    "Complete your TestReady Score Assessment, then pay once for your full Premium report: score, risks, next steps, coach note, and a rough lesson-hour band. Created by a DVSA-approved driving instructor.",
+    "Complete your Test Ready Score assessment, then checkout for your full Premium report: score, risks, next steps, coach note, and lesson-hour band. Created by a DVSA-approved driving instructor.",
 };
 
 const VALUE_BULLETS = [
@@ -18,15 +19,32 @@ const VALUE_BULLETS = [
   "A realistic band for how many more lesson hours you may need before test readiness",
 ] as const;
 
-export default function AssessmentPage() {
+export default async function AssessmentPage() {
+  const sessionUser = await getServerAuthUser();
+  let firstNameHint = "";
+  if (sessionUser) {
+    const sb = createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    const md = user?.user_metadata as Record<string, unknown> | undefined;
+    firstNameHint =
+      (typeof md?.first_name === "string" && md.first_name.trim()) ||
+      (typeof md?.firstName === "string" && md.firstName.trim()) ||
+      "";
+  }
+
   return (
     <Section className="max-md:bg-transparent bg-brand-50" contentClassName="max-w-3xl">
       <div className="mb-10 rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.05] sm:mb-12 sm:p-8 sm:shadow-sm sm:ring-0">
         <h1 className="text-center font-heading text-2xl font-semibold leading-tight tracking-tight text-brand-950 sm:text-left sm:text-3xl">
-          Start your TestReady Score
+          Start your Test Ready Score assessment
         </h1>
         <p className="mt-3 text-center text-sm leading-relaxed text-brand-600 sm:text-left sm:text-base">
-          Takes less than 60 seconds. No account needed.
+          Secure account · Progress saved · Instant access once checkout clears.
+        </p>
+        <p className="mt-2 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
+          Your reports are saved securely to your account so only you can access them.
         </p>
         <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-brand-800">
           {VALUE_BULLETS.map((line) => (
@@ -43,7 +61,7 @@ export default function AssessmentPage() {
           including lesson-hour estimate
         </p>
       </div>
-      <AssessmentForm />
+      <AssessmentForm lockedAccountEmail={sessionUser?.email} prefilledFullName={firstNameHint || undefined} />
     </Section>
   );
 }

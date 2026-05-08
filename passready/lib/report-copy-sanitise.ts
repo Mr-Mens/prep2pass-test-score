@@ -1,7 +1,7 @@
 import type { MockReadinessResult } from "./validation";
 
 /**
- * Learner-facing copy: no em dash (—) or en dash (–); keeps trust tone consistent with ADI-led guidance.
+ * Learner-facing copy: no em dash or en dash characters; keeps trust tone consistent with ADI-led guidance.
  */
 function fixLearnerPunctuation(t: string): string {
   return t

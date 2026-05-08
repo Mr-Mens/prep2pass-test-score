@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { requestEntitlementLookup } from "@/lib/api/entitlement-lookup";
 import { requestProgress } from "@/lib/api/progress";
@@ -11,7 +12,7 @@ import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBloc
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
-import { SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { PRICING, SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { reportCopySalt } from "@/lib/deterministic-report-copy";
@@ -64,8 +65,22 @@ type ProgressUiState =
   | { kind: "off" };
 
 export function ResultsView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [state, setState] = useState<ViewState>({ status: "loading" });
   const [progressUi, setProgressUi] = useState<ProgressUiState>({ kind: "idle" });
+  const [upgradeNotice, setUpgradeNotice] = useState<"success" | "already" | null>(null);
+
+  useEffect(() => {
+    const flag = searchParams.get("upgrade");
+    if (flag === "success" || flag === "already") {
+      setUpgradeNotice(flag);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("upgrade");
+      const qs = params.toString();
+      router.replace(qs ? `/results?${qs}` : "/results");
+    }
+  }, [router, searchParams]);
 
   const upgradeLegacyRecord = useCallback(async (legacy: StoredAssessmentV1) => {
     setState({ status: "loading" });
@@ -275,6 +290,22 @@ export function ResultsView() {
       subtitle="Test prep guidance based on your answers, guided by an ADI. Use it with your instructor."
     >
       <div className="space-y-5 pb-32 sm:space-y-10 sm:pb-0 print:space-y-6 md:pb-0">
+        {upgradeNotice ? (
+          <div
+            role="status"
+            className="rounded-2xl border border-teal-300/80 bg-gradient-to-br from-teal-50 to-white px-5 py-4 shadow-card ring-1 ring-teal-600/10 print:hidden"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
+              {upgradeNotice === "success" ? "Lifetime access activated" : "Lifetime already active"}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-brand-900">
+              {upgradeNotice === "success"
+                ? "Thanks for the upgrade. You can now generate unlimited reports and your progress will appear below."
+                : "This email already has lifetime access. Retake the assessment any time to add a new report to your timeline."}
+            </p>
+          </div>
+        ) : null}
+
         {/* A: score summary */}
         <div className={`${reportCard} print:break-inside-avoid`}>
           <p className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-500/90 sm:text-left">
@@ -312,6 +343,7 @@ export function ResultsView() {
               hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
               entries={progressUi.data.entries}
               currentScore={report.readinessScore}
+              viewToken={progressUi.data.viewToken}
             />
           )}
 
@@ -356,18 +388,31 @@ export function ResultsView() {
           </ol>
         </div>
 
-        {/* D: lesson guidance */}
-        <div className={`${reportCard} print:break-inside-avoid`}>
-          <h2 className={sectionTitle}>Lesson guidance</h2>
-          <p className={sectionIntro}>
-            The headline range and the note below use the same calculation, so the hours always match. Use both to plan
-            with your instructor, not as a fixed rule.
+        {/* D: lesson guidance — featured, this is the deal-breaker section */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-teal-300/80 bg-gradient-to-br from-teal-50/95 via-white to-brand-50/60 p-5 shadow-card ring-1 ring-teal-600/[0.07] sm:p-8 print:border-brand-200 print:bg-white print:shadow-none print:ring-0 print:break-inside-avoid">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-400 to-teal-500 print:hidden" aria-hidden />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
+              Featured guidance
+            </p>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-teal-800 ring-1 ring-teal-200/80 print:hidden">
+              <span aria-hidden>★</span>
+              Plan with your instructor
+            </span>
+          </div>
+          <h2 className="mt-3 font-heading text-xl font-semibold tracking-tight text-brand-950 sm:text-2xl">
+            How many more lesson hours you may need
+          </h2>
+          <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+            A realistic range to share with your instructor. Use it as a starting point, not a fixed rule.
           </p>
-          <div className="mt-5">
+          <div className="mt-5 rounded-xl bg-white/80 p-4 ring-1 ring-teal-200/70 sm:p-5 print:bg-white print:ring-0">
             <EstimatedLessonHoursBlock hours={estimatedHours} />
           </div>
-          <p className="mt-2 text-xs font-medium text-brand-600">How to use that time</p>
-          <p className="mt-1 text-sm font-medium leading-relaxed text-brand-900">{lessonHoursNarrative}</p>
+          <div className="mt-5 border-t border-teal-200/70 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">How to use that time</p>
+            <p className="mt-2 text-sm font-medium leading-relaxed text-brand-900">{lessonHoursNarrative}</p>
+          </div>
         </div>
 
         {/* E: use this report well */}
@@ -397,6 +442,33 @@ export function ResultsView() {
             </li>
           </ul>
         </div>
+
+        {progressUi.kind === "ready" && !progressUi.data.hasLifetimeAccess ? (
+          <div className="relative overflow-hidden rounded-2xl border-2 border-teal-300/80 bg-gradient-to-br from-teal-50 via-white to-brand-50/60 p-5 shadow-card ring-1 ring-teal-600/[0.07] sm:p-7 print:hidden">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_45%,rgba(20,184,166,0.08))]" />
+            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-md">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
+                  Lifetime access
+                </p>
+                <p className="mt-2 text-base font-semibold tracking-tight text-brand-950 sm:text-lg">
+                  Keep tracking progress, unlock unlimited reports
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-brand-700">
+                  One payment for unlimited Premium TestReady reports and a private timeline of every score saved
+                  under your email. No subscription.
+                </p>
+              </div>
+              <Button
+                href="/upgrade"
+                variant="conversion"
+                className="w-full min-h-[52px] sm:w-auto sm:min-w-[16rem]"
+              >
+                Upgrade to lifetime ({PRICING.lifetime.display})
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         {/* Snapshot */}
         <div className={`${reportCard} print:break-inside-avoid`}>

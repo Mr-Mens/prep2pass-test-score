@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Button } from "@/components/Button";
 import { PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
@@ -15,7 +17,13 @@ type Props =
       hasLifetimeAccess: boolean;
       entries: ProgressEntry[];
       currentScore: number;
+      /** When provided, each entry becomes a link to the saved report. */
+      viewToken?: string;
     };
+
+function reportHref(reportId: string, viewToken: string): string {
+  return `/reports/${reportId}?token=${encodeURIComponent(viewToken)}`;
+}
 
 export function ProgressTrackingSection(props: Props) {
   if (props.status === "loading") {
@@ -28,6 +36,7 @@ export function ProgressTrackingSection(props: Props) {
   }
 
   const { hasLifetimeAccess, entries, currentScore } = props;
+  const viewToken = props.status === "ready" ? props.viewToken : undefined;
 
   if (hasLifetimeAccess) {
     const improvement =
@@ -35,12 +44,18 @@ export function ProgressTrackingSection(props: Props) {
         ? entries[entries.length - 1]!.score - entries[entries.length - 2]!.score
         : null;
 
+    const rowBase =
+      "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50/50 px-4 py-3 text-sm";
+    const rowInteractive =
+      "cursor-pointer transition hover:border-teal-300 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300";
+
     return (
       <div className={card}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">Lifetime feature</p>
         <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Your progress</h2>
         <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
           Each Premium report saved under your email appears here with the date so you can compare readiness over time.
+          {viewToken ? " Tap any entry to open that report and compare the detail." : ""}
         </p>
 
         {entries.length === 0 ? (
@@ -51,20 +66,42 @@ export function ProgressTrackingSection(props: Props) {
         ) : (
           <>
             <ul className="mt-5 space-y-3">
-              {entries.map((e) => (
-                <li
-                  key={e.reportId}
-                  className="flex flex-wrap items-baseline justify-between gap-2 rounded-xl border border-brand-100 bg-brand-50/50 px-4 py-3 text-sm"
-                >
-                  <span className="text-brand-600">{formatIsoDateUk(e.recordedAt)}</span>
+              {entries.map((e) => {
+                const date = formatIsoDateUk(e.recordedAt);
+                const dateLabel = <span className="text-brand-600">{date}</span>;
+                const scoreLabel = (
                   <span className="font-semibold tabular-nums text-brand-950">
-                    {e.score}{" "}
-                    <span className="font-medium text-brand-600">
-                      · {e.label}
-                    </span>
+                    {e.score} <span className="font-medium text-brand-600">· {e.label}</span>
                   </span>
-                </li>
-              ))}
+                );
+
+                if (viewToken) {
+                  return (
+                    <li key={e.reportId}>
+                      <Link
+                        href={reportHref(e.reportId, viewToken)}
+                        className={`group ${rowBase} ${rowInteractive}`}
+                        aria-label={`Open report from ${date}, score ${e.score} out of 100`}
+                      >
+                        {dateLabel}
+                        <span className="flex items-center gap-2">
+                          {scoreLabel}
+                          <span aria-hidden className="text-brand-400 transition group-hover:translate-x-0.5">
+                            ›
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={e.reportId} className={rowBase}>
+                    {dateLabel}
+                    {scoreLabel}
+                  </li>
+                );
+              })}
             </ul>
 
             <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-3 text-sm leading-relaxed text-teal-950">
@@ -78,9 +115,9 @@ export function ProgressTrackingSection(props: Props) {
                   {improvement > 0 ? (
                     <>Improvement: +{improvement} points since your previous saved report.</>
                   ) : improvement < 0 ? (
-                    <>Change since last report: {improvement} points — worth reviewing what shifted with your instructor.</>
+                    <>Change since last report: {improvement} points. Worth reviewing what shifted with your instructor.</>
                   ) : (
-                    <>Same score as your previous saved report — consistency matters before you move dates.</>
+                    <>Same score as your previous saved report. Consistency matters before you move dates.</>
                   )}
                 </p>
               ) : (
@@ -103,15 +140,15 @@ export function ProgressTrackingSection(props: Props) {
         Track your progress over time with unlimited access
       </p>
       <p className="relative mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-        Lifetime unlock keeps a private timeline of your TestReady scores so you can see improvement between lessons —
-        only available with unlimited access.
+        Lifetime unlock keeps a private timeline of your TestReady scores so you can see improvement between lessons.
+        Only available with unlimited access.
       </p>
       <Button
-        href="/assessment?checkout=lifetime"
+        href="/upgrade"
         variant="conversion"
         className="relative mt-5 w-full min-h-[52px] sm:w-auto sm:min-w-[14rem]"
       >
-        Upgrade to lifetime — {PRICING.lifetime.display}
+        Upgrade to lifetime ({PRICING.lifetime.display})
       </Button>
     </div>
   );

@@ -10,7 +10,7 @@ export const PRICING = {
   lifetime: {
     display: "£9.99",
     label: "Lifetime unlimited",
-    hint: "Unlimited Premium reports — track progress over time",
+    hint: "Unlimited Premium reports. Track progress over time.",
   },
 } as const;
 

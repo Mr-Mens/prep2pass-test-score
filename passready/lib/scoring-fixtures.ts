@@ -47,7 +47,7 @@ function payload(p: Partial<AssessmentPayload> & Pick<AssessmentPayload, "lesson
  */
 export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
   {
-    name: "Ideal prep — strong mock, high confidence",
+    name: "Ideal prep: strong mock, high confidence",
     inputs: payload({
       lessonsTaken: 42,
       mockTestResult: "pass",
@@ -61,7 +61,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "High baseline, mock pass bonus, strong confidence, few faults, no weak-area penalty; should land in top band.",
   },
   {
-    name: "Solid mid-pack — booked soon, average faults",
+    name: "Solid mid-pack: booked soon, average faults",
     inputs: payload({
       lessonsTaken: 28,
       testBooked: "yes",
@@ -77,7 +77,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "Near-term test applies small pressure; single low-tier weak area and moderate driving faults keep score in strong-ready band.",
   },
   {
-    name: "Early learner — few lessons, no mock",
+    name: "Early learner: few lessons, no mock",
     inputs: payload({
       lessonsTaken: 6,
       mockTestTaken: "no",
@@ -92,7 +92,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "Six lessons and no mock sit under a strict headline cap so the score does not read as half ready without test-style evidence.",
   },
   {
-    name: "Mock fail — otherwise reasonable",
+    name: "Mock fail, otherwise reasonable",
     inputs: payload({
       lessonsTaken: 22,
       mockTestResult: "fail",
@@ -106,7 +106,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "Mock-fail penalty dominates over moderate faults; still no serious faults.",
   },
   {
-    name: "Serious-fault signal — low driving count",
+    name: "Serious-fault signal: low driving count",
     inputs: payload({
       lessonsTaken: 30,
       mockTestResult: "pass",
@@ -134,7 +134,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "Many minors plus two critical roadcraft weaknesses should sit in Nearly Test Ready, not top-band ready.",
   },
   {
-    name: "Weak-area cluster — mirrors + junctions + roundabouts",
+    name: "Weak-area cluster: mirrors + junctions + roundabouts",
     inputs: payload({
       lessonsTaken: 24,
       mockTestResult: "pass",
@@ -148,7 +148,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "Cluster bonuses on overlapping official groups push weak-area component toward cap alongside faults.",
   },
   {
-    name: "Max weak-area pressure — diversified critical list",
+    name: "Max weak-area pressure: diversified critical list",
     inputs: payload({
       lessonsTaken: 20,
       mockTestTaken: "no",
@@ -213,7 +213,7 @@ export const SCORING_BENCHMARK_FIXTURES: ScoringBenchmarkFixture[] = [
     rationale: "Serious fault, mock fail, stacked minors, and paired critical weak skills compound into Needs More Time territory.",
   },
   {
-    name: "Parking-only weaknesses — higher tier mix",
+    name: "Parking-only weaknesses: higher tier mix",
     inputs: payload({
       lessonsTaken: 32,
       mockTestResult: "pass",

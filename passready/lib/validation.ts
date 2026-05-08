@@ -383,6 +383,42 @@ export const entitlementLookupSuccessSchema = z.object({
 });
 export type EntitlementLookupSuccess = z.infer<typeof entitlementLookupSuccessSchema>;
 
+export const upgradeCheckoutRequestSchema = z.object({
+  fullName: z.string().trim().min(2, "Enter your name").max(120, "Name is too long"),
+  email: z
+    .string()
+    .trim()
+    .email("Enter a valid email address")
+    .transform((s) => s.toLowerCase()),
+});
+export type UpgradeCheckoutRequest = z.infer<typeof upgradeCheckoutRequestSchema>;
+
+export const upgradeCheckoutSuccessSchema = z.discriminatedUnion("alreadyHasLifetime", [
+  z.object({
+    success: z.literal(true),
+    alreadyHasLifetime: z.literal(true),
+  }),
+  z.object({
+    success: z.literal(true),
+    alreadyHasLifetime: z.literal(false),
+    url: z.string().url(),
+    sessionId: z.string(),
+  }),
+]);
+export type UpgradeCheckoutSuccess = z.infer<typeof upgradeCheckoutSuccessSchema>;
+
+export const confirmUpgradeRequestSchema = z.object({
+  sessionId: z.string().min(1),
+});
+export type ConfirmUpgradeRequest = z.infer<typeof confirmUpgradeRequestSchema>;
+
+export const confirmUpgradeSuccessSchema = z.object({
+  success: z.literal(true),
+  hasLifetimeAccess: z.literal(true),
+  email: z.string().email(),
+});
+export type ConfirmUpgradeSuccess = z.infer<typeof confirmUpgradeSuccessSchema>;
+
 /** Same shape as email lookup for entitlements — normalised on parse. */
 export const progressRequestSchema = entitlementLookupRequestSchema;
 
@@ -399,6 +435,8 @@ export const progressSuccessSchema = z.object({
   hasLifetimeAccess: z.boolean(),
   reportCount: z.number().int().min(0),
   entries: z.array(progressEntrySchema),
+  /** Short-lived signed token for opening saved reports under this email. Present only when hasLifetimeAccess is true. */
+  viewToken: z.string().optional(),
 });
 export type ProgressSuccess = z.infer<typeof progressSuccessSchema>;
 

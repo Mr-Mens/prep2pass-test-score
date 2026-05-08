@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/Button";
 import { requestFinaliseReport } from "@/lib/api/finalise-report";
+import { requestConfirmUpgrade } from "@/lib/api/upgrade-to-lifetime";
 import { requestVerifyCheckoutSession } from "@/lib/api/verify-checkout-session";
 import { ApiRequestError } from "@/lib/errors";
 import {
@@ -26,6 +27,7 @@ export function CheckoutSuccessFlow() {
   const [message, setMessage] = useState("Verifying payment with Stripe…");
 
   const sessionId = useMemo(() => params.get("session_id"), [params]);
+  const isUpgrade = useMemo(() => params.get("mode") === "upgrade", [params]);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +36,23 @@ export function CheckoutSuccessFlow() {
       if (!sessionId) {
         setStatus("error");
         setMessage("Missing checkout session. Return to the TestReady Score Assessment.");
+        return;
+      }
+
+      if (isUpgrade) {
+        try {
+          await requestConfirmUpgrade(sessionId);
+          if (cancelled) return;
+          router.replace("/results?upgrade=success");
+        } catch (e) {
+          if (cancelled) return;
+          setStatus("error");
+          setMessage(
+            e instanceof ApiRequestError
+              ? e.message
+              : "We could not confirm your upgrade. Your payment is safe. Try again from the report.",
+          );
+        }
         return;
       }
 
@@ -90,15 +109,17 @@ export function CheckoutSuccessFlow() {
     return () => {
       cancelled = true;
     };
-  }, [router, sessionId]);
+  }, [router, sessionId, isUpgrade]);
 
   if (status === "loading") {
     return (
       <div className="rounded-2xl border border-brand-200/80 bg-white p-8 shadow-card ring-1 ring-black/[0.02]">
         <p className="text-sm font-medium text-brand-600/90">Processing securely</p>
-        <p className="mt-2 text-base text-brand-900">{message}</p>
+        <p className="mt-2 text-base text-brand-900">
+          {isUpgrade ? "Activating your lifetime access..." : message}
+        </p>
         <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
-          We confirm your payment with Stripe before showing your report.
+          We confirm your payment with Stripe before {isUpgrade ? "unlocking lifetime access" : "showing your report"}.
         </p>
       </div>
     );
@@ -106,18 +127,20 @@ export function CheckoutSuccessFlow() {
 
   return (
     <div className="rounded-2xl border border-red-200/90 bg-white p-8 shadow-card ring-1 ring-red-100/60">
-      <p className="text-sm font-semibold text-red-700">Checkout could not be completed</p>
+      <p className="text-sm font-semibold text-red-700">
+        {isUpgrade ? "Upgrade could not be completed" : "Checkout could not be completed"}
+      </p>
       <p className="mt-2 text-sm text-brand-800">{message}</p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Button
-          href="/assessment"
+          href={isUpgrade ? "/upgrade" : "/assessment"}
           variant="conversion"
           className="w-full sm:w-auto sm:min-w-[12rem]"
         >
-          Back to assessment
+          {isUpgrade ? "Try upgrading again" : "Back to assessment"}
         </Button>
-        <Button href="/" variant="secondary" className="w-full min-h-[48px] sm:w-auto">
-          Home
+        <Button href={isUpgrade ? "/results" : "/"} variant="secondary" className="w-full min-h-[48px] sm:w-auto">
+          {isUpgrade ? "Back to my report" : "Home"}
         </Button>
       </div>
     </div>

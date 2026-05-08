@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { createReportAccessToken } from "@/lib/server/report-access-token";
 import { getLifetimeAccess } from "@/lib/server/repositories/entitlements-repository";
 import {
   countReportsByEmail,
@@ -63,11 +64,19 @@ export async function POST(request: Request) {
       label: r.readiness_label,
     }));
 
+    let viewToken: string | undefined;
+    try {
+      viewToken = createReportAccessToken(email);
+    } catch (err) {
+      console.warn("[progress] could not mint viewToken", err);
+    }
+
     return NextResponse.json({
       success: true as const,
       hasLifetimeAccess: true,
       reportCount,
       entries,
+      ...(viewToken ? { viewToken } : {}),
     });
   } catch (e) {
     console.error("[progress]", e);

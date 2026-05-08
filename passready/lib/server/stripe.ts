@@ -50,26 +50,38 @@ function priceIdForTier(tier: CheckoutPriceTier): string {
   return single;
 }
 
+export type CheckoutFlowMode = "report" | "upgrade";
+
 export async function createCheckoutSession(params: {
   assessmentId: string;
   email?: string;
   weakAreaCount: number;
   tier: CheckoutPriceTier;
+  /** "upgrade" = lifetime entitlement only, no new report. Defaults to "report". */
+  flowMode?: CheckoutFlowMode;
 }) {
   const stripe = getStripeServerClient();
   const config = getStripeConfig();
   const priceId = priceIdForTier(params.tier);
+  const flowMode: CheckoutFlowMode = params.flowMode ?? "report";
+
+  const successQuery =
+    flowMode === "upgrade"
+      ? "session_id={CHECKOUT_SESSION_ID}&mode=upgrade"
+      : "session_id={CHECKOUT_SESSION_ID}";
+  const cancelPath = flowMode === "upgrade" ? "/results" : "/assessment";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${config.appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.appUrl}/assessment`,
+    success_url: `${config.appUrl}/checkout/success?${successQuery}`,
+    cancel_url: `${config.appUrl}${cancelPath}`,
     customer_email: params.email,
     metadata: {
       assessmentId: params.assessmentId,
       weakAreaCount: String(params.weakAreaCount),
       tier: params.tier,
+      upgradeOnly: flowMode === "upgrade" ? "true" : "false",
     },
   });
 

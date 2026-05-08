@@ -324,7 +324,7 @@ export function AssessmentForm() {
             for how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
           </p>
           <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
-            Choose a one-off report or lifetime unlimited — both unlock the full Premium TestReady Score Report after
+            Choose a one-off report or lifetime unlimited. Both unlock the full Premium TestReady Score Report after
             checkout (lifetime skips payment once your email has unlimited access).
           </p>
           {submitError ? (
@@ -373,8 +373,8 @@ export function AssessmentForm() {
               {unlocking
                 ? "Please wait…"
                 : checkoutTier === "lifetime"
-                  ? `Continue — ${PRICING.lifetime.display}`
-                  : `Continue — ${PRICING.single.display}`}
+                  ? `Continue (${PRICING.lifetime.display})`
+                  : `Continue (${PRICING.single.display})`}
             </Button>
             <p className="mt-3 text-xs leading-relaxed text-brand-600">
               Instant access • No subscription • Secure checkout with Stripe

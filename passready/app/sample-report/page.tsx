@@ -14,9 +14,9 @@ import {
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
 
 export const metadata: Metadata = {
-  title: "Sample Premium TestReady Score Report",
+  title: "Sample Premium Test Ready Score Report",
   description:
-    "Preview a realistic Premium TestReady Score Report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
+    "Preview a realistic Premium Test Ready Score report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
 };
 
 const sampleRiskAreas: GroupedRiskArea[] = [
@@ -138,16 +138,17 @@ export default function SampleReportPage() {
       className="bg-brand-50 print:bg-white"
       contentClassName="max-w-3xl"
       eyebrow="Preview"
-      title="Sample Premium TestReady Score Report"
-      subtitle="Illustrative example. Your paid report follows the same structure."
+      title="Sample Premium Test Ready Score report"
+      subtitle="Illustrative example. Your paid report follows the same layout: score, risks, action plan, coach note, and lesson-hour estimate — saved to your secure account after checkout."
     >
       <div className="space-y-8 print:space-y-4">
         <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] print:border-brand-200 print:shadow-none print:ring-0">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-brand-600/90">Readiness score</p>
-              <p className="mt-2 text-5xl font-semibold tracking-tight text-brand-950">
+              <p className="mt-2 font-heading text-5xl font-semibold tabular-nums tracking-tight text-brand-950">
                 {sample.readinessScore}
+                <span className="text-3xl font-semibold text-brand-400">/100</span>
               </p>
             </div>
             <span
@@ -186,8 +187,9 @@ export default function SampleReportPage() {
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm text-amber-950">
           <p className="font-semibold">Example disclaimer</p>
           <p className="mt-2">
-            This sample is illustrative only. Prep2Pass is created by a DVSA-approved driving instructor, is not
-            official DVSA guidance, and does not guarantee pass/fail outcomes.
+            This sample is illustrative only. Prep2Pass is independent and not affiliated with DVSA. It is created by a
+            DVSA-approved driving instructor, is not official DVSA guidance, and does not guarantee pass or fail
+            outcomes.
           </p>
         </div>
 
@@ -197,14 +199,15 @@ export default function SampleReportPage() {
             variant="conversion"
             className="w-full sm:w-auto sm:min-w-[12rem]"
           >
-            Get My TestReady Score
+            Get My Test Ready Score
           </Button>
           <Button href="/" variant="secondary" className="w-full min-h-[48px] sm:w-auto">
             Back to home
           </Button>
         </div>
         <p className="text-xs text-brand-500/90">
-          Premium TestReady Score Report · {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime.
+          Premium Test Ready Score report · {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime
+          progress access · Secure checkout via Stripe
         </p>
       </div>
     </Section>

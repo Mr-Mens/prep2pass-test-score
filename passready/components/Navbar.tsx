@@ -11,7 +11,7 @@ import { Button } from "./Button";
 const links = [
   { href: "/", label: "Home" },
   { href: "/sample-report", label: "Sample report" },
-  { href: "/report-lookup", label: "Find my report" },
+  { href: "/report-lookup", label: "My reports" },
 ] as const;
 
 const mobileNavItemBase =
@@ -69,7 +69,7 @@ export function Navbar() {
             href="/assessment"
             className="ml-2 !min-h-[44px] !px-4 !py-2.5 !text-sm"
           >
-            Get My TestReady Score
+            Get My Test Ready Score
           </Button>
         </nav>
 
@@ -101,7 +101,7 @@ export function Navbar() {
               className={mobileNavCtaClass(pathname === "/assessment")}
               onClick={() => setOpen(false)}
             >
-              Get My TestReady Score
+              Get My Test Ready Score
             </Link>
             {links.map((l) => {
               const active = pathname === l.href;

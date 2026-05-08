@@ -27,7 +27,7 @@ export function Footer() {
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               href="/assessment"
             >
-              Get your TestReady Score
+              Get My Test Ready Score
             </Link>
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
@@ -39,7 +39,7 @@ export function Footer() {
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               href="/report-lookup"
             >
-              Find My Report
+              My reports
             </Link>
           </nav>
           <p className="text-xs text-brand-500">

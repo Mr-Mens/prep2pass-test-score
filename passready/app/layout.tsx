@@ -22,15 +22,15 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   metadataBase: new URL("https://passready.app"),
   title: {
-    default: `TestReady Score by ${SITE.name}`,
+    default: `Test Ready Score by ${SITE.name}`,
     template: `%s · ${SITE.name}`,
   },
   description:
-    "TestReady Score by Prep2Pass: a clear UK learner assessment, practical risks, and next steps before your practical test. Created by a DVSA-approved driving instructor.",
+    "Test Ready Score by Prep2Pass: a clear UK learner assessment, practical risks, and focused next steps before your practical test. Created by a DVSA-approved driving instructor.",
   openGraph: {
-    title: `TestReady Score by ${SITE.name}`,
+    title: `Test Ready Score by ${SITE.name}`,
     description:
-      "TestReady Score by Prep2Pass: a clear UK learner assessment, practical risks, and next steps before your practical test. Created by a DVSA-approved driving instructor.",
+      "Test Ready Score by Prep2Pass: a clear UK learner assessment, practical risks, and focused next steps before your practical test. Created by a DVSA-approved driving instructor.",
     type: "website",
     locale: "en_GB",
     siteName: SITE.name,

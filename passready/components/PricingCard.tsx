@@ -28,10 +28,10 @@ export function PricingCard({
   primarySub = "One-off report",
   secondaryPrice,
   secondarySub = "Lifetime unlimited",
-  productTitle = "TestReady Score",
+  productTitle = "Test Ready Score",
   bullets = DEFAULT_BULLETS,
   ctaHref = "/assessment",
-  ctaLabel = "Get My TestReady Score",
+  ctaLabel = "Get My Test Ready Score",
 }: PricingCardProps) {
   const oneOff = primaryPrice ?? price ?? "";
   const showDual = Boolean(secondaryPrice);
@@ -77,7 +77,7 @@ export function PricingCard({
       </div>
 
       <p className="mt-4 text-center text-xs leading-relaxed text-brand-500/90">
-        Instant access · Secure checkout · No account required
+        Secure account · Progress saved · Instant access · Payments via Stripe
       </p>
     </div>
   );

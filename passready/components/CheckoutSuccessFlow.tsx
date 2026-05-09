@@ -93,7 +93,7 @@ export function CheckoutSuccessFlow() {
           result: finalised.result,
         });
         clearPendingAssessment();
-        router.replace("/results");
+        router.replace(finalised.persisted ? `/reports/${finalised.reportId}` : "/results");
       } catch (e) {
         if (cancelled) return;
         setStatus("error");

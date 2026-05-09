@@ -1,5 +1,6 @@
 import "server-only";
 
+import { normalizeEmail } from "@/lib/normalize-email";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type RouteAuthResult =
@@ -29,7 +30,7 @@ export async function requireVerifiedApiUser(): Promise<RouteAuthResult> {
       };
     }
 
-    const email = user.email.trim().toLowerCase();
+    const email = normalizeEmail(user.email);
 
     return { ok: true, userId: user.id, email };
   } catch {

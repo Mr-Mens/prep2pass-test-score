@@ -14,10 +14,15 @@ export function LoginFlow() {
   const router = useRouter();
   const params = useSearchParams();
   const nextRaw = params.get("next");
-  const next = useMemo(
-    () => (nextRaw?.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/my-reports"),
+  const nextResolved = useMemo(
+    () => (nextRaw?.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/auth/resume"),
     [nextRaw],
   );
+
+  const postLoginHref = useMemo(() => {
+    if (nextResolved === "/auth/resume") return "/auth/resume";
+    return `/auth/resume?continue=${encodeURIComponent(nextResolved)}`;
+  }, [nextResolved]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +51,7 @@ export function LoginFlow() {
         }
         return;
       }
-      router.replace(next);
+      router.replace(postLoginHref);
       router.refresh();
     } finally {
       setBusy(false);

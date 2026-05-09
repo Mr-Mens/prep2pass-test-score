@@ -1,4 +1,4 @@
-/** Static marketing preview aligned with Premium report visuals — not live data. */
+/** Static marketing preview aligned with Premium report visuals (not live data). */
 export function HomeReportPreview() {
   const progressPoints = [58, 64, 68, 72];
 

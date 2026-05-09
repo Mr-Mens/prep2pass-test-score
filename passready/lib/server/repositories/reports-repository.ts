@@ -2,6 +2,7 @@ import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
+import type { JourneySnapshot } from "@/lib/dashboard/journey-types";
 import type { AssessmentPayload, MockReadinessResult, ReportDbRecord, ReportSummaryItem } from "@/lib/validation";
 
 function withMigratedWeakAreas(row: ReportDbRecord): ReportDbRecord {
@@ -162,6 +163,26 @@ export async function listScoreHistoryByUserId(userId: string): Promise<ScoreHis
     throw new Error("Failed to fetch score history");
   }
   return (data as ScoreHistoryRow[]) ?? [];
+}
+
+/** Snapshot fields for personalised lifetime dashboard narratives. Ordered oldest → newest. */
+export async function listJourneySnapshotsByUserId(userId: string): Promise<JourneySnapshot[]> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, created_at, readiness_score, readiness_label, weak_areas, mock_test_taken")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("[reports] listJourneySnapshotsByUserId failed", error.message);
+    throw new Error("Failed to fetch journey snapshots");
+  }
+
+  return (data ?? []).map((row) => ({
+    ...row,
+    weak_areas: migrateWeakAreaIds((row as { weak_areas: string[] | null }).weak_areas ?? []),
+  })) as JourneySnapshot[];
 }
 
 export async function countReportsByUserId(userId: string): Promise<number> {

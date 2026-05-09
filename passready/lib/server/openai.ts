@@ -76,7 +76,7 @@ export async function createOpenAiJsonCompletion(messages: ChatMessage[]): Promi
         const err = await parseOpenAiErrorResponse(response);
         if (err.code === "insufficient_quota") {
           throw new Error(
-            `OpenAI insufficient_quota (add billing / credits — retries do not help): ${err.summary}`,
+            `OpenAI insufficient_quota (add billing / credits; retries do not help): ${err.summary}`,
           );
         }
         if (attempt < max429Attempts - 1) {
@@ -87,7 +87,7 @@ export async function createOpenAiJsonCompletion(messages: ChatMessage[]): Promi
             : null;
           const exponential = Math.min(16_000, 2000 * 2 ** attempt);
           const waitMs = fromHeader ?? exponential;
-          console.warn("[openai] HTTP 429 —", err.summary, "| retry after ms:", waitMs, "attempt:", attempt + 1);
+          console.warn("[openai] HTTP 429:", err.summary, "| retry after ms:", waitMs, "attempt:", attempt + 1);
           await sleep(waitMs);
           attempt += 1;
           continue;

@@ -1,6 +1,6 @@
 /**
  * Ready to Pass–style structure: 8 skill groups and 27 skills (public DVSA teaching framework).
- * Prep2Pass is independent — this is for learner-friendly alignment, not a DVSA product or score.
+ * Prep2Pass is independent. This aligns copy with learner-facing framing, not a DVSA product or score line.
  */
 
 export const OFFICIAL_SKILL_GROUPS = [

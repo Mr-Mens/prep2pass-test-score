@@ -2,13 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { requestCheckoutSession } from "@/lib/api/create-checkout-session";
 import { requestFinaliseReport } from "@/lib/api/finalise-report";
-import { PRICING, WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { LIFETIME_MEMBER_UI, PRICING, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import {
   clearPendingAssessment,
@@ -131,20 +131,39 @@ function SectionHeader({
   );
 }
 
+async function fetchLifetimeAccessFromSession(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+    if (!res.ok) return false;
+    const raw = (await res.json()) as { user?: { lifetimeAccess?: boolean; id?: string } | null };
+    return Boolean(raw.user?.id && raw.user.lifetimeAccess);
+  } catch {
+    return false;
+  }
+}
+
 export type AssessmentFormProps = {
   /** When set (signed-in Prep2Pass account email), email is read-only */
   lockedAccountEmail?: string;
   prefilledFullName?: string;
+  /** Server hint: skips payment UI when true; `/api/checkout/create-session` re-verifies before finalising */
+  hasLifetimeAccess?: boolean;
 };
 
-export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: AssessmentFormProps = {}) {
+export function AssessmentForm({
+  lockedAccountEmail,
+  prefilledFullName,
+  hasLifetimeAccess = false,
+}: AssessmentFormProps = {}) {
   const router = useRouter();
   const submitLock = useRef(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [preview, setPreview] = useState<ScorePreview | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  /** True while scoring is done and we are finalising a lifetime report (full Premium, no preview step). */
+  const [premiumBuild, setPremiumBuild] = useState(false);
+  const [lifetimeVerifiedFromSession, setLifetimeVerifiedFromSession] = useState(false);
   const [checkoutTier, setCheckoutTier] = useState<CheckoutPriceTier>("single");
-
   const {
     register,
     control,
@@ -175,8 +194,35 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
   const testBooked = watch("testBooked");
   const mockTestTaken = watch("mockTestTaken");
   const confidenceLevel = watch("confidenceLevel");
+  const showLifetimeAssessmentChrome = Boolean(lockedAccountEmail && hasLifetimeAccess);
 
   const testDateEnabled = testBooked === "yes";
+
+  const runCheckoutOrFinalise = useCallback(
+    async (
+      assessment: AssessmentPayload,
+      tier: CheckoutPriceTier,
+    ): Promise<{ kind: "finalised" } | { kind: "stripe"; url: string }> => {
+      const checkout = await requestCheckoutSession(assessment, tier);
+      if (checkout.skipCheckout) {
+        const finalised = await requestFinaliseReport({
+          entitlementToken: checkout.entitlementToken,
+          assessment,
+        });
+        saveScoredAssessment({
+          version: 2,
+          submittedAt: new Date().toISOString(),
+          assessment: finalised.assessment,
+          result: finalised.result,
+        });
+        clearPendingAssessment();
+        router.replace(finalised.persisted ? `/reports/${finalised.reportId}` : "/results");
+        return { kind: "finalised" };
+      }
+      return { kind: "stripe", url: checkout.url };
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (mockTestTaken === "no") {
@@ -215,6 +261,33 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
       });
 
       const scored = await requestAssessmentScore(parsed.data);
+
+      let hasUnlimitedReports = Boolean(hasLifetimeAccess);
+      if (lockedAccountEmail && !hasUnlimitedReports) {
+        hasUnlimitedReports = await fetchLifetimeAccessFromSession();
+        if (hasUnlimitedReports) setLifetimeVerifiedFromSession(true);
+      }
+
+      if (lockedAccountEmail && hasUnlimitedReports) {
+        setPremiumBuild(true);
+        try {
+          const out = await runCheckoutOrFinalise(parsed.data, "single");
+          if (out.kind === "finalised") {
+            return;
+          }
+          window.location.assign(out.url);
+          return;
+        } catch (e) {
+          const message =
+            e instanceof ApiRequestError
+              ? e.message
+              : "We could not save your full report. Try again or use the unlock step below.";
+          setSubmitError(message);
+        } finally {
+          setPremiumBuild(false);
+        }
+      }
+
       setPreview({
         assessment: parsed.data,
         readinessScore: scored.result.readinessScore,
@@ -237,24 +310,10 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
     setUnlocking(true);
     setSubmitError(null);
     try {
-      const checkout = await requestCheckoutSession(preview.assessment, checkoutTier);
-      if (checkout.skipCheckout) {
-        setSubmitError(null);
-        const finalised = await requestFinaliseReport({
-          entitlementToken: checkout.entitlementToken,
-          assessment: preview.assessment,
-        });
-        saveScoredAssessment({
-          version: 2,
-          submittedAt: new Date().toISOString(),
-          assessment: finalised.assessment,
-          result: finalised.result,
-        });
-        clearPendingAssessment();
-        router.replace("/results");
-        return;
+      const out = await runCheckoutOrFinalise(preview.assessment, checkoutTier);
+      if (out.kind === "stripe") {
+        window.location.assign(out.url);
       }
-      window.location.assign(checkout.url);
     } catch (e) {
       const message =
         e instanceof ApiRequestError
@@ -324,68 +383,103 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
         </section>
 
         <section className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8">
-          <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Unlock your full TestReady report</h2>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-            See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic band
-            for how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
-          </p>
-          <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
-            Choose a one-off report or lifetime unlimited. Both unlock the full Premium TestReady Score Report after
-            checkout (lifetime skips payment once your email has unlimited access).
-          </p>
-          {submitError ? (
-            <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-              {submitError}
-            </p>
-          ) : null}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => setCheckoutTier("single")}
-              className={`rounded-2xl border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:p-5 ${
-                checkoutTier === "single"
-                  ? "border-teal-600 bg-teal-50/90 ring-2 ring-teal-600/25"
-                  : "border-brand-200 bg-brand-50/40 hover:border-brand-300"
-              }`}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">{PRICING.single.label}</p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-brand-950">{PRICING.single.display}</p>
-              <p className="mt-1 text-xs leading-relaxed text-brand-600">{PRICING.single.hint}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCheckoutTier("lifetime")}
-              className={`rounded-2xl border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:p-5 ${
-                checkoutTier === "lifetime"
-                  ? "border-teal-600 bg-teal-50/90 ring-2 ring-teal-600/25"
-                  : "border-brand-200 bg-brand-50/40 hover:border-brand-300"
-              }`}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">
-                {PRICING.lifetime.label}
+          {lockedAccountEmail && (hasLifetimeAccess || lifetimeVerifiedFromSession) ? (
+            <>
+              <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
+                Save your full Test Ready Score report
+              </h2>
+              <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+                Your lifetime access includes unlimited full Premium reports for this account. We attach this assessment
+                to your timeline with no extra payment.
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-brand-950">{PRICING.lifetime.display}</p>
-              <p className="mt-1 text-xs leading-relaxed text-brand-600">{PRICING.lifetime.hint}</p>
-            </button>
-          </div>
-          <div className="mt-6">
-            <Button
-              type="button"
-              variant="conversion"
-              disabled={unlocking}
-              className="w-full min-h-[52px] sm:min-w-[18rem]"
-              onClick={() => void onUnlockFullReport()}
-            >
-              {unlocking
-                ? "Please wait…"
-                : checkoutTier === "lifetime"
-                  ? `Continue (${PRICING.lifetime.display})`
-                  : `Continue (${PRICING.single.display})`}
-            </Button>
-            <p className="mt-3 text-xs leading-relaxed text-brand-600">
-              Instant access • No subscription • Secure checkout with Stripe
-            </p>
-          </div>
+              {submitError ? (
+                <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                  {submitError}
+                </p>
+              ) : null}
+              <div className="mt-6">
+                <Button
+                  type="button"
+                  variant="conversion"
+                  disabled={unlocking}
+                  className="w-full min-h-[52px] sm:min-w-[18rem]"
+                  onClick={() => void onUnlockFullReport()}
+                >
+                  {unlocking ? "Saving your report…" : "Save full Premium report"}
+                </Button>
+                <p className="mt-3 text-xs leading-relaxed text-brand-600">
+                  No checkout step. Confirmed again on the server before we store your report.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
+                Unlock your full TestReady report
+              </h2>
+              <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+                See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic
+                band for how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
+              </p>
+              <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
+                Choose a one-off report or lifetime unlimited. Both unlock the full Premium TestReady Score Report after
+                checkout (lifetime skips payment once your email has unlimited access).
+              </p>
+              {submitError ? (
+                <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                  {submitError}
+                </p>
+              ) : null}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setCheckoutTier("single")}
+                  className={`rounded-2xl border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:p-5 ${
+                    checkoutTier === "single"
+                      ? "border-teal-600 bg-teal-50/90 ring-2 ring-teal-600/25"
+                      : "border-brand-200 bg-brand-50/40 hover:border-brand-300"
+                  }`}
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">{PRICING.single.label}</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-brand-950">{PRICING.single.display}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-brand-600">{PRICING.single.hint}</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutTier("lifetime")}
+                  className={`rounded-2xl border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:p-5 ${
+                    checkoutTier === "lifetime"
+                      ? "border-teal-600 bg-teal-50/90 ring-2 ring-teal-600/25"
+                      : "border-brand-200 bg-brand-50/40 hover:border-brand-300"
+                  }`}
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">
+                    {PRICING.lifetime.label}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-brand-950">{PRICING.lifetime.display}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-brand-600">{PRICING.lifetime.hint}</p>
+                </button>
+              </div>
+              <div className="mt-6">
+                <Button
+                  type="button"
+                  variant="conversion"
+                  disabled={unlocking}
+                  className="w-full min-h-[52px] sm:min-w-[18rem]"
+                  onClick={() => void onUnlockFullReport()}
+                >
+                  {unlocking
+                    ? "Please wait…"
+                    : checkoutTier === "lifetime"
+                      ? `Continue (${PRICING.lifetime.display})`
+                      : `Continue (${PRICING.single.display})`}
+                </Button>
+                <p className="mt-3 text-xs leading-relaxed text-brand-600">
+                  Instant access • No subscription • Secure checkout with Stripe
+                </p>
+              </div>
+            </>
+          )}
         </section>
       </div>
     );
@@ -682,46 +776,79 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
 
       <div className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8 sm:shadow-sm sm:ring-0">
         <p className="text-center text-[11px] font-semibold uppercase tracking-wider text-brand-500/90 sm:text-left">
-          Checkout
+          {showLifetimeAssessmentChrome ? LIFETIME_MEMBER_UI.journeyInsights : "Checkout"}
         </p>
-        <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:mt-0 sm:text-xl">
-          Unlock your TestReady Score
-        </h2>
-        <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-          See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic band for
-          how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
-        </p>
-        <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
-          Everything listed below is included in your Premium report once checkout completes (not in the free preview).
-        </p>
-        <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
-          {CHECKOUT_VALUE_BULLETS.map((line) => (
-            <li key={line} className="flex gap-3">
-              <span className="mt-0.5 shrink-0 font-semibold text-teal-700" aria-hidden>
-                ✓
-              </span>
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2 border-t border-brand-100 pt-6">
-          <div>
-            <p className="text-sm font-medium text-brand-800">
-              <span className="text-3xl font-semibold tracking-tight text-brand-950">{PRICING.single.display}</span>
-              <span className="ml-2 text-brand-600">one-off</span>
+        {showLifetimeAssessmentChrome ? (
+          <>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:mt-0 sm:text-xl">
+              {LIFETIME_MEMBER_UI.badge}
+            </h2>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">{LIFETIME_MEMBER_UI.unlimited}</p>
+            <p className="mt-3 max-w-prose text-sm leading-relaxed text-brand-600">{LIFETIME_MEMBER_UI.progressRhythm}</p>
+            <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
+              {CHECKOUT_VALUE_BULLETS.map((line) => (
+                <li key={line} className="flex gap-3">
+                  <span className="mt-0.5 shrink-0 font-semibold text-teal-700" aria-hidden>
+                    ✓
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <>
+            <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:mt-0 sm:text-xl">
+              Unlock your TestReady Score
+            </h2>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+              See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic band for
+              how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
             </p>
-            <p className="mt-2 text-sm font-medium text-brand-800">
-              <span className="text-3xl font-semibold tracking-tight text-brand-950">{PRICING.lifetime.display}</span>
-              <span className="ml-2 text-brand-600">lifetime unlimited</span>
+            <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
+              Everything listed below is included in your Premium report once checkout completes (not in the free preview).
             </p>
-          </div>
-        </div>
-        <p className="mt-4 text-xs leading-relaxed text-brand-600">
-          Secure payment powered by Stripe · No subscription · No hidden charges
-        </p>
-        <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
-          Most learners book their test too early. This helps you prepare with more clarity.
-        </p>
+            <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
+              {CHECKOUT_VALUE_BULLETS.map((line) => (
+                <li key={line} className="flex gap-3">
+                  <span className="mt-0.5 shrink-0 font-semibold text-teal-700" aria-hidden>
+                    ✓
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2 border-t border-brand-100 pt-6">
+              <div>
+                <p className="text-sm font-medium text-brand-800">
+                  <span className="text-3xl font-semibold tracking-tight text-brand-950">{PRICING.single.display}</span>
+                  <span className="ml-2 text-brand-600">one-off</span>
+                </p>
+                <p className="mt-2 text-sm font-medium text-brand-800">
+                  <span className="text-3xl font-semibold tracking-tight text-brand-950">{PRICING.lifetime.display}</span>
+                  <span className="ml-2 text-brand-600">lifetime unlimited</span>
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-brand-600">
+              Secure payment powered by Stripe · No subscription · No hidden charges
+            </p>
+          </>
+        )}
+        {!showLifetimeAssessmentChrome ? null : (
+          <p className="mt-6 border-t border-brand-100 pt-6 text-xs leading-relaxed text-brand-500">
+            Full Premium detail loads as soon as we finish scoring—already included in your membership.
+          </p>
+        )}
+        {!showLifetimeAssessmentChrome ? (
+          <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
+            Most learners book their test too early. This helps you prepare with more clarity.
+          </p>
+        ) : (
+          <p className="mt-2 text-xs leading-relaxed text-brand-500/90">
+            Take your time answering; clarity here makes the roadmap later feel steadier between lessons.
+          </p>
+        )}
       </div>
 
       {submitError ? (
@@ -740,11 +867,13 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
           disabled={isSubmitting}
           className={checkoutSubmitButtonClass}
         >
-          {isSubmitting ? "Scoring..." : "See My TestReady Score"}
+          {isSubmitting ? (premiumBuild ? "Building your Premium report…" : "Scoring...") : "See My TestReady Score"}
         </Button>
         <p className="text-center text-xs leading-relaxed text-brand-500">
-          For information only, not a substitute for professional instruction. Your answers generate your
-          TestReady Score report after payment.
+          For information only, not a substitute for professional instruction.
+          {showLifetimeAssessmentChrome
+            ? " Your Premium report attaches to Prep2Pass as part of lifetime access."
+            : " Your answers generate your TestReady Score report after payment."}
         </p>
       </div>
 
@@ -755,9 +884,11 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
         {submitError ? (
           <p className="mb-2 text-center text-xs font-medium text-red-800">{submitError}</p>
         ) : (
-          <p className="mb-2 text-center text-[11px] leading-snug text-brand-500/90">
-            Stripe-secured checkout · One-time payment · No subscription
-          </p>
+          !showLifetimeAssessmentChrome && (
+            <p className="mb-2 text-center text-[11px] leading-snug text-brand-500/90">
+              Stripe-secured checkout · One-time payment · No subscription
+            </p>
+          )
         )}
         <Button
           type="submit"
@@ -765,10 +896,11 @@ export function AssessmentForm({ lockedAccountEmail, prefilledFullName }: Assess
           disabled={isSubmitting}
           className={checkoutSubmitButtonClass}
         >
-          {isSubmitting ? "Scoring..." : "See My TestReady Score"}
+          {isSubmitting ? (premiumBuild ? "Building your Premium report…" : "Scoring...") : "See My TestReady Score"}
         </Button>
         <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
           Information only, not a substitute for professional instruction
+          {showLifetimeAssessmentChrome ? " · Saves to your account automatically" : null}
         </p>
       </div>
     </form>

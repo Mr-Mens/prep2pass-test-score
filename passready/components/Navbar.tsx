@@ -42,9 +42,9 @@ type MePayload = {
 type NavAuth =
   /** Session / entitlement lookup still in flight */
   | { phase: "loading" }
-  /** Signed out or email unconfirmed — show public CTAs only */
+  /** Signed out or email unconfirmed: public CTAs only */
   | { phase: "guest" }
-  /** Verified email — show signed-in shortcuts */
+  /** Verified email: signed-in shortcuts */
   | { phase: "member"; lifetime: boolean };
 
 export function Navbar() {
@@ -101,7 +101,7 @@ export function Navbar() {
       );
     }
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
         {navAuth.lifetime ? (
           <Link
             href="/dashboard"
@@ -128,7 +128,7 @@ export function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex min-h-[44px] min-w-0 max-w-[min(280px,calc(100vw-9rem))] items-center rounded-xl py-1 pr-2"
+          className="flex min-h-[48px] min-w-0 max-w-[min(420px,calc(100vw-8rem))] items-center rounded-xl py-1 pr-2"
           onClick={() => setOpen(false)}
           aria-label={`Test Ready Score by ${SITE.name}, home`}
         >
@@ -137,8 +137,9 @@ export function Navbar() {
             alt=""
             width={BRAND_LOGO.width}
             height={BRAND_LOGO.height}
-            sizes="260px"
-            className="h-9 w-auto object-contain object-left sm:h-10"
+            quality={92}
+            sizes="(max-width: 768px) min(400px, 62vw), 400px"
+            className="h-[3.125rem] w-auto object-contain object-left contrast-[1.04] sm:h-14 md:h-16 lg:h-[4.5rem]"
             priority
           />
         </Link>
@@ -191,13 +192,48 @@ export function Navbar() {
             {navAuth.phase === "loading" ? (
               <div className={`${mobileNavItemBase} h-12 animate-pulse rounded-xl bg-brand-50`} aria-hidden />
             ) : navAuth.phase === "member" ? (
-              <button
-                type="button"
-                className={`${mobileNavItemBase} font-semibold text-brand-900 hover:bg-brand-50`}
-                onClick={() => void signOut()}
-              >
-                Sign Out
-              </button>
+              <>
+                {navAuth.lifetime ? (
+                  <Link
+                    href="/dashboard"
+                    className={mobileNavLinkClass(pathname.startsWith("/dashboard"))}
+                    onClick={() => setOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                ) : null}
+                <Link
+                  href="/assessment"
+                  className={
+                    navAuth.lifetime ? mobileNavLinkClass(pathname === "/assessment") : mobileNavCtaClass(pathname === "/assessment")
+                  }
+                  onClick={() => setOpen(false)}
+                >
+                  {navAuth.lifetime ? "New assessment" : "Get My Test Ready Score"}
+                </Link>
+                {links.map((l) => {
+                  const active =
+                    pathname === l.href ||
+                    (l.href === "/my-reports" && pathname.startsWith("/reports"));
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className={mobileNavLinkClass(active)}
+                      onClick={() => setOpen(false)}
+                    >
+                      {l.label}
+                    </Link>
+                  );
+                })}
+                <button
+                  type="button"
+                  className={`${mobileNavItemBase} font-semibold text-brand-900 hover:bg-brand-50`}
+                  onClick={() => void signOut()}
+                >
+                  Sign Out
+                </button>
+              </>
             ) : (
               <>
                 <Link
@@ -214,39 +250,30 @@ export function Navbar() {
                 >
                   Create account
                 </Link>
-              </>
-            )}
-            {navAuth.phase === "member" && navAuth.lifetime ? (
-              <Link
-                href="/dashboard"
-                className={mobileNavLinkClass(pathname.startsWith("/dashboard"))}
-                onClick={() => setOpen(false)}
-              >
-                Dashboard
-              </Link>
-            ) : null}
-            <Link
-              href="/assessment"
-              className={mobileNavCtaClass(pathname === "/assessment")}
-              onClick={() => setOpen(false)}
-            >
-              Get My Test Ready Score
-            </Link>
-            {links.map((l) => {
-              const active =
-                pathname === l.href ||
-                (l.href === "/my-reports" && pathname.startsWith("/reports"));
-              return (
                 <Link
-                  key={l.href}
-                  href={l.href}
-                  className={mobileNavLinkClass(active)}
+                  href="/assessment"
+                  className={mobileNavCtaClass(pathname === "/assessment")}
                   onClick={() => setOpen(false)}
                 >
-                  {l.label}
+                  Get My Test Ready Score
                 </Link>
-              );
-            })}
+                {links.map((l) => {
+                  const active =
+                    pathname === l.href ||
+                    (l.href === "/my-reports" && pathname.startsWith("/reports"));
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className={mobileNavLinkClass(active)}
+                      onClick={() => setOpen(false)}
+                    >
+                      {l.label}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </nav>
         </div>
       ) : null}

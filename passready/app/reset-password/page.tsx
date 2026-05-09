@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
         setMsg("This reset link expired or already used. Start again from Forgot password.");
         return;
       }
-      window.location.assign("/my-reports");
+      window.location.assign("/auth/resume");
     } finally {
       setBusy(false);
     }
@@ -49,7 +49,7 @@ export default function ResetPasswordPage() {
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">New password</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Choose a new password</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          Use something personal and unique — we never send plain passwords by email afterwards.
+          Use something memorable and unique. We never mail plain passwords after you submit this form.
         </p>
 
         <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">

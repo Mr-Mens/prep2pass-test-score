@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/Button";
 import { Section } from "@/components/Section";
-import { PRICING } from "@/lib/constants";
+import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { getReportSummaryByUserId } from "@/lib/server/repositories/reports-repository";
@@ -22,7 +22,9 @@ export default async function MyReportsPage() {
     redirect("/login?next=%2Fmy-reports");
   }
   if (!user.emailConfirmedAt) {
-    redirect(`/verify-email?next=${encodeURIComponent("/my-reports")}`);
+    redirect(
+      `/verify-email?next=${encodeURIComponent("/auth/resume?continue=/my-reports")}`,
+    );
   }
 
   let firstName = "";
@@ -59,8 +61,17 @@ export default async function MyReportsPage() {
           {greeting}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-brand-600">
-          Your reports are saved securely to your Prep2Pass account so only you can open them. Payments are verified through
-          Stripe — we never pass your inbox to third-party advertisers.
+          {lifetimeFlag ? (
+            <>
+              {LIFETIME_MEMBER_UI.badge} · Your reports stay private on Prep2Pass, tied to this account—not a recurring pitch in
+              your inbox.
+            </>
+          ) : (
+            <>
+              Your reports are saved securely to your Prep2Pass account so only you can open them. Stripe handles payments directly;
+              Prep2Pass never sells your inbox to advertisers.
+            </>
+          )}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button href="/assessment" variant="conversion" className="w-full sm:w-auto sm:min-w-[12rem]">
@@ -82,7 +93,14 @@ export default async function MyReportsPage() {
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wide text-brand-500">Access</dt>
             <dd className="mt-1 text-sm font-medium text-brand-900">
-              {entitlements.hasLifetimeAccess ? "Lifetime progress access" : "One-off reports on this account"}
+              {entitlements.hasLifetimeAccess ? (
+                <>
+                  {LIFETIME_MEMBER_UI.unlimited}{" "}
+                  <span className="font-normal text-brand-600">· {LIFETIME_MEMBER_UI.badge}</span>
+                </>
+              ) : (
+                "One-off reports on this account"
+              )}
             </dd>
           </div>
           <div>
@@ -107,17 +125,18 @@ export default async function MyReportsPage() {
       </div>
 
       {entitlements.hasLifetimeAccess ? (
-        <div className="mb-10 rounded-2xl border border-teal-200/80 bg-teal-50/50 p-6 shadow-sm sm:p-7">
-          <h2 className="text-base font-semibold tracking-tight text-teal-950">Lifetime: progress over time</h2>
-          <p className="mt-2 text-sm leading-relaxed text-teal-900/90">
-            Your score timeline and dated history live on your progress dashboard — useful when you&apos;re revisiting Prep2Pass
-            before test day.
+        <div className="mb-10 rounded-2xl border border-teal-200/75 bg-teal-50/40 p-6 shadow-sm sm:p-7">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{LIFETIME_MEMBER_UI.journeyInsights}</p>
+          <h2 className="mt-3 text-base font-semibold tracking-tight text-teal-950">{LIFETIME_MEMBER_UI.journey}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-brand-700">
+            Your readiness arc lives on the dashboard—dated checkpoints plus language that tracks how themes evolve before test
+            day.
           </p>
           <Link
-            href="/dashboard"
+            href="/dashboard#driving-journey"
             className="mt-4 inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-900 underline-offset-4 hover:underline"
           >
-            Open progress dashboard
+            Continue your journey timeline
           </Link>
         </div>
       ) : null}
@@ -126,7 +145,9 @@ export default async function MyReportsPage() {
         <h2 className="text-lg font-semibold tracking-tight text-brand-950">Your reports</h2>
         {summaries.length === 0 ? (
           <p className="mt-4 text-sm text-brand-700">
-            Finish an assessment and complete checkout — your Premium report saves here afterwards.
+            {lifetimeFlag
+              ? "Your next saved Premium report lands here automatically after scoring. Whenever you finish an assessment while signed in, the library updates on its own."
+              : "Finish an assessment and checkout. Afterwards your Premium report lands here automatically."}
           </p>
         ) : (
           <ul className="mt-5 divide-y divide-brand-100">

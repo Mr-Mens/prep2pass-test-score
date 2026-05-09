@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/Button";
-import { PRICING } from "@/lib/constants";
+import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import type { ProgressEntry } from "@/lib/validation";
 
@@ -42,17 +42,14 @@ export function ProgressTrackingSection(props: Props) {
 
     return (
       <div className={card}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">Lifetime feature</p>
-        <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Your progress</h2>
-        <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
-          Each Premium report saved on your Prep2Pass account appears here so you can compare readiness over time. Tap any
-          entry to open that report securely.
-        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">{LIFETIME_MEMBER_UI.journey}</p>
+        <h2 className="mt-2 text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">Progress updates</h2>
+        <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">{LIFETIME_MEMBER_UI.progressRhythm}</p>
 
         {entries.length === 0 ? (
           <p className="mt-4 text-sm text-brand-700">
-            Your next saved reports will appear here after checkout. Retake the assessment anytime to add another point on
-            your timeline.
+            Your timeline grows as reports save to Prep2Pass. Finish your next assessment and it will slot in here beside
+            this score.
           </p>
         ) : (
           <>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -7,6 +8,7 @@ import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBloc
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
+import { LIFETIME_MEMBER_UI } from "@/lib/constants";
 import {
   buildRecommendedHoursNarrative,
   computeEstimatedLessonHours,
@@ -14,6 +16,7 @@ import {
   reportNarrativeSalt,
 } from "@/lib/estimated-lesson-hours";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
+import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { getReportByIdForUser } from "@/lib/server/repositories/reports-repository";
 import { getServerAuthUser } from "@/lib/supabase/server";
 import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
@@ -61,6 +64,13 @@ export default async function ReportDetailPage({ params }: Props) {
   };
   const estimatedHours = computeEstimatedLessonHours(hoursInput, report.readiness_score);
   const recommendedHoursNarrative = buildRecommendedHoursNarrative(estimatedHours, reportNarrativeSalt(report.id));
+
+  let reportLifetimeRoute = false;
+  try {
+    reportLifetimeRoute = await getLifetimeAccessByUserId(sessionUser.id);
+  } catch {
+    reportLifetimeRoute = false;
+  }
 
   return (
     <Section
@@ -118,6 +128,31 @@ export default async function ReportDetailPage({ params }: Props) {
           </div>
           <p className="mt-6 text-sm font-medium leading-relaxed text-brand-800">{recommendedHoursNarrative}</p>
         </div>
+
+        {reportLifetimeRoute ? (
+          <div className="rounded-2xl border border-teal-200/75 bg-teal-50/45 p-6 shadow-sm sm:p-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{LIFETIME_MEMBER_UI.journeyInsights}</p>
+            <p className="mt-3 text-sm font-semibold text-brand-950">{LIFETIME_MEMBER_UI.badge}</p>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
+              {LIFETIME_MEMBER_UI.progressRhythm} Go to milestones on your dashboard when you want the wider arc—not just this
+              report.
+            </p>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Link
+                href="/dashboard#driving-journey"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-teal-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
+              >
+                {LIFETIME_MEMBER_UI.journey}
+              </Link>
+              <Link
+                href="/assessment"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
+              >
+                Add another checkpoint
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button href="/my-reports" className="w-full sm:w-auto sm:min-w-[12rem]">

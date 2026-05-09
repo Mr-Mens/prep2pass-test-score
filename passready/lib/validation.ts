@@ -408,7 +408,7 @@ export const confirmUpgradeSuccessSchema = z.object({
 });
 export type ConfirmUpgradeSuccess = z.infer<typeof confirmUpgradeSuccessSchema>;
 
-/** Same shape as email lookup for entitlements — normalised on parse. */
+/** Same shape as email lookup for entitlements, normalised on parse. */
 export const progressRequestSchema = entitlementLookupRequestSchema;
 
 export const progressEntrySchema = z.object({
@@ -526,6 +526,7 @@ export const finaliseReportSuccessSchema = z.object({
   result: mockReadinessResultSchema,
   reportId: z.string().uuid(),
   sessionId: z.string(),
+  persisted: z.boolean(),
 });
 export type FinaliseReportSuccess = z.infer<typeof finaliseReportSuccessSchema>;
 

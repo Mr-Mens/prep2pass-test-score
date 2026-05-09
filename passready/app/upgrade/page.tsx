@@ -4,7 +4,7 @@ import { Section } from "@/components/Section";
 import { UpgradeFlow } from "@/components/UpgradeFlow";
 
 export const metadata: Metadata = {
-  title: "Upgrade to lifetime — Prep2Pass",
+  title: "Upgrade to lifetime · Prep2Pass",
   description:
     "One-time upgrade for unlimited Premium TestReady reports and a private progress timeline tied to your email.",
 };

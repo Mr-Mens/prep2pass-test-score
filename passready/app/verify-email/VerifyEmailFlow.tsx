@@ -53,7 +53,7 @@ export function VerifyEmailFlow() {
           Verify your email to continue
         </h1>
         <p className="mt-3 text-base leading-relaxed text-brand-700">
-          Prep2Pass needs a verified inbox before showing Premium reports — it keeps retrieval tied to your account and
+          Prep2Pass needs a verified inbox before Premium reports appear. That binds retrieval tightly to your account and keeps
           away from accidental sharing.
         </p>
         <p className="mt-6 text-sm text-brand-600">

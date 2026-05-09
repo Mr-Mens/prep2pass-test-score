@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 import { requestEntitlementLookup } from "@/lib/api/entitlement-lookup";
 import { requestProgress } from "@/lib/api/progress";
@@ -12,7 +13,7 @@ import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBloc
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
-import { PRICING, SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { LIFETIME_MEMBER_UI, PRICING, SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { reportCopySalt } from "@/lib/deterministic-report-copy";
@@ -280,6 +281,7 @@ export function ResultsView() {
   const estimatedHours =
     report.estimatedLessonHours ?? computeEstimatedLessonHours(assessment, report.readinessScore);
   const lessonHoursNarrative = buildRecommendedHoursNarrative(estimatedHours, reportCopySalt(assessment));
+  const resultsLifetimeMemberUi = progressUi.kind === "ready" && progressUi.data.hasLifetimeAccess;
 
   return (
     <Section
@@ -337,12 +339,42 @@ export function ResultsView() {
           {progressUi.kind === "idle" ? null : progressUi.kind === "loading" ? (
             <ProgressTrackingSection status="loading" />
           ) : progressUi.kind === "off" ? null : (
-            <ProgressTrackingSection
-              status="ready"
-              hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
-              entries={progressUi.data.entries}
-              currentScore={report.readinessScore}
-            />
+            <>
+              <ProgressTrackingSection
+                status="ready"
+                hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
+                entries={progressUi.data.entries}
+                currentScore={report.readinessScore}
+              />
+              {progressUi.data.hasLifetimeAccess ? (
+                <div className={`${reportCard} print:hidden`}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">
+                    {LIFETIME_MEMBER_UI.journeyInsights}
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold tracking-tight text-brand-950 sm:text-lg">
+                    {LIFETIME_MEMBER_UI.reportsHistory}
+                  </h3>
+                  <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
+                    The arc on your dashboard shows how checkpoints cluster over time; this screen keeps focus on today&apos;s
+                    reading. Open saved write-ups anytime from My reports, same steady cadence across lessons.
+                  </p>
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Link
+                      href="/dashboard#driving-journey"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
+                    >
+                      {LIFETIME_MEMBER_UI.journey}
+                    </Link>
+                    <Link
+                      href="/my-reports"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
+                    >
+                      All saved reports
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+            </>
           )}
 
           <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
@@ -386,7 +418,7 @@ export function ResultsView() {
           </ol>
         </div>
 
-        {/* D: lesson guidance — featured, this is the deal-breaker section */}
+        {/* D: lesson guidance featured (deal-breaker section) */}
         <div className="relative overflow-hidden rounded-2xl border-2 border-teal-300/80 bg-gradient-to-br from-teal-50/95 via-white to-brand-50/60 p-5 shadow-card ring-1 ring-teal-600/[0.07] sm:p-8 print:border-brand-200 print:bg-white print:shadow-none print:ring-0 print:break-inside-avoid">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-400 to-teal-500 print:hidden" aria-hidden />
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -494,8 +526,9 @@ export function ResultsView() {
         <div className="rounded-2xl border border-brand-200/80 bg-white/95 p-5 text-sm leading-relaxed text-brand-700 shadow-card ring-1 ring-black/[0.02] print:hidden max-md:sticky max-md:bottom-0 max-md:z-20 max-md:-mx-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:border-x-0 max-md:border-b-0 max-md:px-4 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:pt-4 max-md:shadow-[0_-10px_36px_rgba(28,34,48,0.1)] max-md:backdrop-blur-lg sm:shadow-sm sm:ring-0">
           <p className="font-medium text-brand-900">What you might do from here</p>
           <p className="mt-2">
-            Retake the assessment if your lessons shift materially, or use Find My Report if you checked out with an
-            email and need this on another device.
+            {resultsLifetimeMemberUi
+              ? "When lessons or test timing move, generate a fresh checkpoint. Your Prep2Pass account keeps the full timeline under the same lifetime access—no checkout between runs."
+              : "Retake the assessment if your lessons shift materially, or use Find My Report if you checked out with an email and need this on another device."}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button href="/assessment" className="w-full sm:w-auto sm:min-w-[11rem]">

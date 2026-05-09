@@ -20,6 +20,7 @@ function requiresConfirmedUser(pathname: string): boolean {
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/upgrade") ||
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/lifetime") ||
     pathname.startsWith("/my-reports") ||
     pathname.startsWith("/reports/")
   );
@@ -64,7 +65,7 @@ export async function middleware(request: NextRequest) {
     }
     if (user.email_confirmed_at) {
       const url = request.nextUrl.clone();
-      url.pathname = "/my-reports";
+      url.pathname = "/auth/resume";
       url.search = "";
       return NextResponse.redirect(url);
     }
@@ -73,7 +74,7 @@ export async function middleware(request: NextRequest) {
 
   if (user?.email_confirmed_at && isAuthUi(pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/my-reports";
+    url.pathname = "/auth/resume";
     url.search = "";
     return NextResponse.redirect(url);
   }

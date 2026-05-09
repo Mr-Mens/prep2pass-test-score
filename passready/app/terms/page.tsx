@@ -7,9 +7,9 @@ export default function TermsPage() {
     <Section eyebrow="Legal" title="Prep2Pass terms of use" contentClassName="max-w-3xl text-left">
       <div className="prose prose-sm max-w-none text-brand-700">
         <p>
-          Test Ready Score is coaching-style guidance only — not official DVSA material, not a substitute for live
-          instruction, and Prep2Pass is independent from DVSA. By using Prep2Pass you accept that scores and plans are not
-          a pass guarantee.
+          Test Ready Score is coaching-style guidance only: it is not official DVSA material, not a substitute for live
+          instruction, and Prep2Pass stays independent from DVSA. When you continue using Prep2Pass you accept scores and coaching
+          plans cannot guarantee passing the practical driving test.
         </p>
         <p className="mt-4">
           Returning to {" "}

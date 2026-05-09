@@ -40,14 +40,24 @@ export async function POST(request: Request) {
     }
 
     const assessmentEmail = normalizeEmail(parsed.data.assessment.email);
-    if (assessmentEmail !== auth.email) {
+    if (assessmentEmail !== normalizeEmail(auth.email)) {
       return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Prep2Pass account.");
     }
 
     const supabaseOk = isSupabaseConfigured();
 
     if (supabaseOk) {
-      const lifetime = await getLifetimeAccessByUserId(auth.userId);
+      let lifetime = false;
+      try {
+        lifetime = await getLifetimeAccessByUserId(auth.userId);
+      } catch (e) {
+        console.error("[checkout:create-session] lifetime_read_failed", e);
+        return jsonError(
+          503,
+          "ENTITLEMENT_READ_FAILED",
+          "We could not confirm your account access. Please try again shortly.",
+        );
+      }
       if (lifetime) {
         try {
           const entitlementToken = signLifetimeFinaliseToken(auth.email, auth.userId);

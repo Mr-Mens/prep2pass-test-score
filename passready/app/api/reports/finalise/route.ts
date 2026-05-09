@@ -45,6 +45,7 @@ function buildExistingReportResponse(
     success: true as const,
     sessionId,
     reportId: existing.id,
+    persisted: true as const,
     assessment,
     result: {
       readinessScore: existing.readiness_score,
@@ -219,6 +220,7 @@ async function finaliseWithStripeSession(
       success: true as const,
       sessionId: session.id,
       reportId: randomUUID(),
+      persisted: false as const,
       assessment: scoredAssessment,
       result,
     });
@@ -237,6 +239,7 @@ async function finaliseWithStripeSession(
     success: true as const,
     sessionId: session.id,
     reportId: report.id,
+    persisted: true as const,
     assessment: scoredAssessment,
     result,
   });
@@ -281,6 +284,7 @@ async function finaliseWithEntitlementToken(
       success: true as const,
       sessionId: syntheticSessionId,
       reportId: randomUUID(),
+      persisted: false as const,
       assessment: scoredAssessment,
       result,
     });
@@ -298,6 +302,7 @@ async function finaliseWithEntitlementToken(
     success: true as const,
     sessionId: syntheticSessionId,
     reportId: report.id,
+    persisted: true as const,
     assessment: scoredAssessment,
     result,
   });

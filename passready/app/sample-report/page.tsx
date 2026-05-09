@@ -139,7 +139,7 @@ export default function SampleReportPage() {
       contentClassName="max-w-3xl"
       eyebrow="Preview"
       title="Sample Premium Test Ready Score report"
-      subtitle="Illustrative example. Your paid report follows the same layout: score, risks, action plan, coach note, and lesson-hour estimate — saved to your secure account after checkout."
+      subtitle="Illustrative example. Your paid report keeps the same layout (score, risks, action plan, coach note, lesson-hour estimate). After checkout we save everything to your secure account."
     >
       <div className="space-y-8 print:space-y-4">
         <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] print:border-brand-200 print:shadow-none print:ring-0">

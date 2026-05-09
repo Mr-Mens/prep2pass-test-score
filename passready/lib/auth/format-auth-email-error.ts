@@ -25,12 +25,12 @@ function isLikelyEmailRateLimited(error: unknown): boolean {
 export function describeAuthEmailError(error: unknown, action: AuthEmailAction): string {
   if (isLikelyEmailRateLimited(error)) {
     if (action === "password_reset") {
-      return "Several reset emails were requested in a short time, so sending has paused briefly. Wait a little, then request again—or use a link that may already be in your inbox or junk folder.";
+      return "Several reset emails were requested in a short time, so sending has paused briefly. Wait a little, then request again, or use a link that may already be in your inbox or junk folder.";
     }
     if (action === "resend_verify") {
-      return "Several verification emails were requested in a short time, so sending has paused briefly. Wait a little, then tap resend again—or find the confirmation we may already have sent (check junk as well as inbox).";
+      return "Several verification emails were requested in a short time, so sending has paused briefly. Wait a little, then tap resend again, or find the confirmation we may already have sent (check junk as well as inbox).";
     }
-    return "Several confirmation emails were requested in a short time, so sending has paused briefly. Wait a little before trying again—and check your inbox and junk folder first, in case a link is already there.";
+    return "Several confirmation emails were requested in a short time, so sending has paused briefly. Wait a little before trying again. Check inbox and junk first in case a link is already waiting.";
   }
 
   if (!error || typeof error !== "object") {

@@ -77,9 +77,7 @@ export default function SignupPage() {
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Create account</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Join Prep2Pass</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          Your Premium reports stay linked to your account so only you can open them. We send a verification email —
-          please confirm it before you can sign in. Payments remain with Stripe; Prep2Pass never asks for your password
-          over email.
+          Your Premium reports stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Prep2Pass never asks you to repeat your password via email.
         </p>
 
         <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">

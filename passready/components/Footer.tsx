@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer className="border-t border-brand-100 bg-white pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-3 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-12 lg:px-8">
-        <div className="max-w-md">
+        <div className="max-w-xl">
           <Link
             href="/"
             className="inline-flex max-w-full"
@@ -20,8 +20,9 @@ export function Footer() {
               alt=""
               width={BRAND_LOGO.width}
               height={BRAND_LOGO.height}
-              sizes="280px"
-              className="h-12 w-auto max-w-[min(280px,100%)] object-contain object-left sm:h-14"
+              quality={92}
+              sizes="(max-width: 640px) min(420px, 94vw), 440px"
+              className="h-[4.25rem] w-auto max-w-[min(440px,100%)] object-contain object-left contrast-[1.04] sm:h-20 md:h-[5.25rem]"
             />
           </Link>
           <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">{SITE.name}</p>

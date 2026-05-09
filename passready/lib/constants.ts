@@ -11,6 +11,17 @@ export const BRAND_LOGO = {
   height: 682,
 } as const;
 
+/** Calm membership copy inside authenticated flows when entitlement is lifetime (avoid prospect/pricing framing). */
+export const LIFETIME_MEMBER_UI = {
+  badge: "Lifetime access active",
+  unlimited: "Unlimited reports unlocked",
+  journey: "Your driving journey",
+  reportsHistory: "Report history",
+  journeyInsights: "Journey insights",
+  progressRhythm:
+    "Each saved checkpoint adds context to how you prepare. Revisit anytime to spot patterns across lessons.",
+} as const;
+
 /** One-off vs lifetime TestReady Score unlock (Stripe Price IDs map to these in env). */
 export const PRICING = {
   single: { display: "£3.99", label: "One-off report", hint: "Single Premium report for this assessment" },

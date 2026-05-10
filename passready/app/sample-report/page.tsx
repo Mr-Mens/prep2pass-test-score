@@ -4,6 +4,7 @@ import { Button } from "@/components/Button";
 import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
+import { SampleLifetimeJourneyPreview } from "@/components/SampleLifetimeJourneyPreview";
 import { Section } from "@/components/Section";
 import { PRICING } from "@/lib/constants";
 import {
@@ -182,7 +183,15 @@ export default function SampleReportPage() {
           <p className="mt-6 text-sm font-medium text-brand-800">
             Recommended lesson guidance: {sample.recommendedHours}
           </p>
+          <div className="mt-8 flex items-center justify-center border-t border-brand-100 pt-8 print:hidden">
+            <p className="max-w-lg text-center text-[13px] leading-relaxed text-brand-500">
+              <span className="font-semibold text-brand-700">End of single Premium report sample.</span> The layout above
+              is what you get from one assessment: score, coach note, risks, next steps, and lesson-hour band.
+            </p>
+          </div>
         </div>
+
+        <SampleLifetimeJourneyPreview />
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm text-amber-950">
           <p className="font-semibold">Example disclaimer</p>

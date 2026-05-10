@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
 
@@ -34,6 +35,8 @@ export async function GET() {
       lifetimeAccess = false;
     }
 
+    const role = await getUserAppRole(user.id);
+
     return NextResponse.json(
       {
         user: {
@@ -42,6 +45,7 @@ export async function GET() {
           emailConfirmedAt: user.email_confirmed_at ?? null,
           firstName,
           lifetimeAccess,
+          role,
         },
       },
       noStore,

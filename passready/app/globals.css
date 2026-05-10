@@ -32,6 +32,75 @@
   }
 }
 
+@layer components {
+  /**
+   * Instructor mock test sheet — single type scale (Inter body + Inter Tight headings).
+   */
+  .mock-sheet {
+    @apply text-sm text-brand-900;
+  }
+
+  .mock-sheet-hero-title {
+    @apply font-heading text-2xl font-semibold tracking-tight text-brand-950;
+  }
+
+  .mock-sheet-hero-sub {
+    @apply text-sm leading-relaxed text-brand-600;
+  }
+
+  .mock-sheet-eyebrow {
+    @apply text-xs font-medium uppercase tracking-wide text-brand-500;
+  }
+
+  .mock-sheet-h2 {
+    @apply font-heading text-sm font-semibold tracking-tight text-brand-950;
+  }
+
+  .mock-sheet-card-title {
+    @apply font-heading text-xs font-semibold tracking-tight text-brand-800;
+  }
+
+  .mock-sheet-hint {
+    @apply text-xs font-normal leading-relaxed text-brand-500;
+  }
+
+  .mock-sheet-label {
+    @apply block text-sm font-medium leading-snug text-brand-800;
+  }
+
+  .mock-sheet-control {
+    @apply mt-1 w-full rounded-lg border border-brand-200/90 bg-white px-3 py-2 text-sm text-brand-900 shadow-sm outline-none transition placeholder:text-brand-400 focus:border-teal-600/35 focus:ring-2 focus:ring-teal-600/15;
+  }
+
+  .mock-sheet-control-threshold {
+    @apply mt-0.5 w-16 max-w-full rounded-lg border border-brand-200/90 bg-white px-2 py-1.5 text-center font-heading text-sm font-semibold tabular-nums tracking-tight text-brand-900 shadow-sm outline-none focus:border-teal-600/35 focus:ring-2 focus:ring-teal-600/15;
+  }
+
+  .mock-sheet-check {
+    @apply flex items-center gap-2 text-sm font-normal text-brand-800;
+  }
+
+  .mock-sheet-check-start {
+    @apply flex items-start gap-2 text-sm font-normal text-brand-800;
+  }
+
+  .mock-sheet-stat-value {
+    @apply font-heading text-xl font-semibold tabular-nums tracking-tight text-brand-950;
+  }
+
+  .mock-sheet-inline-field {
+    @apply mt-2 block text-xs font-medium text-brand-500;
+  }
+
+  .mock-sheet-body {
+    @apply text-sm leading-relaxed text-brand-600;
+  }
+
+  .mock-sheet-row-label {
+    @apply min-w-0 text-sm font-normal leading-snug text-brand-800;
+  }
+}
+
 @media print {
   header,
   footer {

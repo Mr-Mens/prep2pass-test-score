@@ -21,6 +21,7 @@ function requiresConfirmedUser(pathname: string): boolean {
     pathname.startsWith("/upgrade") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/lifetime") ||
+    pathname.startsWith("/instructor") ||
     pathname.startsWith("/my-reports") ||
     pathname.startsWith("/reports/")
   );

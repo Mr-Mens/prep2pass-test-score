@@ -1,11 +1,19 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { BRAND_LOGO, SITE } from "@/lib/constants";
 
 const year = new Date().getFullYear();
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/instructor")) {
+    return null;
+  }
+
   return (
     <footer className="border-t border-brand-100 bg-white pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-3 py-10 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-12 lg:px-8">

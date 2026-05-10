@@ -1,6 +1,7 @@
 import "server-only";
 
 import { normalizeEmail } from "@/lib/normalize-email";
+import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type RouteAuthResult =
@@ -36,4 +37,14 @@ export async function requireVerifiedApiUser(): Promise<RouteAuthResult> {
   } catch {
     return { ok: false, status: 500, message: "Authentication failed. Try again shortly." };
   }
+}
+
+export async function requireInstructorApiUser(): Promise<RouteAuthResult> {
+  const base = await requireVerifiedApiUser();
+  if (!base.ok) return base;
+  const role = await getUserAppRole(base.userId);
+  if (role !== "instructor") {
+    return { ok: false, status: 403, message: "Instructor access only." };
+  }
+  return base;
 }

@@ -36,6 +36,7 @@ type MePayload = {
     email: string;
     emailConfirmedAt: string | null;
     lifetimeAccess?: boolean;
+    role?: string;
   } | null;
 };
 
@@ -45,7 +46,7 @@ type NavAuth =
   /** Signed out or email unconfirmed: public CTAs only */
   | { phase: "guest" }
   /** Verified email: signed-in shortcuts */
-  | { phase: "member"; lifetime: boolean };
+  | { phase: "member"; lifetime: boolean; role?: string };
 
 export function Navbar() {
   const pathname = usePathname();
@@ -61,7 +62,7 @@ export function Navbar() {
         setNavAuth({ phase: "guest" });
         return;
       }
-      setNavAuth({ phase: "member", lifetime: Boolean(u.lifetimeAccess) });
+      setNavAuth({ phase: "member", lifetime: Boolean(u.lifetimeAccess), role: u.role });
     } catch {
       setNavAuth({ phase: "guest" });
     }
@@ -112,6 +113,16 @@ export function Navbar() {
             Dashboard
           </Link>
         ) : null}
+        {navAuth.role === "instructor" ? (
+          <Link
+            href="/instructor"
+            className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+              pathname.startsWith("/instructor") ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
+            }`}
+          >
+            Instructor
+          </Link>
+        ) : null}
         <button
           type="button"
           onClick={() => void signOut()}
@@ -121,6 +132,10 @@ export function Navbar() {
         </button>
       </div>
     );
+  }
+
+  if (pathname.startsWith("/instructor")) {
+    return null;
   }
 
   return (
@@ -200,6 +215,15 @@ export function Navbar() {
                     onClick={() => setOpen(false)}
                   >
                     Dashboard
+                  </Link>
+                ) : null}
+                {navAuth.role === "instructor" ? (
+                  <Link
+                    href="/instructor"
+                    className={mobileNavLinkClass(pathname.startsWith("/instructor"))}
+                    onClick={() => setOpen(false)}
+                  >
+                    Instructor workspace
                   </Link>
                 ) : null}
                 <Link

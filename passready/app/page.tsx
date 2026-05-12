@@ -247,7 +247,7 @@ export default async function HomePage() {
               <LandingPricing />
             </div>
           ) : (
-            <div className="relative mx-auto mt-14 max-w-5xl border-t border-teal-200/40 pt-12 sm:mt-16 sm:pt-14 lg:mt-20">
+            <div id="pricing" className="relative mx-auto mt-14 max-w-5xl border-t border-teal-200/40 pt-12 sm:mt-16 sm:pt-14 lg:mt-20">
               <p className="text-center text-sm font-medium leading-relaxed text-teal-900">{LIFETIME_MEMBER_UI.badge}</p>
               <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-brand-700">
                 {LIFETIME_MEMBER_UI.unlimited}{" "}
@@ -386,7 +386,7 @@ export default async function HomePage() {
         </div>
       </Section>
 
-      <Section eyebrow="FAQ" title="Questions before you start">
+      <Section id="faq" eyebrow="FAQ" title="Questions before you start">
         <div className="mx-auto grid max-w-4xl gap-4">
           {faqItems.map((item) => (
             <FaqItem key={item.q} question={item.q} answer={item.a} />

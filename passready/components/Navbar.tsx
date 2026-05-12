@@ -101,21 +101,27 @@ export function Navbar() {
         </div>
       );
     }
-    return (
-      <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
-        {navAuth.lifetime ? (
-          <Link
-            href="/dashboard"
-            className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-              pathname.startsWith("/dashboard") ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
-            }`}
-          >
-            Dashboard
-          </Link>
-        ) : null}
-        {navAuth.role === "instructor" ? (
-          <Link
-            href="/instructor"
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
+      <Link
+        href="/dashboard"
+        className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+          pathname === "/dashboard" ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
+        }`}
+      >
+        Overview
+      </Link>
+      <Link
+        href="/"
+        className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+          pathname === "/" ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
+        }`}
+      >
+        Website
+      </Link>
+      {navAuth.role === "instructor" ? (
+        <Link
+          href="/instructor"
             className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
               pathname.startsWith("/instructor") ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
             }`}
@@ -208,15 +214,20 @@ export function Navbar() {
               <div className={`${mobileNavItemBase} h-12 animate-pulse rounded-xl bg-brand-50`} aria-hidden />
             ) : navAuth.phase === "member" ? (
               <>
-                {navAuth.lifetime ? (
-                  <Link
-                    href="/dashboard"
-                    className={mobileNavLinkClass(pathname.startsWith("/dashboard"))}
-                    onClick={() => setOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                ) : null}
+                <Link
+                  href="/dashboard"
+                  className={mobileNavLinkClass(pathname === "/dashboard")}
+                  onClick={() => setOpen(false)}
+                >
+                  Overview
+                </Link>
+                <Link
+                  href="/"
+                  className={mobileNavLinkClass(pathname === "/")}
+                  onClick={() => setOpen(false)}
+                >
+                  Website
+                </Link>
                 {navAuth.role === "instructor" ? (
                   <Link
                     href="/instructor"

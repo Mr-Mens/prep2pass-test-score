@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { Section } from "@/components/Section";
 import { UpgradeFlow } from "@/components/UpgradeFlow";
 
 export const metadata: Metadata = {
@@ -11,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function UpgradePage() {
   return (
-    <Section className="max-md:bg-transparent bg-brand-50" contentClassName="max-w-2xl">
+    <div className="pb-4">
       <UpgradeFlow />
-    </Section>
+    </div>
   );
 }

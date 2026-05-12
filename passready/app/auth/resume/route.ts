@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
 const BLOCKED_CONTINUE_PREFIXES = [
@@ -22,8 +21,8 @@ function redirect(origin: string, path: string) {
 }
 
 /**
- * Consolidated post-login destination: lifetime accounts default to `/dashboard`; others `/my-reports`.
- * Optional `continue` selects a verified internal path without opening redirects.
+ * Post-login destination for verified learners defaults to `/dashboard`.
+ * Optional `continue` selects a verified internal path.
  */
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -38,7 +37,7 @@ export async function GET(request: NextRequest) {
   }
 
   const continueRaw = request.nextUrl.searchParams.get("continue");
-  let destination = "/my-reports";
+  let destination = "/dashboard";
 
   if (
     typeof continueRaw === "string" &&
@@ -47,14 +46,6 @@ export async function GET(request: NextRequest) {
     !blockedContinue(continueRaw)
   ) {
     destination = continueRaw;
-  } else {
-    try {
-      if (await getLifetimeAccessByUserId(user.id)) {
-        destination = "/dashboard";
-      }
-    } catch {
-      destination = "/my-reports";
-    }
   }
 
   return redirect(origin, destination);

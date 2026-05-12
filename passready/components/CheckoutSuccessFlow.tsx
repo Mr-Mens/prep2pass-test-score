@@ -113,7 +113,7 @@ export function CheckoutSuccessFlow() {
 
   if (status === "loading") {
     return (
-      <div className="rounded-2xl border border-brand-200/80 bg-white p-8 shadow-card ring-1 ring-black/[0.02]">
+      <div className="rounded-2xl border border-brand-100 bg-white p-8 shadow-sm">
         <p className="text-sm font-medium text-brand-600/90">Processing securely</p>
         <p className="mt-2 text-base text-brand-900">
           {isUpgrade ? "Activating your lifetime access..." : message}
@@ -126,7 +126,7 @@ export function CheckoutSuccessFlow() {
   }
 
   return (
-    <div className="rounded-2xl border border-red-200/90 bg-white p-8 shadow-card ring-1 ring-red-100/60">
+    <div className="rounded-2xl border border-red-200/90 bg-white p-8 shadow-sm">
       <p className="text-sm font-semibold text-red-700">
         {isUpgrade ? "Upgrade could not be completed" : "Checkout could not be completed"}
       </p>

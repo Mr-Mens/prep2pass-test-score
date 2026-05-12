@@ -56,7 +56,7 @@ export function UpgradeFlow() {
   }
 
   return (
-    <div className="rounded-2xl border-2 border-teal-300/80 bg-gradient-to-br from-teal-50/95 via-white to-brand-50/60 p-5 shadow-card ring-1 ring-teal-600/[0.07] sm:p-8">
+    <div className="rounded-2xl border border-teal-200/75 bg-teal-50/40 p-5 shadow-sm sm:p-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">Lifetime upgrade</p>
       <h1 className="mt-2 font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">
         Unlock unlimited Premium reports

@@ -360,7 +360,7 @@ export function ResultsView() {
                   </p>
                   <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Link
-                      href="/dashboard#driving-journey"
+                      href="/progress"
                       className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
                     >
                       {LIFETIME_MEMBER_UI.journey}

@@ -12,6 +12,31 @@ function severityLabel(severity: GroupedRiskArea["severity"]) {
   return "Low risk";
 }
 
+function severityMeterPercent(severity: GroupedRiskArea["severity"]) {
+  if (severity === "high") return 92;
+  if (severity === "moderate") return 62;
+  return 36;
+}
+
+function severityMeterBarClass(severity: GroupedRiskArea["severity"]) {
+  if (severity === "high") return "bg-red-500/90";
+  if (severity === "moderate") return "bg-amber-400/95";
+  return "bg-teal-600/85";
+}
+
+function SeverityMeterBar({ severity }: { severity: GroupedRiskArea["severity"] }) {
+  const width = severityMeterPercent(severity);
+  return (
+    <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-brand-100 print:hidden">
+      <div
+        className={`h-full rounded-full ${severityMeterBarClass(severity)}`}
+        style={{ width: `${width}%` }}
+        aria-hidden
+      />
+    </div>
+  );
+}
+
 type Props = {
   blocks: GroupedRiskArea[];
   /** Slightly tighter spacing when embedded in print layouts. */
@@ -21,7 +46,7 @@ type Props = {
 export function RiskAreasSection({ blocks, compact }: Props) {
   return (
     <div
-      className={`rounded-2xl border border-brand-200/70 bg-white shadow-card ring-1 ring-black/[0.02] print:break-inside-avoid print:shadow-none print:ring-0 ${compact ? "p-5 sm:p-6" : "p-6 sm:p-8"}`}
+      className={`rounded-2xl border border-brand-100 bg-white shadow-sm print:break-inside-avoid print:shadow-none ${compact ? "p-5 sm:p-6" : "p-6 sm:p-8"}`}
     >
       <h2 className="text-lg font-semibold tracking-tight text-brand-950">Your Test Risk Areas</h2>
       <p className="mt-2 max-w-prose text-xs leading-relaxed text-brand-600/90">
@@ -44,6 +69,8 @@ export function RiskAreasSection({ blocks, compact }: Props) {
                 {severityLabel(block.severity)}
               </span>
             </header>
+
+            <SeverityMeterBar severity={block.severity} />
 
             <p className="mt-3 text-sm leading-relaxed text-brand-800">{block.summary}</p>
 

@@ -20,6 +20,8 @@ function requiresConfirmedUser(pathname: string): boolean {
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/upgrade") ||
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/progress") ||
     pathname.startsWith("/lifetime") ||
     pathname.startsWith("/instructor") ||
     pathname.startsWith("/my-reports") ||

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 
-import { Footer } from "@/components/Footer";
-import { Navbar } from "@/components/Navbar";
+import { AppShell } from "@/components/AppShell";
 import { SITE } from "@/lib/constants";
 
 import "./globals.css";
@@ -51,11 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" className={`${inter.variable} ${interTight.variable}`}>
       <body className="font-sans">
-        <div className="flex min-h-dvh flex-col">
-          <Navbar />
-          <main className="flex-1 max-md:overflow-x-hidden">{children}</main>
-          <Footer />
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

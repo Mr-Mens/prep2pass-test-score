@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { AssessmentForm } from "@/components/AssessmentForm";
-import { Section } from "@/components/Section";
 import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
 import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
@@ -47,8 +46,9 @@ export default async function AssessmentPage() {
   }
 
   return (
-    <Section className="max-md:bg-transparent bg-brand-50" contentClassName="max-w-3xl">
-      <div className="mb-10 rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.05] sm:mb-12 sm:p-8 sm:shadow-sm sm:ring-0">
+    <section className="pb-4">
+      <div className="mx-auto w-full max-w-3xl">
+      <div className="mb-10 rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:mb-12 sm:p-8">
         <h1 className="text-center font-heading text-2xl font-semibold leading-tight tracking-tight text-brand-950 sm:text-left sm:text-3xl">
           Start your Test Ready Score assessment
         </h1>
@@ -96,6 +96,7 @@ export default async function AssessmentPage() {
         prefilledFullName={firstNameHint || undefined}
         hasLifetimeAccess={hasLifetimeAccess}
       />
-    </Section>
+      </div>
+    </section>
   );
 }

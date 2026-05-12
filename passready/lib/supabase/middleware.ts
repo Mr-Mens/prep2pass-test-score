@@ -15,16 +15,26 @@ export function createSupabaseUpdatingClient(request: NextRequest) {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
-        /** Edge (e.g. Vercel): mutating `request.cookies` throws; only `response.cookies` is supported. */
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => {
-          if (value) {
+      setAll(cookiesToSet, headers) {
+        /**
+         * Edge (Vercel): only mutate `response` cookies/headers, not `request`.
+         * @supabase/ssr ≥0.10 passes a second arg with Cache-Control so auth
+         * responses are not cached by CDNs (required for safe sessions).
+         * Removals use `value: ""` with maxAge: 0 — do not use `delete()` only.
+         */
+        try {
+          response = NextResponse.next({ request });
+          for (const { name, value, options } of cookiesToSet) {
             response.cookies.set(name, value, options);
-          } else {
-            response.cookies.delete(name);
           }
-        });
+          if (headers) {
+            for (const [key, val] of Object.entries(headers)) {
+              response.headers.set(key, val);
+            }
+          }
+        } catch (e) {
+          console.error("[middleware] setAll failed:", e);
+        }
       },
     },
   });

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { upgradeCheckoutRequestSchema } from "@/lib/validation";
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     if (isSupabaseConfigured()) {
-      const already = await getLifetimeAccessByUserId(auth.userId);
+      const already = await getEffectiveLifetimeAccessByUserId(auth.userId);
       if (already) {
         return NextResponse.json({ success: true as const, alreadyHasLifetime: true as const });
       }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LIFETIME_MEMBER_UI } from "@/lib/constants";
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -32,7 +32,7 @@ export default async function LifetimeMembershipPage() {
     /* ignore */
   }
 
-  const ok = await getLifetimeAccessByUserId(user.id);
+  const ok = await getEffectiveLifetimeAccessByUserId(user.id);
   if (!ok) {
     redirect("/upgrade");
   }

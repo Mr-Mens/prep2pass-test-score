@@ -5,16 +5,22 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
-import { Section } from "@/components/Section";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
 
 export function VerifyEmailFlow() {
   const params = useSearchParams();
-  const nextSafe = useMemo(() => {
-    const raw = params.get("next");
-    return raw?.startsWith("/") && !raw.startsWith("//") ? raw : "/assessment";
+
+  const continueSafe = useMemo(() => {
+    const raw = params.get("continue");
+    return raw?.startsWith("/") && !raw.startsWith("//") ? raw : null;
   }, [params]);
+
+  const resumeHref = useMemo(
+    () =>
+      continueSafe ? `/auth/resume?continue=${encodeURIComponent(continueSafe)}` : "/auth/resume",
+    [continueSafe],
+  );
 
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,10 +39,12 @@ export function VerifyEmailFlow() {
         return;
       }
       const origin = window.location.origin;
+      const verifyPath = `/verify-email${continueSafe ? `?continue=${encodeURIComponent(continueSafe)}` : ""}`;
+      const emailRedirectTo = `${origin}/auth/callback?next=${encodeURIComponent(verifyPath)}`;
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo: `${origin}/auth/callback?next=/verify-email` },
+        options: { emailRedirectTo },
       });
       if (error) setMsg(describeAuthEmailError(error, "resend_verify"));
       else setMsg("Fresh verification instructions are heading to your inbox.");
@@ -46,8 +54,7 @@ export function VerifyEmailFlow() {
   }
 
   return (
-    <Section className="bg-brand-50" contentClassName="max-w-lg">
-      <div className="rounded-2xl border border-teal-200/70 bg-white p-8 shadow-card">
+    <div className="rounded-2xl border border-teal-200/70 bg-white p-8 shadow-card">
         <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Email verification</p>
         <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-brand-950">
           Verify your email to continue
@@ -58,7 +65,7 @@ export function VerifyEmailFlow() {
         </p>
         <p className="mt-6 text-sm text-brand-600">
           Already verified? Reload this tab or jump back to{" "}
-          <Link href={nextSafe} className="font-semibold text-teal-900 underline underline-offset-4">
+          <Link href={resumeHref} className="font-semibold text-teal-900 underline underline-offset-4">
             continue
           </Link>
           .
@@ -75,6 +82,5 @@ export function VerifyEmailFlow() {
           </Button>
         </div>
       </div>
-    </Section>
   );
 }

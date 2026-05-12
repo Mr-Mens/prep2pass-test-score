@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
-import { Section } from "@/components/Section";
+import { AuthScreenChrome } from "@/components/auth/AuthScreenChrome";
 import { passwordFieldSchema } from "@/lib/auth/password";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <Section className="bg-brand-50" contentClassName="max-w-md">
+    <AuthScreenChrome>
       <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">New password</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Choose a new password</h1>
@@ -91,6 +91,6 @@ export default function ResetPasswordPage() {
           </p>
         </form>
       </div>
-    </Section>
+    </AuthScreenChrome>
   );
 }

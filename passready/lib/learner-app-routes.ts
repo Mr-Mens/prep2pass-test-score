@@ -3,12 +3,15 @@
  */
 
 const LEARNER_ROOTS = [
+  "/home",
   "/dashboard",
+  "/supervisor",
   "/account",
   "/progress",
   "/assessment",
   "/results",
   "/my-reports",
+  "/sample-report",
   "/upgrade",
   "/lifetime",
 ] as const;

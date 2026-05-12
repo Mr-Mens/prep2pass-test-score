@@ -132,10 +132,12 @@ export default async function LearnerAccountPage() {
         className="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
         aria-label="Shortcuts"
       >
-        <MenuRow href="/" title="Website" hint="FAQs, sample report, pricing" />
+        <MenuRow href="/home" title="Home" hint="FAQs, sample report, pricing" />
         <MenuRow href="/dashboard" title="Overview" hint="Readiness hub and checkpoints" />
         <MenuRow href="/assessment" title="Check test readiness" hint="Short assessment flow" />
-        <MenuRow href="/progress" title="Progress timeline" hint="Score arc across Premium reports" />
+        {entitlements.hasLifetimeAccess ? (
+          <MenuRow href="/progress" title="Progress timeline" hint="Score arc across Premium reports" />
+        ) : null}
         <MenuRow href="/my-reports" title="Saved reports" hint="Open past write-ups" />
         {!entitlements.hasLifetimeAccess ? (
           <MenuRow href="/upgrade" title="Upgrade to lifetime" hint={`One-time · ${PRICING.lifetime.display}`} />

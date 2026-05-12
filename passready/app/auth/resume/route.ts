@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
+import { getUserAppRole } from "@/lib/server/user-app-role";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
 const BLOCKED_CONTINUE_PREFIXES = [
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   const continueRaw = request.nextUrl.searchParams.get("continue");
-  let destination = "/dashboard";
+  let destination: string = dashboardPathForAppRole(await getUserAppRole(user.id));
 
   if (
     typeof continueRaw === "string" &&

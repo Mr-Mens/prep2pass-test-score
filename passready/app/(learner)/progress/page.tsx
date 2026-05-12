@@ -7,6 +7,7 @@ import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { SITE } from "@/lib/constants";
 import { deriveDeltaVsPrior, deriveFocusArea, deriveNextMilestone } from "@/lib/dashboard/journey-insights";
 import { formatCompactDateUk, formatIsoDateUk } from "@/lib/formatting";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { listJourneySnapshotsByUserId } from "@/lib/server/repositories/reports-repository";
 import { getServerAuthUser } from "@/lib/supabase/server";
 import type { WeakAreaId } from "@/lib/product-skill-map";
@@ -38,6 +39,14 @@ export default async function LearnerProgressPage() {
   const user = await getServerAuthUser();
   if (!user) redirect("/login?next=%2Fprogress");
   if (!user.emailConfirmedAt) redirect(`/verify-email?next=${encodeURIComponent("/progress")}`);
+
+  let lifetime = false;
+  try {
+    lifetime = await getEffectiveLifetimeAccessByUserId(user.id);
+  } catch {
+    lifetime = false;
+  }
+  if (!lifetime) redirect("/upgrade");
 
   const snaps = await listJourneySnapshotsByUserId(user.id);
   const latest = snaps.length ? snaps[snaps.length - 1]! : null;

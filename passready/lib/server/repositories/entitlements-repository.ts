@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/server/supabase";
+import { getUserAppRole } from "@/lib/server/user-app-role";
 
 export type CustomerEntitlementRow = {
   user_id: string;
@@ -58,18 +59,20 @@ function paymentLooksLikeSinglePurchase(rawMetadata: Record<string, unknown> | n
 export async function getEntitlementLookupForUser(userId: string): Promise<EntitlementLookupResult> {
   const supabase = getSupabaseServerClient();
 
-  const [entRes, reportsCountRes, paymentsRes] = await Promise.all([
+  const [entRes, reportsCountRes, paymentsRes, appRole] = await Promise.all([
     supabase.from("user_entitlements").select("lifetime_access").eq("user_id", userId).maybeSingle(),
     supabase.from("reports").select("id", { count: "exact", head: true }).eq("user_id", userId),
     supabase.from("payments").select("raw_metadata, payment_status").eq("user_id", userId),
+    getUserAppRole(userId),
   ]);
 
   if (entRes.error) throw new Error("Failed to read entitlements");
   if (reportsCountRes.error) throw new Error("Failed to count reports");
   if (paymentsRes.error) throw new Error("Failed to read payments");
 
-  const hasLifetimeAccess =
+  const storedLifetime =
     (entRes.data as { lifetime_access: boolean } | null)?.lifetime_access === true;
+  const hasLifetimeAccess = storedLifetime || appRole === "instructor";
 
   const reportCount = reportsCountRes.count ?? 0;
 

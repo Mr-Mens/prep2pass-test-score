@@ -16,7 +16,7 @@ import {
   reportNarrativeSalt,
 } from "@/lib/estimated-lesson-hours";
 import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { getReportByIdForUser } from "@/lib/server/repositories/reports-repository";
 import { getServerAuthUser } from "@/lib/supabase/server";
 import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
@@ -67,7 +67,7 @@ export default async function ReportDetailPage({ params }: Props) {
 
   let reportLifetimeRoute = false;
   try {
-    reportLifetimeRoute = await getLifetimeAccessByUserId(sessionUser.id);
+    reportLifetimeRoute = await getEffectiveLifetimeAccessByUserId(sessionUser.id);
   } catch {
     reportLifetimeRoute = false;
   }
@@ -165,13 +165,15 @@ export default async function ReportDetailPage({ params }: Props) {
           <Button href="/assessment" variant="conversion" className="min-h-[50px] w-full text-[15px]">
             Start new assessment
           </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Link
-              href="/progress"
-              className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-brand-200 bg-white text-sm font-semibold text-brand-900 shadow-sm hover:bg-brand-50"
-            >
-              Track progress
-            </Link>
+          <div className={`grid gap-2 ${reportLifetimeRoute ? "grid-cols-2" : "grid-cols-1"}`}>
+            {reportLifetimeRoute ? (
+              <Link
+                href="/progress"
+                className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-brand-200 bg-white text-sm font-semibold text-brand-900 shadow-sm hover:bg-brand-50"
+              >
+                Track progress
+              </Link>
+            ) : null}
             <Link
               href="/my-reports"
               className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-brand-200 bg-white text-sm font-semibold text-brand-900 shadow-sm hover:bg-brand-50"

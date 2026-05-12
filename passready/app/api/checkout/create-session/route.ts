@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { normalizeEmail } from "@/lib/normalize-email";
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { signLifetimeFinaliseToken } from "@/lib/server/entitlement-token";
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { createCheckoutSession } from "@/lib/server/stripe";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createCheckoutSessionRequestSchema } from "@/lib/validation";
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     if (supabaseOk) {
       let lifetime = false;
       try {
-        lifetime = await getLifetimeAccessByUserId(auth.userId);
+        lifetime = await getEffectiveLifetimeAccessByUserId(auth.userId);
       } catch (e) {
         console.error("[checkout:create-session] lifetime_read_failed", e);
         return jsonError(

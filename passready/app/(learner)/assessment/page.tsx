@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { AssessmentForm } from "@/components/AssessmentForm";
 import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -26,7 +26,7 @@ export default async function AssessmentPage() {
   let hasLifetimeAccess = false;
   if (sessionUser?.id && isSupabaseConfigured()) {
     try {
-      hasLifetimeAccess = await getLifetimeAccessByUserId(sessionUser.id);
+      hasLifetimeAccess = await getEffectiveLifetimeAccessByUserId(sessionUser.id);
     } catch {
       hasLifetimeAccess = false;
     }

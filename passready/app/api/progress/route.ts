@@ -5,7 +5,7 @@ import {
   countReportsByUserId,
   listScoreHistoryByUserId,
 } from "@/lib/server/repositories/reports-repository";
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { entitlementLookupRequestSchema } from "@/lib/validation";
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     }
 
     const reportCount = await countReportsByUserId(auth.userId);
-    const lifetime = await getLifetimeAccessByUserId(auth.userId);
+    const lifetime = await getEffectiveLifetimeAccessByUserId(auth.userId);
 
     if (!lifetime) {
       return NextResponse.json({

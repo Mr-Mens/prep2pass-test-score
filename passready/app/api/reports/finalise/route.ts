@@ -5,10 +5,8 @@ import Stripe from "stripe";
 import { normalizeEmail } from "@/lib/normalize-email";
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { verifyLifetimeFinaliseToken } from "@/lib/server/entitlement-token";
-import {
-  getLifetimeAccessByUserId,
-  setLifetimeAccessByUserId,
-} from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
+import { setLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import {
   fromCheckoutSessionToPaymentInput,
   upsertPaymentFromCheckoutSession,
@@ -262,7 +260,7 @@ async function finaliseWithEntitlementToken(
   }
 
   if (supabaseOk) {
-    const ok = await getLifetimeAccessByUserId(caller.userId);
+    const ok = await getEffectiveLifetimeAccessByUserId(caller.userId);
     if (!ok) {
       return jsonError(403, "LIFETIME_REQUIRED", "Lifetime access is not active for your account.");
     }

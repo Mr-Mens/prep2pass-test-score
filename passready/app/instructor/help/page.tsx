@@ -30,8 +30,8 @@ export default function InstructorHelpPage() {
 
       <p className="text-sm text-brand-600">
         For product help, contact your Prep2Pass administrator. Learner help:{" "}
-        <Link href="/" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-          return to home
+        <Link href="/explore" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+          explore the learner site
         </Link>
         .
       </p>

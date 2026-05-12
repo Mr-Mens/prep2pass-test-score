@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
-import { Section } from "@/components/Section";
 import { classifySignInError } from "@/lib/auth/classify-sign-in-error";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -59,8 +58,7 @@ export function LoginFlow() {
   }
 
   return (
-    <Section className="bg-brand-50" contentClassName="max-w-md">
-      <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
+    <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Sign in</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Welcome back</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
@@ -129,12 +127,20 @@ export function LoginFlow() {
 
           <p className="text-center text-xs text-brand-500">
             New here?{" "}
-            <Link href="/signup" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+            <Link
+              href={`/signup?next=${encodeURIComponent(nextResolved)}`}
+              className="font-semibold text-teal-800 underline-offset-4 hover:underline"
+            >
               Create an account
+            </Link>
+          </p>
+
+          <p className="text-center text-[11px] text-brand-500">
+            <Link href="/welcome" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+              ← Back to welcome
             </Link>
           </p>
         </form>
       </div>
-    </Section>
   );
 }

@@ -2,16 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createSupabaseUpdatingClient } from "@/lib/supabase/middleware";
 import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
-
-function isAuthUi(pathname: string): boolean {
-  return (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/auth/callback")
-  );
-}
+import { isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
 
 function requiresConfirmedUser(pathname: string): boolean {
   return (
@@ -19,12 +10,14 @@ function requiresConfirmedUser(pathname: string): boolean {
     pathname.startsWith("/results") ||
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/upgrade") ||
+    pathname.startsWith("/home") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/account") ||
     pathname.startsWith("/progress") ||
     pathname.startsWith("/lifetime") ||
     pathname.startsWith("/instructor") ||
     pathname.startsWith("/my-reports") ||
+    pathname.startsWith("/supervisor") ||
     pathname.startsWith("/reports/")
   );
 }
@@ -69,13 +62,18 @@ export async function middleware(request: NextRequest) {
     if (user.email_confirmed_at) {
       const url = request.nextUrl.clone();
       url.pathname = "/auth/resume";
-      url.search = "";
+      const cont = request.nextUrl.searchParams.get("continue");
+      if (typeof cont === "string" && cont.startsWith("/") && !cont.startsWith("//")) {
+        url.searchParams.set("continue", cont);
+      } else {
+        url.search = "";
+      }
       return NextResponse.redirect(url);
     }
     return res;
   }
 
-  if (user?.email_confirmed_at && isAuthUi(pathname)) {
+  if (user?.email_confirmed_at && isStandaloneAuthRoute(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/resume";
     url.search = "";

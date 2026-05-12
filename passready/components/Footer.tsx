@@ -1,16 +1,16 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BRAND_LOGO, SITE } from "@/lib/constants";
+import { BrandLogo } from "@/components/BrandLogo";
+import { SITE } from "@/lib/constants";
 
 const year = new Date().getFullYear();
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname.startsWith("/instructor")) {
+  if (pathname.startsWith("/instructor") || pathname === "/" || pathname === "/welcome") {
     return null;
   }
 
@@ -23,15 +23,7 @@ export function Footer() {
             className="inline-flex max-w-full"
             aria-label={`Test Ready Score by ${SITE.name}, home`}
           >
-            <Image
-              src={BRAND_LOGO.src}
-              alt=""
-              width={BRAND_LOGO.width}
-              height={BRAND_LOGO.height}
-              quality={92}
-              sizes="(max-width: 640px) min(420px, 94vw), 440px"
-              className="h-[4.25rem] w-auto max-w-[min(440px,100%)] object-contain object-left contrast-[1.04] sm:h-20 md:h-[5.25rem]"
-            />
+            <BrandLogo variant="footer" />
           </Link>
           <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">{SITE.name}</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
@@ -43,9 +35,9 @@ export function Footer() {
           <nav className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Footer">
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-              href="/"
+              href="/explore"
             >
-              Home
+              Explore
             </Link>
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"

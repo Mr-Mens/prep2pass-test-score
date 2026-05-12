@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/Button";
-import { Section } from "@/components/Section";
+import { AuthScreenChrome } from "@/components/auth/AuthScreenChrome";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Section className="bg-brand-50" contentClassName="max-w-md">
+    <AuthScreenChrome>
       <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Password reset</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Forgotten password?</h1>
@@ -82,6 +82,6 @@ export default function ForgotPasswordPage() {
           </div>
         )}
       </div>
-    </Section>
+    </AuthScreenChrome>
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
@@ -30,7 +30,7 @@ export async function GET() {
 
     let lifetimeAccess = false;
     try {
-      lifetimeAccess = await getLifetimeAccessByUserId(user.id);
+      lifetimeAccess = await getEffectiveLifetimeAccessByUserId(user.id);
     } catch {
       lifetimeAccess = false;
     }

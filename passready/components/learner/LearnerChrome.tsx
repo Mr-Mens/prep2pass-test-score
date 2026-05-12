@@ -1,22 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { BRAND_LOGO, PRICING, SITE } from "@/lib/constants";
+import { BrandLogo } from "@/components/BrandLogo";
+import { PRICING, SITE } from "@/lib/constants";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type NavMatch = "site" | "dashboard" | "score" | "progress" | "reports-child" | "account";
 
 const MARKETING_LINKS = [
   { href: "/sample-report", label: "Sample report" },
-  { href: "/#faq", label: "FAQs" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/home#faq", label: "FAQs" },
+  { href: "/home#pricing", label: "Pricing" },
 ] as const;
 
 const railNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/", label: "Website", match: "site" },
+  { href: "/home", label: "Home", match: "site" },
   { href: "/dashboard", label: "Overview", match: "dashboard" },
   { href: "/assessment", label: "Score", match: "score" },
   { href: "/progress", label: "Progress", match: "progress" },
@@ -24,9 +25,9 @@ const railNavItems: readonly { href: string; label: string; match: NavMatch }[] 
   { href: "/account", label: "Account", match: "account" },
 ];
 
-/** Mobile dock: keep five slots; Overview lives on sidebar + dashboard deep links */
+/** Mobile dock: Overview on sidebar — Progress only for lifetime members */
 const dockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/", label: "Home", match: "site" },
+  { href: "/home", label: "Home", match: "site" },
   { href: "/assessment", label: "Score", match: "score" },
   { href: "/progress", label: "Progress", match: "progress" },
   { href: "/my-reports", label: "Reports", match: "reports-child" },
@@ -34,7 +35,7 @@ const dockNavItems: readonly { href: string; label: string; match: NavMatch }[] 
 ];
 
 function activeFor(pathname: string, match: NavMatch): boolean {
-  if (match === "site") return pathname === "/";
+  if (match === "site") return pathname === "/home";
   if (match === "dashboard") return pathname === "/dashboard";
   if (match === "score") return pathname === "/assessment" || pathname.startsWith("/assessment/");
   if (match === "progress") return pathname === "/progress" || pathname.startsWith("/progress/");
@@ -42,15 +43,14 @@ function activeFor(pathname: string, match: NavMatch): boolean {
   return pathname.startsWith("/my-reports") || /^\/reports\/[^/]+$/.test(pathname);
 }
 
-function IconGlobe({ stroke }: { stroke: string }) {
+function IconHome({ stroke }: { stroke: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="12" r="9" stroke={stroke} strokeWidth="2" />
       <path
-        d="M3 12h18M12 3a17 17 0 010 18M12 3a17 17 0 000 18M4.5 8h15M4.5 16h15"
+        d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
         stroke={stroke}
-        strokeWidth="1.5"
-        strokeLinecap="round"
+        strokeWidth="2"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -113,7 +113,7 @@ function IconUser({ stroke }: { stroke: string }) {
 function iconForMatch(match: NavMatch, stroke: string) {
   switch (match) {
     case "site":
-      return <IconGlobe stroke={stroke} />;
+      return <IconHome stroke={stroke} />;
     case "dashboard":
       return <IconLayout stroke={stroke} />;
     case "score":
@@ -125,7 +125,7 @@ function iconForMatch(match: NavMatch, stroke: string) {
     case "account":
       return <IconUser stroke={stroke} />;
     default:
-      return <IconGlobe stroke={stroke} />;
+      return <IconHome stroke={stroke} />;
   }
 }
 
@@ -160,6 +160,10 @@ function initialsFromMe(me: MeBrief): string {
 export function LearnerChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
   const [me, setMe] = useState<MeBrief | null>(null);
+  /** Progress is lifetime-only; hide until entitlement is confirmed client-side */
+  const showProgressNav = me?.lifetimeAccess === true;
+  const railLinks = railNavItems.filter((item) => item.match !== "progress" || showProgressNav);
+  const dockLinks = dockNavItems.filter((item) => item.match !== "progress" || showProgressNav);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,7 +198,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
     return (
       <>
         <nav className="flex flex-col gap-0.5 px-3 pb-4" aria-label="Learner app">
-          {railNavItems.map((item) => {
+          {railLinks.map((item) => {
             const active = activeFor(pathname, item.match);
             const stroke = strokeRail(active);
             return (
@@ -239,8 +243,10 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
-        <ul className="mx-auto grid max-w-xl grid-cols-5 gap-0 px-1 pt-1">
-          {dockNavItems.map((item) => {
+        <ul
+          className={`mx-auto grid max-w-xl gap-0 px-1 pt-1 ${showProgressNav ? "grid-cols-5" : "grid-cols-4"}`}
+        >
+          {dockLinks.map((item) => {
             const active = activeFor(pathname, item.match);
             const stroke = strokeDock(active);
             return (
@@ -266,18 +272,18 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
   const initials = me ? initialsFromMe(me) : "…";
 
+  async function signOut() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    window.location.assign("/");
+  }
+
   return (
     <div className="flex min-h-dvh bg-[#f0f2f5] md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
-          <Link href="/" className="block" aria-label={`${SITE.name}, marketing homepage with FAQs and sample report`}>
-            <Image
-              src={BRAND_LOGO.src}
-              alt=""
-              width={BRAND_LOGO.width}
-              height={BRAND_LOGO.height}
-              className="h-9 w-auto max-w-[200px] object-contain object-left brightness-0 invert opacity-95"
-            />
+          <Link href="/home" className="block" aria-label={`${SITE.name}, home — FAQs, sample report, and pricing`}>
+            <BrandLogo variant="learnerRail" />
           </Link>
           <p className="mt-3 font-heading text-xs font-semibold uppercase tracking-wide text-white">Test Ready Score</p>
           <p className="mt-1 text-xs text-slate-400">Powered by {SITE.name}</p>
@@ -313,6 +319,13 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
               <p className="truncate text-xs text-slate-400">{me?.email ?? "Signed in"}</p>
             </div>
           </Link>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="mt-3 w-full rounded-xl border border-slate-500/80 bg-transparent px-3 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-800"
+          >
+            Sign out
+          </button>
         </div>
       </aside>
 
@@ -320,17 +333,11 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
           <div className="mx-auto flex min-h-[52px] w-full max-w-xl items-center gap-3 px-4 py-3 sm:min-h-[3.25rem]">
             <Link
-              href="/"
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-2 py-1.5 shadow-sm"
-              aria-label={`${SITE.name}, public homepage`}
+              href="/home"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-3 py-2 shadow-sm"
+              aria-label={`${SITE.name}, home`}
             >
-              <Image
-                src={BRAND_LOGO.src}
-                alt=""
-                width={BRAND_LOGO.width}
-                height={BRAND_LOGO.height}
-                className="h-8 w-auto object-contain object-left"
-              />
+              <BrandLogo variant="learnerMobile" />
             </Link>
             <div className="min-w-0 flex-1">
               <p className="font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>

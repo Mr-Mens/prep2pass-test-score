@@ -1,20 +1,30 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import { BRAND_LOGO, SITE } from "@/lib/constants";
+import { BrandLogo } from "@/components/BrandLogo";
+import { SITE } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { Button } from "./Button";
 
 const links = [
-  { href: "/", label: "Home" },
+  { href: "/explore", label: "Explore" },
   { href: "/sample-report", label: "Sample report" },
   { href: "/my-reports", label: "My reports" },
 ] as const;
+
+const memberPrimaryLinks = [
+  { href: "/home", label: "Home" },
+  { href: "/sample-report", label: "Sample report" },
+  { href: "/my-reports", label: "My reports" },
+] as const;
+
+function primaryNavLinks(navAuth: NavAuth): ReadonlyArray<(typeof links)[number] | (typeof memberPrimaryLinks)[number]> {
+  return navAuth.phase === "member" ? memberPrimaryLinks : links;
+}
 
 const mobileNavItemBase =
   "block w-full rounded-xl px-4 py-3.5 text-left text-sm transition-colors";
@@ -82,7 +92,7 @@ export function Navbar() {
 
   function AuthDesktop() {
     if (navAuth.phase === "loading") {
-      return <div className="ml-2 h-11 w-24 animate-pulse rounded-xl bg-brand-50" aria-hidden />;
+      return <div className="ml-2 h-[3.75rem] w-32 animate-pulse rounded-xl bg-brand-50 sm:h-[4.75rem]" aria-hidden />;
     }
     if (navAuth.phase === "guest") {
       return (
@@ -111,14 +121,6 @@ export function Navbar() {
       >
         Overview
       </Link>
-      <Link
-        href="/"
-        className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-          pathname === "/" ? "bg-brand-50 text-brand-950" : "text-brand-800 hover:bg-brand-50"
-        }`}
-      >
-        Website
-      </Link>
       {navAuth.role === "instructor" ? (
         <Link
           href="/instructor"
@@ -146,27 +148,18 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-brand-200/60 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:border-brand-100/80 md:shadow-none">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-4 sm:px-6 md:py-5 lg:px-8">
         <Link
           href="/"
-          className="flex min-h-[48px] min-w-0 max-w-[min(420px,calc(100vw-8rem))] items-center rounded-xl py-1 pr-2"
+          className="flex min-h-[52px] min-w-0 max-w-[calc(100vw-5rem)] shrink-0 items-center rounded-xl py-1 pr-2 md:min-h-[56px] md:max-w-[calc(100%-12rem)]"
           onClick={() => setOpen(false)}
           aria-label={`Test Ready Score by ${SITE.name}, home`}
         >
-          <Image
-            src={BRAND_LOGO.src}
-            alt=""
-            width={BRAND_LOGO.width}
-            height={BRAND_LOGO.height}
-            quality={92}
-            sizes="(max-width: 768px) min(400px, 62vw), 400px"
-            className="h-[3.125rem] w-auto object-contain object-left contrast-[1.04] sm:h-14 md:h-16 lg:h-[4.5rem]"
-            priority
-          />
+          <BrandLogo variant="navbar" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-          {links.map((l) => {
+          {primaryNavLinks(navAuth).map((l) => {
             const active =
               pathname === l.href ||
               (l.href === "/my-reports" && (pathname.startsWith("/my-reports") || pathname.startsWith("/reports")));
@@ -221,13 +214,6 @@ export function Navbar() {
                 >
                   Overview
                 </Link>
-                <Link
-                  href="/"
-                  className={mobileNavLinkClass(pathname === "/")}
-                  onClick={() => setOpen(false)}
-                >
-                  Website
-                </Link>
                 {navAuth.role === "instructor" ? (
                   <Link
                     href="/instructor"
@@ -246,7 +232,7 @@ export function Navbar() {
                 >
                   {navAuth.lifetime ? "New assessment" : "Get My Test Ready Score"}
                 </Link>
-                {links.map((l) => {
+                {primaryNavLinks(navAuth).map((l) => {
                   const active =
                     pathname === l.href ||
                     (l.href === "/my-reports" && pathname.startsWith("/reports"));
@@ -292,7 +278,7 @@ export function Navbar() {
                 >
                   Get My Test Ready Score
                 </Link>
-                {links.map((l) => {
+                {primaryNavLinks(navAuth).map((l) => {
                   const active =
                     pathname === l.href ||
                     (l.href === "/my-reports" && pathname.startsWith("/reports"));

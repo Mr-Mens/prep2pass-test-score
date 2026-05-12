@@ -120,8 +120,8 @@ export default async function LearnerDashboardPage() {
             Open instructor workspace
           </Link>
           <p className="mt-3 text-xs leading-relaxed text-brand-700">
-            FAQs, sample report, and pricing stay on the public homepage — tap Home in the learner bottom bar or Website in
-            the desktop sidebar.
+            FAQs, sample report, and pricing stay on Home inside the learner app — use Home in the bottom bar or the first
+            item in the desktop sidebar.
           </p>
         </aside>
       ) : null}
@@ -239,7 +239,7 @@ export default async function LearnerDashboardPage() {
         </div>
       )}
 
-      {snaps.length > 1 ? (
+      {entitlements.hasLifetimeAccess && snaps.length > 1 ? (
         <div className="rounded-2xl border border-brand-100 bg-white p-5 text-center shadow-sm transition hover:border-teal-200 hover:shadow-md">
           <p className="text-sm text-brand-600">
             Want timeline detail?{" "}

@@ -37,60 +37,67 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!isSupabaseClientEnvConfigured()) {
-    console.warn("[middleware] Supabase anon env missing; skipping session refresh");
-    return NextResponse.next();
-  }
-
-  const { supabase, getResponse } = createSupabaseUpdatingClient(request);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  let res = getResponse();
-
-  const redirectLogin = () => {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-    return NextResponse.redirect(url);
-  };
-
-  if (pathname.startsWith("/verify-email")) {
-    if (!user) {
-      return redirectLogin();
+  try {
+    if (!isSupabaseClientEnvConfigured()) {
+      console.warn("[middleware] Supabase anon env missing; skipping session refresh");
+      return NextResponse.next();
     }
-    if (user.email_confirmed_at) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/auth/resume";
-      const cont = request.nextUrl.searchParams.get("continue");
-      if (typeof cont === "string" && cont.startsWith("/") && !cont.startsWith("//")) {
-        url.searchParams.set("continue", cont);
-      } else {
-        url.search = "";
-      }
-      return NextResponse.redirect(url);
+
+    const { supabase, getResponse } = createSupabaseUpdatingClient(request);
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.warn("[middleware] getUser failed:", error.message);
     }
-    return res;
-  }
+    const user = data?.user ?? null;
+    let res = getResponse();
 
-  if (user?.email_confirmed_at && isStandaloneAuthRoute(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/resume";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
-  if (requiresConfirmedUser(pathname)) {
-    if (!user) return redirectLogin();
-    if (!user.email_confirmed_at) {
+    const redirectLogin = () => {
       const url = request.nextUrl.clone();
-      url.pathname = "/verify-email";
+      url.pathname = "/login";
       url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
       return NextResponse.redirect(url);
-    }
-  }
+    };
 
-  return res;
+    if (pathname.startsWith("/verify-email")) {
+      if (!user) {
+        return redirectLogin();
+      }
+      if (user.email_confirmed_at) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/auth/resume";
+        const cont = request.nextUrl.searchParams.get("continue");
+        if (typeof cont === "string" && cont.startsWith("/") && !cont.startsWith("//")) {
+          url.searchParams.set("continue", cont);
+        } else {
+          url.search = "";
+        }
+        return NextResponse.redirect(url);
+      }
+      return res;
+    }
+
+    if (user?.email_confirmed_at && isStandaloneAuthRoute(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/resume";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    if (requiresConfirmedUser(pathname)) {
+      if (!user) return redirectLogin();
+      if (!user.email_confirmed_at) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/verify-email";
+        url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+        return NextResponse.redirect(url);
+      }
+    }
+
+    return res;
+  } catch (e) {
+    console.error("[middleware] unhandled:", e);
+    return NextResponse.next();
+  }
 }
 
 export const config = {

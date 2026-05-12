@@ -16,9 +16,15 @@ export function createSupabaseUpdatingClient(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        /** Edge (e.g. Vercel): mutating `request.cookies` throws; only `response.cookies` is supported. */
         response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value, options }) => {
+          if (value) {
+            response.cookies.set(name, value, options);
+          } else {
+            response.cookies.delete(name);
+          }
+        });
       },
     },
   });

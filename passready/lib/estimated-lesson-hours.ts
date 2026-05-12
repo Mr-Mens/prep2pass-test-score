@@ -12,7 +12,15 @@ export const ESTIMATED_HOURS_DISCLAIMER = "This is a guide, not a guarantee.";
 /** Inputs needed for hour estimation (subset of {@link AssessmentPayload}). */
 export type EstimatedHoursInput = Pick<
   AssessmentPayload,
-  "lessonsTaken" | "mockTestTaken" | "mockTestResult" | "seriousFaults" | "drivingFaults" | "weakAreas" | "confidenceLevel"
+  | "lessonsTaken"
+  | "mockTestTaken"
+  | "mockTestResult"
+  | "seriousFaults"
+  | "drivingFaults"
+  | "weakAreas"
+  | "confidenceLevel"
+  | "syllabusCaptureVersion"
+  | "topicsCovered"
 >;
 
 export type EstimationPath = "minimal" | "partial" | "full";

@@ -1,4 +1,5 @@
 import { sanitiseReportLearnerCopy } from "@/lib/report-copy-sanitise";
+import { mergeNextStepsPreserveOrder } from "@/lib/syllabus-coverage";
 import { computeMockReadiness } from "@/lib/scoring";
 import { generateReadinessReport } from "@/lib/server/generate-readiness-report";
 import { deterministicToReport } from "@/lib/transformers/deterministic-to-report";
@@ -38,12 +39,13 @@ export async function scoreAssessment(
 
   try {
     const aiReport = await generateReadinessReport({ assessment, deterministic });
+    const prefixedNext = mergeNextStepsPreserveOrder(deterministic.nextSteps, aiReport.nextSteps, 8);
     const result: MockReadinessResult = {
       readinessScore: deterministic.readinessScore,
       readinessLabel: deterministic.readinessLabel,
       summary: aiReport.summary,
       riskAreas: aiReport.riskAreas,
-      nextSteps: aiReport.nextSteps,
+      nextSteps: prefixedNext,
       recommendedHours: deterministic.recommendedHours,
       estimatedLessonHours: deterministic.estimatedLessonHours,
       coachMessage: aiReport.coachMessage,
@@ -51,6 +53,7 @@ export async function scoreAssessment(
         source: "ai",
         model: aiReport.model,
         generatedAt: new Date().toISOString(),
+        ...(deterministic.syllabusProgress ? { syllabus: deterministic.syllabusProgress } : {}),
       },
     };
     return { assessment, result: sanitiseReportLearnerCopy(result) };

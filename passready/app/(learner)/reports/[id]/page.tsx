@@ -8,6 +8,7 @@ import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBloc
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
+import { ReportSyllabusPanel } from "@/components/reports/ReportSyllabusPanel";
 import { LIFETIME_MEMBER_UI } from "@/lib/constants";
 import {
   buildRecommendedHoursNarrative,
@@ -21,6 +22,7 @@ import { getReportByIdForUser } from "@/lib/server/repositories/reports-reposito
 import { getServerAuthUser } from "@/lib/supabase/server";
 import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
 import type { AssessmentPayload } from "@/lib/validation";
+import { syllabusProgressSnapshotSchema } from "@/lib/validation";
 
 type Props = { params: { id: string } };
 
@@ -37,6 +39,13 @@ function badgeClass(label: string) {
   if (label === "Building Consistency") return "bg-amber-50 text-amber-950 ring-amber-200";
   if (label === "Nearly Test Ready") return "bg-sky-50 text-sky-950 ring-sky-200";
   return "bg-teal-50 text-teal-950 ring-teal-200";
+}
+
+function syllabusFromRawMetadata(raw: unknown) {
+  if (!raw || typeof raw !== "object") return null;
+  const syllabus = "syllabus" in raw ? (raw as { syllabus: unknown }).syllabus : undefined;
+  const p = syllabusProgressSnapshotSchema.safeParse(syllabus);
+  return p.success ? p.data : null;
 }
 
 export default async function ReportDetailPage({ params }: Props) {
@@ -71,6 +80,8 @@ export default async function ReportDetailPage({ params }: Props) {
   } catch {
     reportLifetimeRoute = false;
   }
+
+  const syllabusSnapshot = syllabusFromRawMetadata(report.raw_metadata);
 
   const formattedDate = new Date(report.created_at).toLocaleString("en-GB", {
     weekday: "short",
@@ -116,6 +127,8 @@ export default async function ReportDetailPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {syllabusSnapshot ? <ReportSyllabusPanel syllabus={syllabusSnapshot} /> : null}
 
         <div className="rounded-2xl border border-teal-200/80 bg-teal-50/80 p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-semibold text-teal-950">Coach note</h2>

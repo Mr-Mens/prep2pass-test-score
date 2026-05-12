@@ -19,6 +19,8 @@ const baseLearner = (): Omit<
   | "drivingFaults"
   | "confidenceLevel"
   | "weakAreas"
+  | "syllabusCaptureVersion"
+  | "topicsCovered"
 > => ({
   fullName: "Benchmark Learner",
   email: "benchmark@prep2pass.test",

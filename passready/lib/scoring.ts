@@ -1,4 +1,16 @@
 import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
+import {
+  appendSyllabusSentenceToSummary,
+  blendReadinessWithSyllabus,
+  boostLessonHoursForSyllabusGaps,
+  buildSyllabusFocusSteps,
+  buildSyllabusProgressSnapshot,
+  buildSyllabusRoadmapSteps,
+  computeWeightedSyllabusRatio,
+  mergeNextStepsPreserveOrder,
+  syllabusLayerActive,
+} from "@/lib/syllabus-coverage";
+import { syllabusGapHighlightsByRiskGroup } from "@/lib/syllabus-risk-bridge";
 import { WEAK_AREA_OPTIONS, type WeakAreaId } from "./constants";
 import {
   labelForOfficialGroup,
@@ -441,6 +453,12 @@ function buildGroupedRiskAreas(assessment: AssessmentPayload, salt: number): Gro
     getBucket(buckets, meta.groupKey).skills.set(id, chip);
   }
 
+  const syllabusGapsByGroup = syllabusGapHighlightsByRiskGroup(assessment);
+  for (const gk of Object.keys(syllabusGapsByGroup) as OfficialGroupKey[]) {
+    const text = syllabusGapsByGroup[gk];
+    if (text) getBucket(buckets, gk).highlights.push(text);
+  }
+
   const groups: GroupedRiskArea[] = [];
 
   for (const groupKey of OFFICIAL_GROUP_ORDER) {
@@ -619,7 +637,7 @@ function buildNextSteps(assessment: AssessmentPayload, salt: number): string[] {
     ]),
   );
 
-  return Array.from(new Set(steps)).slice(0, 6);
+  return Array.from(new Set(steps));
 }
 
 function buildSummary(assessment: AssessmentPayload, score: number, salt: number): string {
@@ -657,16 +675,36 @@ function buildSummary(assessment: AssessmentPayload, score: number, salt: number
  * Deterministic scoring: five-pillar UK ADI-style model (safety-led blend of consistency, judgement, independence, test-day evidence).
  */
 export function computeMockReadiness(assessment: AssessmentPayload): DeterministicReadinessResult {
-  const score = computePillarReadinessScore(assessment);
+  const pillarScore = computePillarReadinessScore(assessment);
+  const weightedSyllabus = syllabusLayerActive(assessment)
+    ? computeWeightedSyllabusRatio(assessment.topicsCovered ?? [])
+    : 1;
+  const score = syllabusLayerActive(assessment)
+    ? blendReadinessWithSyllabus(pillarScore, weightedSyllabus)
+    : pillarScore;
   const readinessLabel = labelForScore(score);
   const copySalt = reportCopySalt(assessment);
-  const riskAreas = buildGroupedRiskAreas(assessment, copySalt);
-  const nextSteps = buildNextSteps(assessment, copySalt);
-  const estimatedLessonHours = computeEstimatedLessonHours(assessment, score);
-  const recommendedHours = buildRecommendedHoursNarrative(estimatedLessonHours, copySalt);
-  const summary = buildSummary(assessment, score, copySalt);
 
-  return {
+  const syllabusSnapshot = buildSyllabusProgressSnapshot(assessment);
+  const syllabusFocusSteps = buildSyllabusFocusSteps(assessment, copySalt);
+  const syllabusRoadmapSteps = buildSyllabusRoadmapSteps(assessment, copySalt);
+
+  const riskAreas = buildGroupedRiskAreas(assessment, copySalt);
+  const baselineNext = buildNextSteps(assessment, copySalt);
+  const nextSteps = mergeNextStepsPreserveOrder(
+    [...syllabusFocusSteps, ...syllabusRoadmapSteps],
+    baselineNext,
+    8,
+  );
+
+  let estimatedLessonHours = computeEstimatedLessonHours(assessment, score);
+  if (syllabusLayerActive(assessment)) {
+    estimatedLessonHours = boostLessonHoursForSyllabusGaps(estimatedLessonHours, weightedSyllabus);
+  }
+  const recommendedHours = buildRecommendedHoursNarrative(estimatedLessonHours, copySalt);
+  const summary = appendSyllabusSentenceToSummary(buildSummary(assessment, score, copySalt), assessment, copySalt);
+
+  const out: DeterministicReadinessResult = {
     readinessScore: score,
     readinessLabel,
     riskAreas,
@@ -675,4 +713,8 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
     summary,
     nextSteps,
   };
+  if (syllabusSnapshot) out.syllabusProgress = syllabusSnapshot;
+  const syllabusPrepends = [...syllabusFocusSteps, ...syllabusRoadmapSteps];
+  if (syllabusPrepends.length) out.syllabusFocusSteps = syllabusPrepends;
+  return out;
 }

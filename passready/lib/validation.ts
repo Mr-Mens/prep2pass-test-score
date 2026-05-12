@@ -8,6 +8,7 @@ import {
   riskSeveritySchema,
 } from "./readiness-risk-areas";
 import { MOCK_REFLECTION_CATEGORIES, MOCK_REFLECTION_SUB_OPTIONS } from "./mock-reflection";
+import { SYLLABUS_TOPIC_ID_SET, SYLLABUS_TOTAL_TOPIC_COUNT } from "./syllabus-topics";
 import { migrateWeakAreaIds } from "./weak-area-migration";
 
 type WeakAreaId = (typeof WEAK_AREA_OPTIONS)[number]["id"];
@@ -24,6 +25,60 @@ const mockReflectionSubOptionIds = MOCK_REFLECTION_SUB_OPTIONS.map((o) => o.id) 
 const mockReflectionSubOptionCategoryById = new Map(
   MOCK_REFLECTION_SUB_OPTIONS.map((opt) => [opt.id, opt.categoryId] as const),
 );
+
+function refineSyllabusPayload(
+  data: { syllabusCaptureVersion?: 1; topicsCovered?: string[] },
+  ctx: z.RefinementCtx,
+): void {
+  const topics = data.topicsCovered;
+  const version = data.syllabusCaptureVersion;
+
+  if ((topics?.length ?? 0) > 0 && version !== 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Syllabus topics require syllabus capture version 1",
+      path: ["topicsCovered"],
+    });
+  }
+
+  if (version === 1 && topics != null) {
+    if (topics.length > SYLLABUS_TOTAL_TOPIC_COUNT) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Too many syllabus topics listed",
+        path: ["topicsCovered"],
+      });
+      return;
+    }
+    for (const id of topics) {
+      if (!SYLLABUS_TOPIC_ID_SET.has(id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Unknown syllabus topic id",
+          path: ["topicsCovered"],
+        });
+        return;
+      }
+    }
+  }
+}
+
+function normalizeSyllabusOutput<T extends { syllabusCaptureVersion?: 1; topicsCovered?: string[] }>(
+  data: T,
+): T {
+  if (data.syllabusCaptureVersion !== 1) {
+    return {
+      ...data,
+      syllabusCaptureVersion: undefined,
+      topicsCovered: undefined,
+    };
+  }
+  return {
+    ...data,
+    syllabusCaptureVersion: 1,
+    topicsCovered: Array.from(new Set(data.topicsCovered ?? [])),
+  };
+}
 
 const countedField = (label: string, max: number) =>
   z
@@ -109,6 +164,9 @@ export const assessmentSchema = z
       .max(250, "Keep this under 250 characters")
       .optional()
       .transform((v) => (v === "" ? undefined : v)),
+    /** When set with `topicsCovered`, enables syllabus realism layer (v1). Omit for legacy payloads. */
+    syllabusCaptureVersion: z.literal(1).optional(),
+    topicsCovered: z.array(z.string()).max(SYLLABUS_TOTAL_TOPIC_COUNT).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.testBooked === "yes") {
@@ -160,7 +218,10 @@ export const assessmentSchema = z
         }
       }
     }
-  });
+
+    refineSyllabusPayload(data, ctx);
+  })
+  .transform(normalizeSyllabusOutput);
 
 export type AssessmentFormValues = z.input<typeof assessmentSchema>;
 export type AssessmentPayload = z.output<typeof assessmentSchema>;
@@ -192,7 +253,13 @@ export const assessmentDataSchema = z.object({
   mockReflectionCategories: z.array(z.enum(mockReflectionCategoryIds)).optional().default([]),
   mockReflectionDetails: z.array(z.enum(mockReflectionSubOptionIds)).optional().default([]),
   extraNotes: z.string().optional(),
-});
+  syllabusCaptureVersion: z.literal(1).optional(),
+  topicsCovered: z.array(z.string()).max(SYLLABUS_TOTAL_TOPIC_COUNT).optional(),
+})
+  .superRefine((data, ctx) => {
+    refineSyllabusPayload(data, ctx);
+  })
+  .transform(normalizeSyllabusOutput);
 
 /** Legacy localStorage shape (assessment only; score was computed on the client). */
 export const storedAssessmentSchema = z.object({
@@ -234,6 +301,26 @@ export const estimatedLessonHoursSchema = z.object({
 });
 export type EstimatedLessonHours = z.infer<typeof estimatedLessonHoursSchema>;
 
+export const syllabusProgressCategorySchema = z.object({
+  key: z.string(),
+  title: z.string(),
+  covered: z.number().int().min(0),
+  total: z.number().int().min(0),
+  completionPercent: z.number().min(0).max(100),
+});
+
+export const syllabusProgressSnapshotSchema = z.object({
+  captureVersion: z.literal(1),
+  topicsCoveredCount: z.number().int().min(0),
+  totalTopics: z.number().int().min(1),
+  completionPercent: z.number().min(0).max(100),
+  weightedCoverageRatio: z.number().min(0).max(1),
+  categoryProgress: z.array(syllabusProgressCategorySchema),
+  uncoveredPriorityLabels: z.array(z.string()),
+  nextLessonFocus: z.array(z.string()),
+});
+export type SyllabusProgressSnapshot = z.infer<typeof syllabusProgressSnapshotSchema>;
+
 export const deterministicReadinessResultSchema = z.object({
   readinessScore: z.number().int().min(0).max(100),
   readinessLabel: readinessLabelSchema,
@@ -243,6 +330,9 @@ export const deterministicReadinessResultSchema = z.object({
   nextSteps: z.array(z.string()),
   /** Present on new scores; optional for older persisted deterministic snapshots. */
   estimatedLessonHours: estimatedLessonHoursSchema.optional(),
+  syllabusProgress: syllabusProgressSnapshotSchema.optional(),
+  /** Prepended deterministically ahead of richer next steps / AI merges. */
+  syllabusFocusSteps: z.array(z.string()).optional(),
 });
 
 export type DeterministicReadinessResult = z.infer<typeof deterministicReadinessResultSchema>;
@@ -251,6 +341,7 @@ export const reportMetadataSchema = z.object({
   source: z.enum(["ai", "fallback"]),
   model: z.string().optional(),
   generatedAt: z.string(),
+  syllabus: syllabusProgressSnapshotSchema.optional(),
 });
 export type ReportMetadata = z.infer<typeof reportMetadataSchema>;
 
@@ -259,7 +350,7 @@ export const aiReadinessReportSchema = z.object({
   readinessLabel: readinessLabelSchema,
   summary: z.string().min(1),
   riskAreas: riskAreasNormalizedSchema,
-  nextSteps: z.array(z.string().min(1)).min(2).max(6),
+  nextSteps: z.array(z.string().min(1)).min(2).max(8),
   recommendedHours: z.string().min(1),
   coachMessage: z.string().min(1),
   /** Deterministic range; optional on older cached API payloads. */
@@ -274,7 +365,7 @@ export type AiReadinessReport = z.infer<typeof aiReadinessReportSchema>;
 export const aiReadinessNarrativeOnlySchema = z.object({
   summary: z.string().min(1),
   riskAreas: riskAreasNormalizedSchema,
-  nextSteps: z.array(z.string().min(1)).min(2).max(6),
+  nextSteps: z.array(z.string().min(1)).min(2).max(8),
   coachMessage: z.string().min(1),
 });
 export type AiReadinessNarrativeOnly = z.infer<typeof aiReadinessNarrativeOnlySchema>;

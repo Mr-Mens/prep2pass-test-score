@@ -54,6 +54,7 @@ export function deterministicToReport(
       source: options.source,
       model: options.model,
       generatedAt,
+      ...(deterministic.syllabusProgress ? { syllabus: deterministic.syllabusProgress } : {}),
     },
   };
 }

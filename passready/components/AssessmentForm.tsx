@@ -26,6 +26,7 @@ import {
 
 import { Button } from "./Button";
 import { MockTestReflectionSection } from "./MockTestReflectionSection";
+import { SyllabusTopicsSection } from "./assessment/SyllabusTopicsSection";
 
 const fieldClass =
   "mt-1 block min-h-[50px] w-full rounded-xl border border-brand-200 bg-white px-4 py-3.5 text-sm text-brand-950 shadow-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-200 sm:min-h-0 sm:rounded-lg sm:px-3.5 sm:py-2.5";
@@ -44,6 +45,7 @@ const sectionBox =
 
 const CHECKOUT_VALUE_BULLETS = [
   "Your readiness score, explained in plain English",
+  "A roadmap of syllabus topics touched versus still to practise",
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
@@ -52,7 +54,7 @@ const CHECKOUT_VALUE_BULLETS = [
 
 const checkoutSubmitButtonClass = "w-full";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 type ScorePreview = {
   assessment: AssessmentPayload;
@@ -188,6 +190,8 @@ export function AssessmentForm({
       mockReflectionCategories: [],
       mockReflectionDetails: [],
       extraNotes: "",
+      syllabusCaptureVersion: 1,
+      topicsCovered: [],
     },
   });
 
@@ -591,6 +595,15 @@ export function AssessmentForm({
       <fieldset className={sectionBox}>
         <SectionHeader
           step={3}
+          title="Topics you've covered so far"
+          hint="Select the areas you've already learned or practised during lessons or private practice. Honesty narrows readiness realism—this isn't a test grade on each skill."
+        />
+        <SyllabusTopicsSection control={control} errors={errors} />
+      </fieldset>
+
+      <fieldset className={sectionBox}>
+        <SectionHeader
+          step={4}
           title="Mock test"
           hint="Mocks are the closest safe proxy to exam pressure, so answer honestly."
         />
@@ -660,7 +673,7 @@ export function AssessmentForm({
 
       <fieldset className={sectionBox}>
         <SectionHeader
-          step={4}
+          step={5}
           title="Tell us what happened in your mock test (optional)"
           hint="This helps personalise your report. Keep it quick."
         />
@@ -669,7 +682,7 @@ export function AssessmentForm({
 
       <fieldset className={sectionBox}>
         <SectionHeader
-          step={5}
+          step={6}
           title="Recent performance"
           hint="Use one recent lesson or mock that felt typical, not your best-ever day."
         />
@@ -733,7 +746,7 @@ export function AssessmentForm({
 
       <fieldset className={sectionBox}>
         <SectionHeader
-          step={6}
+          step={7}
           title="Focus areas"
           hint="Tick skills that still wobble under test-like pressure. Honesty improves the snapshot."
         />

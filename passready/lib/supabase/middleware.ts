@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/url";
+import { getSupabaseAnonKey, getSupabaseUrl } from "./url";
 
 /**
  * Maintains refreshed Supabase session cookies and returns the appropriate Next.js response.

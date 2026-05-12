@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createSupabaseUpdatingClient } from "@/lib/supabase/middleware";
-import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
-import { isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
+import { isStandaloneAuthRoute } from "./lib/auth-shell-routes";
+import { createSupabaseUpdatingClient } from "./lib/supabase/middleware";
+import { isSupabaseClientEnvConfigured } from "./lib/supabase/url";
 
 function requiresConfirmedUser(pathname: string): boolean {
   return (

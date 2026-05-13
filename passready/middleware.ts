@@ -25,18 +25,6 @@ function requiresConfirmedUser(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    /\.(?:svg|png|jpg|jpeg|gif|webp|ico)$/i.test(pathname)
-  ) {
-    return NextResponse.next();
-  }
-
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
-
   try {
     if (!isSupabaseClientEnvConfigured()) {
       console.warn("[middleware] Supabase anon env missing; skipping session refresh");
@@ -44,11 +32,11 @@ export async function middleware(request: NextRequest) {
     }
 
     const { supabase, getResponse } = createSupabaseUpdatingClient(request);
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.warn("[middleware] getUser failed:", error.message);
-    }
-    const user = data?.user ?? null;
+    /** Edge: avoid `getUser()` here — it calls Supabase Auth on every request and often breaks Vercel middleware (timeouts / invocation failures). Session comes from refreshed cookies; layouts/API can still call `getUser()` server-side for verified checks. */
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     let res = getResponse();
 
     const redirectLogin = () => {
@@ -101,5 +89,41 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  /** Narrow scope so Edge middleware does not run on marketing/static routes (fewer failures + cheaper). Cookie refresh runs when learners hit app shells or auth flows. */
+  matcher: [
+    "/verify-email",
+    "/verify-email/:path*",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/welcome",
+    "/auth/:path*",
+    "/assessment",
+    "/assessment/:path*",
+    "/results",
+    "/results/:path*",
+    "/checkout",
+    "/checkout/:path*",
+    "/upgrade",
+    "/upgrade/:path*",
+    "/home",
+    "/home/:path*",
+    "/dashboard",
+    "/dashboard/:path*",
+    "/account",
+    "/account/:path*",
+    "/progress",
+    "/progress/:path*",
+    "/lifetime",
+    "/lifetime/:path*",
+    "/instructor",
+    "/instructor/:path*",
+    "/my-reports",
+    "/my-reports/:path*",
+    "/supervisor",
+    "/supervisor/:path*",
+    "/reports",
+    "/reports/:path*",
+  ],
 };

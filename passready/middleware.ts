@@ -4,6 +4,17 @@ import { isStandaloneAuthRoute } from "./lib/auth-shell-routes";
 import { createSupabaseUpdatingClient } from "./lib/supabase/middleware";
 import { isSupabaseClientEnvConfigured } from "./lib/supabase/url";
 
+/** Paths where we skip Supabase session work (marketing / static-like). Matcher stays minimal so builds never choke on regex parsing. */
+function shouldBypassAuthMiddleware(pathname: string): boolean {
+  if (pathname.startsWith("/api/")) return true;
+  if (/\.(?:svg|png|jpg|jpeg|gif|webp|ico)$/i.test(pathname)) return true;
+  if (pathname === "/" || pathname === "/privacy" || pathname === "/terms") return true;
+  if (pathname === "/explore" || pathname === "/sample-report") return true;
+  if (pathname.startsWith("/report-lookup")) return true;
+  if (pathname.startsWith("/admin")) return true;
+  return false;
+}
+
 function requiresConfirmedUser(pathname: string): boolean {
   return (
     pathname.startsWith("/assessment") ||
@@ -24,6 +35,10 @@ function requiresConfirmedUser(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (shouldBypassAuthMiddleware(pathname)) {
+    return NextResponse.next();
+  }
 
   try {
     if (!isSupabaseClientEnvConfigured()) {
@@ -89,11 +104,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  /**
-   * App + auth shells only (marketing pages skip middleware).
-   * Use one regex compatible with Next's matcher compiler — avoid `:path*` segments (they confuse some parsers / tooling that reports errors like Unhandled type "ColonToken"), and avoid nested capturing groups (Next forbids those).
-   */
-  matcher: [
-    "/((?=verify-email(?:/|$)|login(?:/|$)|signup(?:/|$)|forgot-password(?:/|$)|reset-password(?:/|$)|welcome(?:/|$)|upgrade(?:/|$)|auth(?:/|$)|assessment(?:/|$)|results(?:/|$)|checkout(?:/|$)|home(?:/|$)|dashboard(?:/|$)|account(?:/|$)|progress(?:/|$)|lifetime(?:/|$)|instructor(?:/|$)|my-reports(?:/|$)|supervisor(?:/|$)|reports(?:/|$)).*)",
-  ],
+  /** Same shape as Next.js docs — avoids fragile matchers that break some compilers with errors like Unhandled type ColonToken. Narrow behaviour inside middleware instead. */
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

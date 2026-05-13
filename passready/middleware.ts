@@ -89,41 +89,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  /** Narrow scope so Edge middleware does not run on marketing/static routes (fewer failures + cheaper). Cookie refresh runs when learners hit app shells or auth flows. */
+  /**
+   * App + auth shells only (marketing pages skip middleware).
+   * Use one regex compatible with Next's matcher compiler — avoid `:path*` segments (they confuse some parsers / tooling that reports errors like Unhandled type "ColonToken"), and avoid nested capturing groups (Next forbids those).
+   */
   matcher: [
-    "/verify-email",
-    "/verify-email/:path*",
-    "/login",
-    "/signup",
-    "/forgot-password",
-    "/reset-password",
-    "/welcome",
-    "/auth/:path*",
-    "/assessment",
-    "/assessment/:path*",
-    "/results",
-    "/results/:path*",
-    "/checkout",
-    "/checkout/:path*",
-    "/upgrade",
-    "/upgrade/:path*",
-    "/home",
-    "/home/:path*",
-    "/dashboard",
-    "/dashboard/:path*",
-    "/account",
-    "/account/:path*",
-    "/progress",
-    "/progress/:path*",
-    "/lifetime",
-    "/lifetime/:path*",
-    "/instructor",
-    "/instructor/:path*",
-    "/my-reports",
-    "/my-reports/:path*",
-    "/supervisor",
-    "/supervisor/:path*",
-    "/reports",
-    "/reports/:path*",
+    "/((?=verify-email(?:/|$)|login(?:/|$)|signup(?:/|$)|forgot-password(?:/|$)|reset-password(?:/|$)|welcome(?:/|$)|upgrade(?:/|$)|auth(?:/|$)|assessment(?:/|$)|results(?:/|$)|checkout(?:/|$)|home(?:/|$)|dashboard(?:/|$)|account(?:/|$)|progress(?:/|$)|lifetime(?:/|$)|instructor(?:/|$)|my-reports(?:/|$)|supervisor(?:/|$)|reports(?:/|$)).*)",
   ],
 };

@@ -1,16 +1,28 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getSupabaseAnonKey, getSupabaseUrl } from "./url";
+export type SupabaseMiddlewareClient = ReturnType<typeof createServerClient>;
+
+/** Public Supabase client env for Edge middleware (no throw). */
+export function readSupabasePublicEnvForEdge(): { url: string; anonKey: string } | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (!url || !anonKey) return null;
+  return { url, anonKey };
+}
 
 /**
  * Maintains refreshed Supabase session cookies and returns the appropriate Next.js response.
- * Call from root `middleware.ts` after optional route guards read `supabase.auth.getUser()`.
+ * Edge-only: anon URL + anon key; never service role or lib/server.
  */
-export function createSupabaseUpdatingClient(request: NextRequest) {
+export function createSupabaseUpdatingClient(
+  request: NextRequest,
+  url: string,
+  anonKey: string,
+): { supabase: SupabaseMiddlewareClient; getResponse: () => NextResponse } {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
+  const supabase = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

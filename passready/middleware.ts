@@ -1,19 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { isStandaloneAuthRoute } from "./lib/auth-shell-routes";
-import { createSupabaseUpdatingClient } from "./lib/supabase/middleware";
-import { isSupabaseClientEnvConfigured } from "./lib/supabase/url";
+import {
+  createSupabaseUpdatingClient,
+  readSupabasePublicEnvForEdge,
+  type SupabaseMiddlewareClient,
+} from "./lib/supabase/middleware";
 
-/** Paths where we skip Supabase session work (marketing / static-like). */
+/**
+ * Skip Edge auth work for static assets, APIs (incl. Stripe webhooks), marketing, OAuth callback, etc.
+ * Matcher also excludes `/api/*`; this list is defence-in-depth.
+ */
 function shouldBypassAuthMiddleware(pathname: string): boolean {
   if (pathname.startsWith("/_next")) return true;
   if (pathname === "/favicon.ico") return true;
   if (pathname.startsWith("/api/")) return true;
-  if (/\.(?:svg|png|jpg|jpeg|gif|webp|ico)$/i.test(pathname)) return true;
+  if (/\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$/i.test(pathname)) return true;
   if (pathname === "/" || pathname === "/privacy" || pathname === "/terms") return true;
   if (pathname === "/explore" || pathname === "/sample-report") return true;
   if (pathname.startsWith("/report-lookup")) return true;
   if (pathname.startsWith("/admin")) return true;
+  /** PKCE exchange must run before session cookies exist — never intercept. */
+  if (pathname.startsWith("/auth/callback")) return true;
   return false;
 }
 
@@ -43,17 +51,34 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    if (!isSupabaseClientEnvConfigured()) {
-      console.warn("[middleware] Supabase anon env missing; skipping session refresh");
+    const pub = readSupabasePublicEnvForEdge();
+    if (!pub) {
+      console.warn("[middleware] Supabase public env missing; skipping session refresh");
       return NextResponse.next();
     }
 
-    const { supabase, getResponse } = createSupabaseUpdatingClient(request);
-    /** Edge: avoid `getUser()` here — it calls Supabase Auth on every request and often breaks Vercel middleware (timeouts / invocation failures). Session comes from refreshed cookies; layouts/API can still call `getUser()` server-side for verified checks. */
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user ?? null;
+    let supabase: SupabaseMiddlewareClient;
+    let getResponse: () => NextResponse;
+    try {
+      const client = createSupabaseUpdatingClient(request, pub.url, pub.anonKey);
+      supabase = client.supabase;
+      getResponse = client.getResponse;
+    } catch (e) {
+      console.error("[middleware] Supabase client init failed:", e);
+      return NextResponse.next();
+    }
+
+    let user: { email_confirmed_at?: string | null } | null = null;
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      user = session?.user ?? null;
+    } catch (e) {
+      console.error("[middleware] getSession failed:", e);
+      return NextResponse.next();
+    }
+
     let res = getResponse();
 
     const redirectLogin = () => {
@@ -100,9 +125,15 @@ export async function middleware(request: NextRequest) {
 
     return res;
   } catch (e) {
-    console.error("[middleware] unhandled:", e);
+    console.error("[middleware] error:", e);
     return NextResponse.next();
   }
 }
 
-/** No `config.matcher`: Vercel's post-build tooling can choke parsing path regexes (e.g. errors mentioning ColonToken). Scope is handled in `shouldBypassAuthMiddleware` instead. */
+/**
+ * Exclude APIs (Stripe webhooks, etc.), Next internals, favicon from Edge middleware entirely.
+ * Matches Next.js documented shape (single outer group, no nested captures).
+ */
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};

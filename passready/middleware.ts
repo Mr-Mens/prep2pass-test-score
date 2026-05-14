@@ -4,8 +4,10 @@ import { isStandaloneAuthRoute } from "./lib/auth-shell-routes";
 import { createSupabaseUpdatingClient } from "./lib/supabase/middleware";
 import { isSupabaseClientEnvConfigured } from "./lib/supabase/url";
 
-/** Paths where we skip Supabase session work (marketing / static-like). Matcher stays minimal so builds never choke on regex parsing. */
+/** Paths where we skip Supabase session work (marketing / static-like). */
 function shouldBypassAuthMiddleware(pathname: string): boolean {
+  if (pathname.startsWith("/_next")) return true;
+  if (pathname === "/favicon.ico") return true;
   if (pathname.startsWith("/api/")) return true;
   if (/\.(?:svg|png|jpg|jpeg|gif|webp|ico)$/i.test(pathname)) return true;
   if (pathname === "/" || pathname === "/privacy" || pathname === "/terms") return true;
@@ -103,7 +105,4 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-export const config = {
-  /** Same shape as Next.js docs — avoids fragile matchers that break some compilers with errors like Unhandled type ColonToken. Narrow behaviour inside middleware instead. */
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
+/** No `config.matcher`: Vercel's post-build tooling can choke parsing path regexes (e.g. errors mentioning ColonToken). Scope is handled in `shouldBypassAuthMiddleware` instead. */

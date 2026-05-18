@@ -1,87 +1,68 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_EXACT = new Set(["/", "/privacy", "/terms", "/explore", "/sample-report", "/favicon.ico"]);
-
-const PUBLIC_PREFIXES = [
-  "/_next",
-  "/api/",
-  "/auth/callback",
-  "/auth/resume",
-  "/report-lookup",
-  "/admin",
-  "/home",
-] as const;
-
-const AUTH_PREFIXES = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email"] as const;
-
-/** Routes that need a session cookie; role + email checks stay in layouts/pages. */
-const PROTECTED_PREFIXES = [
+const protectedRoutes = [
   "/dashboard",
+  "/reports",
   "/progress",
   "/account",
   "/instructor",
   "/supervisor",
-  "/my-reports",
-  "/lifetime",
-  "/reports/",
-] as const;
+];
 
-function isStaticAsset(pathname: string): boolean {
-  return /\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$/i.test(pathname);
-}
-
-/** Supabase SSR stores chunked `sb-*-auth-token` cookies (no JWT validation here). */
-function hasSupabaseAuthCookie(request: NextRequest): boolean {
-  return request.cookies.getAll().some((cookie) => {
-    if (!cookie.value?.trim()) return false;
-    return cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token");
-  });
-}
-
-function shouldBypassMiddleware(pathname: string): boolean {
-  if (isStaticAsset(pathname)) return true;
-  if (PUBLIC_EXACT.has(pathname)) return true;
-  if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p))) return true;
-  if (AUTH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return true;
-  return false;
-}
-
-function requiresAuthSession(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
-}
-
-function redirectToLogin(request: NextRequest, pathname: string) {
-  const url = request.nextUrl.clone();
-  url.pathname = "/login";
-  url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-  return NextResponse.redirect(url);
-}
+const authRoutes = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/auth/callback",
+];
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (shouldBypassMiddleware(pathname)) {
-    return NextResponse.next();
-  }
-
   try {
-    if (!requiresAuthSession(pathname)) {
+    const { pathname } = request.nextUrl;
+
+    if (authRoutes.some((route) => pathname.startsWith(route))) {
       return NextResponse.next();
     }
 
-    if (!hasSupabaseAuthCookie(request)) {
-      return redirectToLogin(request, pathname);
+    if (
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/favicon.ico") ||
+      pathname.startsWith("/home") ||
+      pathname.startsWith("/privacy") ||
+      pathname.startsWith("/terms")
+    ) {
+      return NextResponse.next();
+    }
+
+    const isProtected = protectedRoutes.some((route) => pathname.startsWith(route));
+
+    if (!isProtected) {
+      return NextResponse.next();
+    }
+
+    const hasSupabaseCookie = request.cookies
+      .getAll()
+      .some((cookie) => cookie.name.startsWith("sb-") && cookie.value?.trim());
+
+    if (!hasSupabaseCookie) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
     return NextResponse.next();
   } catch (error) {
-    console.error("[middleware] error:", error);
+    console.error("Middleware failed:", error);
     return NextResponse.next();
   }
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api(?:/|$)|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map)$).*)",
   ],
 };

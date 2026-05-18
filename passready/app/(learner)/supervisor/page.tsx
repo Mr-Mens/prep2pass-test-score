@@ -1,25 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { Button } from "@/components/Button";
 import { SITE } from "@/lib/constants";
-import { getUserAppRole } from "@/lib/server/user-app-role";
-import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Supervisor · Test Ready Score",
   description: `${SITE.name}: support your learner between lessons with reports and guidance.`,
 };
 
-export default async function SupervisorPlaceholderPage() {
-  const user = await getServerAuthUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent("/supervisor")}`);
-  if (!user.emailConfirmedAt) redirect(`/verify-email?continue=${encodeURIComponent("/supervisor")}`);
-
-  const role = await getUserAppRole(user.id);
-  if (role === "instructor") redirect("/instructor");
-
+export default function SupervisorPlaceholderPage() {
   return (
     <div className="flex flex-col gap-8 pb-10">
       <header className="rounded-3xl border border-violet-200/70 bg-gradient-to-br from-violet-50/90 via-white to-teal-50/40 p-6 shadow-[0_22px_56px_-28px_rgba(76,29,149,0.35)] ring-1 ring-white sm:p-8">

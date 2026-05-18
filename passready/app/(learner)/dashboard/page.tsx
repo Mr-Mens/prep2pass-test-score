@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
 import { Button } from "@/components/Button";
@@ -20,7 +19,6 @@ import {
 import { formatIsoDateUk } from "@/lib/formatting";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { getReportsByUserId, listJourneySnapshotsByUserId } from "@/lib/server/repositories/reports-repository";
-import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 import type { AssessmentPayload } from "@/lib/validation";
 
@@ -37,11 +35,7 @@ function deltaLabel(delta: number | null): { text: string; tone: string } | null
 }
 
 export default async function LearnerDashboardPage() {
-  const user = await getServerAuthUser();
-  if (!user) redirect("/login?next=%2Fdashboard");
-  if (!user.emailConfirmedAt) redirect(`/verify-email?next=${encodeURIComponent("/dashboard")}`);
-
-  const appRole = await getUserAppRole(user.id);
+  const user = (await getServerAuthUser())!;
 
   let firstName = "";
   try {
@@ -107,24 +101,6 @@ export default async function LearnerDashboardPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-4">
-      {appRole === "instructor" ? (
-        <aside className="rounded-2xl border border-teal-300/70 bg-teal-50/90 p-4 shadow-sm ring-1 ring-teal-200/45">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-900">Instructor workspace</p>
-          <p className="mt-2 text-sm font-semibold text-brand-950">
-            Manage mock tests, pupils, and reports from the instructor hub.
-          </p>
-          <Link
-            href="/instructor"
-            className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-teal-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
-          >
-            Open instructor workspace
-          </Link>
-          <p className="mt-3 text-xs leading-relaxed text-brand-700">
-            FAQs, sample report, and pricing stay on Home inside the learner app — use Home in the bottom bar or the first
-            item in the desktop sidebar.
-          </p>
-        </aside>
-      ) : null}
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">{welcome}</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">

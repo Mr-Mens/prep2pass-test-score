@@ -1,7 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { hasSupabaseAuthCookie } from "@/lib/auth/edge-session-cookie";
-
 const PUBLIC_EXACT = new Set(["/", "/privacy", "/terms", "/explore", "/sample-report", "/favicon.ico"]);
 
 const PUBLIC_PREFIXES = [
@@ -30,6 +28,14 @@ const PROTECTED_PREFIXES = [
 
 function isStaticAsset(pathname: string): boolean {
   return /\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$/i.test(pathname);
+}
+
+/** Supabase SSR stores chunked `sb-*-auth-token` cookies (no JWT validation here). */
+function hasSupabaseAuthCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some((cookie) => {
+    if (!cookie.value?.trim()) return false;
+    return cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token");
+  });
 }
 
 function shouldBypassMiddleware(pathname: string): boolean {

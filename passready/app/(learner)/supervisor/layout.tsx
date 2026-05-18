@@ -1,17 +1,11 @@
 import { redirect } from "next/navigation";
 
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
+import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
 import { getUserAppRole } from "@/lib/server/user-app-role";
-import { getServerAuthUser } from "@/lib/supabase/server";
 
 export default async function SupervisorLayout({ children }: { children: React.ReactNode }) {
-  const user = await getServerAuthUser();
-  if (!user) {
-    redirect(`/login?next=${encodeURIComponent("/supervisor")}`);
-  }
-  if (!user.emailConfirmedAt) {
-    redirect(`/verify-email?continue=${encodeURIComponent("/supervisor")}`);
-  }
+  const user = await requireAuthenticatedSession("/supervisor");
 
   const role = await getUserAppRole(user.id);
   if (role !== "parent") {

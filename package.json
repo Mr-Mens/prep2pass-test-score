@@ -1,0 +1,11 @@
+{
+  "name": "prep2pass-test-score",
+  "private": true,
+  "workspaces": ["passready"],
+  "scripts": {
+    "build": "npm run build -w passready",
+    "dev": "npm run dev -w passready",
+    "lint": "npm run lint -w passready",
+    "start": "npm run start -w passready"
+  }
+}

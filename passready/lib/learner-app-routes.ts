@@ -5,7 +5,6 @@
 const LEARNER_ROOTS = [
   "/home",
   "/dashboard",
-  "/supervisor",
   "/account",
   "/progress",
   "/assessment",
@@ -17,7 +16,7 @@ const LEARNER_ROOTS = [
 ] as const;
 
 export function isLearnerAppRoute(pathname: string): boolean {
-  if (!pathname || pathname.startsWith("/instructor")) return false;
+  if (!pathname || pathname.startsWith("/instructor") || pathname.startsWith("/supervisor")) return false;
 
   const path = pathname.split("?")[0] ?? pathname;
 

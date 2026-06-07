@@ -1,0 +1,153 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { BrandLogo } from "@/components/BrandLogo";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const sidebarNav = [
+  { href: "/supervisor", label: "Home", match: "exact" },
+  { href: "/supervisor/practice-log", label: "Practice log", match: "prefix" },
+  { href: "/supervisor/reports", label: "Reports", match: "prefix" },
+  { href: "/supervisor/progress", label: "Progress", match: "prefix" },
+  { href: "/supervisor/link-learner", label: "Link learner", match: "prefix" },
+  { href: "/account", label: "Account", match: "prefix" },
+] as const;
+
+const dockNav = [
+  { href: "/supervisor", label: "Home", icon: "⌂" },
+  { href: "/supervisor/practice-log", label: "Practice", icon: "✎" },
+  { href: "/supervisor/reports", label: "Reports", icon: "☰" },
+  { href: "/supervisor/progress", label: "Progress", icon: "↗" },
+  { href: "/account", label: "Account", icon: "⚙" },
+] as const;
+
+type Props = {
+  children: React.ReactNode;
+  supervisorEmail: string;
+  displayName: string;
+};
+
+function isActive(pathname: string, href: string, match: "exact" | "prefix"): boolean {
+  if (match === "exact") return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function SupervisorShell({ children, supervisorEmail, displayName }: Props) {
+  const pathname = usePathname() ?? "";
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s) => s[0]?.toUpperCase() ?? "")
+      .join("") || "PA";
+
+  async function signOut() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    window.location.assign("/");
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
+      <aside className="hidden w-[17rem] shrink-0 flex-col border-r border-brand-100 bg-white md:flex">
+        <div className="flex h-full flex-col px-4 py-6">
+          <BrandLogo variant="learnerRail" className="h-8 w-auto" />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700">Parent &amp; supervisor</p>
+          <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Supervisor">
+            {sidebarNav.map((item) => {
+              const active = isActive(pathname, item.href, item.match);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                    active
+                      ? "bg-teal-700 text-white shadow-sm"
+                      : "text-brand-700 hover:bg-brand-50 hover:text-brand-950"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="border-t border-brand-100 pt-5">
+            <div className="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50/60 px-3 py-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-sm font-semibold text-teal-800">
+                {initials}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-brand-950">{displayName}</p>
+                <p className="truncate text-xs text-brand-500">{supervisorEmail}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="mt-3 w-full rounded-xl border border-brand-200 bg-white px-3 py-2.5 text-sm font-semibold text-brand-800 transition hover:bg-brand-50"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+          <div>
+            <p className="font-heading text-sm font-semibold text-brand-950">Parent workspace</p>
+            <p className="text-xs text-brand-500">Test Ready Score</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="rounded-xl border border-brand-200 px-3 py-2 text-xs font-semibold text-brand-700"
+          >
+            Sign out
+          </button>
+        </header>
+
+        <main className="flex-1 px-4 py-6 pb-28 sm:px-6 md:px-10 md:py-8 md:pb-8 lg:px-12">{children}</main>
+
+        <nav
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-100 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden"
+          aria-label="Supervisor mobile"
+        >
+          <ul className="grid grid-cols-5 gap-1">
+            {dockNav.map((item) => {
+              const active =
+                item.href === "/supervisor"
+                  ? pathname === "/supervisor"
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition ${
+                      active ? "bg-teal-50 text-teal-800" : "text-brand-600 hover:bg-brand-50"
+                    }`}
+                  >
+                    <span aria-hidden className="text-base leading-none">
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  );
+}

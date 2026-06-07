@@ -1,16 +1,24 @@
-import { redirect } from "next/navigation";
-
-import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
-import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
-import { getUserAppRole } from "@/lib/server/user-app-role";
+import { SupervisorShell } from "@/components/supervisor/SupervisorShell";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireParentSession } from "@/lib/server/supervisor-page-auth";
 
 export default async function SupervisorLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireAuthenticatedSession("/supervisor");
+  const user = await requireParentSession();
 
-  const role = await getUserAppRole(user.id);
-  if (role !== "parent") {
-    redirect(dashboardPathForAppRole(role));
-  }
+  const sb = createSupabaseServerClient();
+  const {
+    data: { user: raw },
+  } = await sb.auth.getUser();
+  const md = raw?.user_metadata as Record<string, unknown> | undefined;
+  const first =
+    (typeof md?.first_name === "string" && md.first_name.trim()) ||
+    (typeof md?.firstName === "string" && md.firstName.trim()) ||
+    "";
+  const displayName = first || "Supervisor";
 
-  return <>{children}</>;
+  return (
+    <SupervisorShell supervisorEmail={user.email} displayName={displayName}>
+      {children}
+    </SupervisorShell>
+  );
 }

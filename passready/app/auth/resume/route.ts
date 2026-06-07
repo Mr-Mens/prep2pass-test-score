@@ -1,8 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { appRoleFromDestination, destinationAllowedForRole } from "@/lib/auth/role-from-destination";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
-import { getUserAppRole } from "@/lib/server/user-app-role";
-import { getServerAuthUser } from "@/lib/supabase/server";
+import { appRoleFromUserMetadata, ensureUserAppRoleFromIntent, getUserAppRole } from "@/lib/server/user-app-role";
+import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
+
+import type { UserAppRole } from "@/lib/instructor/types";
 
 const BLOCKED_CONTINUE_PREFIXES = [
   "/login",
@@ -23,8 +26,8 @@ function redirect(origin: string, path: string) {
 }
 
 /**
- * Post-login destination for verified learners defaults to `/dashboard`.
- * Optional `continue` selects a verified internal path.
+ * Post-login destination defaults to the role dashboard.
+ * Optional `continue` selects a verified internal path when it matches the user's role.
  */
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -39,13 +42,26 @@ export async function GET(request: NextRequest) {
   }
 
   const continueRaw = request.nextUrl.searchParams.get("continue");
-  let destination: string = dashboardPathForAppRole(await getUserAppRole(user.id));
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { user: rawUser },
+  } = await supabase.auth.getUser();
+  const metadata = rawUser?.user_metadata as Record<string, unknown> | undefined;
+
+  const intentFromContinue = continueRaw ? appRoleFromDestination(continueRaw) : null;
+  const intent: UserAppRole =
+    intentFromContinue ?? appRoleFromUserMetadata(metadata) ?? "learner";
+
+  await ensureUserAppRoleFromIntent(user.id, intent);
+  const role = await getUserAppRole(user.id);
+  let destination: string = dashboardPathForAppRole(role);
 
   if (
     typeof continueRaw === "string" &&
     continueRaw.startsWith("/") &&
     !continueRaw.startsWith("//") &&
-    !blockedContinue(continueRaw)
+    !blockedContinue(continueRaw) &&
+    destinationAllowedForRole(continueRaw, role)
   ) {
     destination = continueRaw;
   }

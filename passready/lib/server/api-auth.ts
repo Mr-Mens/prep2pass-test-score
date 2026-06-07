@@ -48,3 +48,13 @@ export async function requireInstructorApiUser(): Promise<RouteAuthResult> {
   }
   return base;
 }
+
+export async function requireParentApiUser(): Promise<RouteAuthResult> {
+  const base = await requireVerifiedApiUser();
+  if (!base.ok) return base;
+  const role = await getUserAppRole(base.userId);
+  if (role !== "parent") {
+    return { ok: false, status: 403, message: "Parent supervisor access only." };
+  }
+  return base;
+}

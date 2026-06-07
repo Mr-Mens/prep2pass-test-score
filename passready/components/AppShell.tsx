@@ -26,6 +26,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <div className="flex min-h-dvh flex-col">{children}</div>;
   }
 
+  if (pathname.startsWith("/supervisor")) {
+    return <div className="flex min-h-dvh flex-col">{children}</div>;
+  }
+
   if (isLearnerAppRoute(pathname)) {
     return <LearnerChrome>{children}</LearnerChrome>;
   }

@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
+import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import { passwordFieldSchema } from "@/lib/auth/password";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -19,6 +20,7 @@ export function SignupFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const postAuthPath = useMemo(() => safePostAuthPath(searchParams.get("next")), [searchParams]);
+  const signupAppRole = useMemo(() => appRoleFromDestination(postAuthPath) ?? "learner", [postAuthPath]);
   /** After email confirmation lands on verify-email with the same destination intent */
   const verifyEmailHref = useMemo(() => {
     const q = new URLSearchParams({ continue: postAuthPath });
@@ -74,7 +76,7 @@ export function SignupFlow() {
         password,
         options: {
           emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextAfterCallback)}`,
-          data: { first_name: fn },
+          data: { first_name: fn, app_role: signupAppRole },
         },
       });
       if (error) {

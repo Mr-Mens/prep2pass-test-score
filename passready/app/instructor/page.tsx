@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { LIFETIME_MEMBER_UI } from "@/lib/constants";
-
 function IconClipboard() {
   return (
     <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
@@ -119,39 +117,14 @@ export default function InstructorDashboardPage() {
             This toolkit is independent and not affiliated with DVSA. Built for Approved Driving Instructors to support
             professional teaching only.
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-8">
             <Link
               href="/instructor/mock-test/new"
               className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 px-6 text-sm font-semibold text-white shadow-md transition hover:from-teal-700 hover:to-teal-800 hover:shadow-lg"
             >
               Start mock test
             </Link>
-            <Link
-              href="/home"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-brand-200 bg-white px-6 text-sm font-semibold text-brand-800 shadow-sm transition hover:border-teal-300 hover:bg-teal-50/90"
-            >
-              Learner premium home
-            </Link>
           </div>
-          <aside className="mt-10 rounded-2xl border border-teal-200/90 bg-teal-50/90 p-5 shadow-inner sm:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-teal-900">{LIFETIME_MEMBER_UI.badge}</p>
-                <p className="mt-2 text-sm font-semibold text-brand-950">
-                  Instructor accounts include full learner Premium access at no charge.
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-brand-700">
-                  Assessments, unlimited saved reports, and Progress — whenever you dip into the learner app.
-                </p>
-              </div>
-              <Link
-                href="/home"
-                className="inline-flex shrink-0 min-h-[44px] items-center justify-center rounded-xl bg-teal-700 px-5 text-sm font-semibold text-white transition hover:bg-teal-800 sm:self-center"
-              >
-                Open learner home
-              </Link>
-            </div>
-          </aside>
         </div>
       </section>
 

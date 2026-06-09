@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
+import { isSelfServiceAppRole } from "@/lib/auth/self-service-roles";
 import { passwordFieldSchema } from "@/lib/auth/password";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -20,7 +21,10 @@ export function SignupFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const postAuthPath = useMemo(() => safePostAuthPath(searchParams.get("next")), [searchParams]);
-  const signupAppRole = useMemo(() => appRoleFromDestination(postAuthPath) ?? "learner", [postAuthPath]);
+  const signupAppRole = useMemo(() => {
+    const fromPath = appRoleFromDestination(postAuthPath) ?? "learner";
+    return isSelfServiceAppRole(fromPath) ? fromPath : "learner";
+  }, [postAuthPath]);
   /** After email confirmation lands on verify-email with the same destination intent */
   const verifyEmailHref = useMemo(() => {
     const q = new URLSearchParams({ continue: postAuthPath });
@@ -76,7 +80,13 @@ export function SignupFlow() {
         password,
         options: {
           emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextAfterCallback)}`,
-          data: { first_name: fn, app_role: signupAppRole },
+          data: {
+            first_name: fn,
+            app_role: signupAppRole,
+            ...(appRoleFromDestination(postAuthPath) === "instructor"
+              ? { signup_intent: "instructor" as const }
+              : {}),
+          },
         },
       });
       if (error) {

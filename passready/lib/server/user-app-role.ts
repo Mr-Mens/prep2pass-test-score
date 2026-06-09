@@ -22,9 +22,14 @@ export async function getUserAppRole(userId: string): Promise<UserAppRole> {
   return stored ?? "learner";
 }
 
-/** Create a profile row on first signup/login; never overwrite an existing role. */
+/** Create a profile row on first signup only; never overwrite an existing role. Instructor requires admin promotion. */
 export async function ensureUserAppRoleFromIntent(userId: string, intent: UserAppRole): Promise<UserAppRole> {
   if (!isSupabaseConfigured()) return intent;
+
+  if (intent === "instructor") {
+    console.warn("[ensureUserAppRoleFromIntent] rejected instructor self-assignment", { userId });
+    intent = "learner";
+  }
 
   const existing = await fetchStoredRole(userId);
   if (existing) return existing;

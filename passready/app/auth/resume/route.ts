@@ -1,40 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { appRoleFromDestination, destinationAllowedForRole } from "@/lib/auth/role-from-destination";
+import { detectLoginIntentMismatch, loginIntentRoleFromContinue } from "@/lib/auth/login-intent";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
-import { appRoleFromUserMetadata, ensureUserAppRoleFromIntent, getUserAppRole } from "@/lib/server/user-app-role";
+import { resolvePostAuthDestination } from "@/lib/auth/resolve-post-auth-destination";
+import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
-
-import type { UserAppRole } from "@/lib/instructor/types";
-
-const BLOCKED_CONTINUE_PREFIXES = [
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/reset-password",
-  "/verify-email",
-  "/auth/resume",
-  "/auth/callback",
-] as const;
-
-function blockedContinue(path: string): boolean {
-  return BLOCKED_CONTINUE_PREFIXES.some((p) => path === p || path.startsWith(`${p}?`) || path.startsWith(`${p}/`));
-}
 
 function redirect(origin: string, path: string) {
   return NextResponse.redirect(new URL(path, origin).toString());
 }
 
 /**
- * Post-login destination defaults to the role dashboard.
- * Optional `continue` selects a verified internal path when it matches the user's role.
+ * Post-login routing uses the persisted DB role only.
+ * If the welcome sign-in path (learner / instructor / parent) does not match the account role,
+ * the session is cleared and the user must sign in via the correct button.
  */
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const user = await getServerAuthUser();
 
   if (!user) {
-    return redirect(origin, `/login?next=${encodeURIComponent("/auth/resume")}`);
+    return redirect(origin, `/welcome`);
   }
 
   if (!user.emailConfirmedAt) {
@@ -42,29 +28,26 @@ export async function GET(request: NextRequest) {
   }
 
   const continueRaw = request.nextUrl.searchParams.get("continue");
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user: rawUser },
-  } = await supabase.auth.getUser();
-  const metadata = rawUser?.user_metadata as Record<string, unknown> | undefined;
-
-  const intentFromContinue = continueRaw ? appRoleFromDestination(continueRaw) : null;
-  const intent: UserAppRole =
-    intentFromContinue ?? appRoleFromUserMetadata(metadata) ?? "learner";
-
-  await ensureUserAppRoleFromIntent(user.id, intent);
   const role = await getUserAppRole(user.id);
-  let destination: string = dashboardPathForAppRole(role);
+  const intent = loginIntentRoleFromContinue(continueRaw);
 
-  if (
-    typeof continueRaw === "string" &&
-    continueRaw.startsWith("/") &&
-    !continueRaw.startsWith("//") &&
-    !blockedContinue(continueRaw) &&
-    destinationAllowedForRole(continueRaw, role)
-  ) {
-    destination = continueRaw;
+  if (!intent) {
+    return redirect(origin, resolvePostAuthDestination(role, null));
   }
 
+  const mismatch = detectLoginIntentMismatch(continueRaw, role);
+
+  if (mismatch) {
+    const supabase = createSupabaseServerClient();
+    await supabase.auth.signOut();
+    const q = new URLSearchParams({
+      error: "role_mismatch",
+      attempted: mismatch.attemptedRole,
+      next: dashboardPathForAppRole(mismatch.attemptedRole),
+    });
+    return redirect(origin, `/login?${q.toString()}`);
+  }
+
+  const destination = resolvePostAuthDestination(role, continueRaw);
   return redirect(origin, destination);
 }

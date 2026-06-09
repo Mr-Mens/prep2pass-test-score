@@ -2,6 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
+import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -15,7 +16,7 @@ export async function requireInstructorSession() {
   }
   const role = await getUserAppRole(user.id);
   if (role !== "instructor") {
-    redirect("/");
+    redirect(dashboardPathForAppRole(role));
   }
   return user;
 }

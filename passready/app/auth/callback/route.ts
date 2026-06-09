@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
-import { appRoleFromUserMetadata, ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
+import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
+import { ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-import type { UserAppRole } from "@/lib/instructor/types";
-
-async function syncRoleFromSignupIntent(userId: string, metadata: Record<string, unknown> | undefined, nextPath: string) {
-  const intent =
-    appRoleFromUserMetadata(metadata) ?? appRoleFromDestination(nextPath) ?? ("learner" satisfies UserAppRole);
-  await ensureUserAppRoleFromIntent(userId, intent);
+/** First email confirmation after signup — assign self-service role from signup metadata only. */
+async function assignInitialRoleFromSignupMetadata(
+  userId: string,
+  metadata: Record<string, unknown> | undefined,
+) {
+  const role = selfServiceRoleFromSignupMetadata(metadata);
+  await ensureUserAppRoleFromIntent(userId, role);
 }
 
 export async function GET(request: Request) {
@@ -26,10 +27,9 @@ export async function GET(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (user?.id) {
-      await syncRoleFromSignupIntent(
+      await assignInitialRoleFromSignupMetadata(
         user.id,
         user.user_metadata as Record<string, unknown> | undefined,
-        safeNext,
       );
     }
   }

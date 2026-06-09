@@ -70,7 +70,7 @@ export function AddPupilForm() {
         disabled={busy}
         className="mt-4 min-h-[44px] rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:opacity-50"
       >
-        {busy ? "Saving…" : "Save pupil"}
+        {busy ? "Sending…" : "Send invitation"}
       </button>
     </form>
   );

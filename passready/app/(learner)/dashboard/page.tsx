@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { LearnerNotificationsPanel } from "@/components/learner/LearnerNotificationsPanel";
+
 import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
 import { Button } from "@/components/Button";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
@@ -107,6 +109,8 @@ export default async function LearnerDashboardPage() {
           Track readiness, skim saved reports, and run a fresh Test Ready Score when you are ready.
         </p>
       </div>
+
+      <LearnerNotificationsPanel />
 
       <div className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm transition hover:border-teal-200 hover:shadow-md">
         {latestSnap ? (

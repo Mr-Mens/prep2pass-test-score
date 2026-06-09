@@ -40,7 +40,11 @@ function activeFor(pathname: string, match: NavMatch): boolean {
   if (match === "score") return pathname === "/assessment" || pathname.startsWith("/assessment/");
   if (match === "progress") return pathname === "/progress" || pathname.startsWith("/progress/");
   if (match === "account") return pathname === "/account" || pathname.startsWith("/account/");
-  return pathname.startsWith("/my-reports") || /^\/reports\/[^/]+$/.test(pathname);
+  return (
+    pathname.startsWith("/my-reports") ||
+    /^\/reports\/[^/]+$/.test(pathname) ||
+    pathname.startsWith("/mock-tests")
+  );
 }
 
 function IconHome({ stroke }: { stroke: string }) {

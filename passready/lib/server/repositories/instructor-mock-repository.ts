@@ -9,14 +9,7 @@ import {
   computeMockOutcome,
 } from "@/lib/instructor/mock-test-scoring";
 
-export type PupilRow = {
-  id: string;
-  instructor_user_id: string;
-  pupil_name: string;
-  pupil_email: string;
-  linked_learner_user_id: string | null;
-  created_at: string;
-};
+export { listPupilsForInstructor, type PupilRow } from "@/lib/server/repositories/instructor-pupil-link-repository";
 
 export type MockTestRow = {
   id: string;
@@ -58,54 +51,6 @@ function recomputeFromPayload(payload: MockTestFormPayload, threshold: number) {
   };
 }
 
-export async function listPupilsForInstructor(instructorUserId: string): Promise<PupilRow[]> {
-  const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("instructor_pupils")
-    .select("*")
-    .eq("instructor_user_id", instructorUserId)
-    .order("updated_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
-  return (data ?? []) as PupilRow[];
-}
-
-export async function createPupil(input: {
-  instructorUserId: string;
-  pupilName: string;
-  pupilEmail: string;
-}): Promise<PupilRow> {
-  const supabase = getSupabaseServerClient();
-  const email = input.pupilEmail.trim().toLowerCase();
-
-  const { data: reportRow } = await supabase
-    .from("reports")
-    .select("user_id")
-    .eq("email", email)
-    .not("user_id", "is", null)
-    .limit(1)
-    .maybeSingle();
-
-  const linked =
-    reportRow && (reportRow as { user_id: string | null }).user_id
-      ? (reportRow as { user_id: string }).user_id
-      : null;
-
-  const { data, error } = await supabase
-    .from("instructor_pupils")
-    .insert({
-      instructor_user_id: input.instructorUserId,
-      pupil_name: input.pupilName.trim(),
-      pupil_email: email,
-      linked_learner_user_id: linked,
-      updated_at: new Date().toISOString(),
-    })
-    .select("*")
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data as PupilRow;
-}
 
 export async function listMockTestsForInstructor(instructorUserId: string): Promise<MockTestRow[]> {
   const supabase = getSupabaseServerClient();

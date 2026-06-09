@@ -58,3 +58,13 @@ export async function requireParentApiUser(): Promise<RouteAuthResult> {
   }
   return base;
 }
+
+export async function requireLearnerApiUser(): Promise<RouteAuthResult> {
+  const base = await requireVerifiedApiUser();
+  if (!base.ok) return base;
+  const role = await getUserAppRole(base.userId);
+  if (role !== "learner") {
+    return { ok: false, status: 403, message: "Learner access only." };
+  }
+  return base;
+}

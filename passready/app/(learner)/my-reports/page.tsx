@@ -6,7 +6,9 @@ import { Button } from "@/components/Button";
 import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
+import { listMockTestDeliveriesForLearner } from "@/lib/server/repositories/learner-mock-test-repository";
 import { getReportSummaryByUserId } from "@/lib/server/repositories/reports-repository";
+import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -47,9 +49,10 @@ export default async function MyReportsPage() {
 
   const titleName = firstName ? `${firstName}, your reports` : "Your report library";
 
-  const [summaries, entitlements] = await Promise.all([
+  const [summaries, entitlements, mockTests] = await Promise.all([
     getReportSummaryByUserId(user.id),
     getEntitlementLookupForUser(user.id),
+    isSupabaseConfigured() ? listMockTestDeliveriesForLearner(user.id) : Promise.resolve([]),
   ]);
 
   const lifetimeFlag = entitlements.hasLifetimeAccess;
@@ -118,6 +121,37 @@ export default async function MyReportsPage() {
           </Link>
         ) : null}
       </div>
+
+      {mockTests.length > 0 ? (
+        <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <h2 className="font-heading text-lg font-semibold tracking-tight text-brand-950">Instructor mock tests</h2>
+            <Link href="/mock-tests" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
+              View all
+            </Link>
+          </div>
+          <ul className="mt-4 divide-y divide-brand-100">
+            {mockTests.slice(0, 3).map((item) => (
+              <li key={item.deliveryId} className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-brand-950">
+                    {item.instructorName} · {formatIsoDateUk(item.sentAt)}
+                  </p>
+                  <p className="text-xs capitalize text-brand-600">
+                    {item.outcome} · {item.minorFaultCount} minor fault{item.minorFaultCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <Link
+                  href={`/mock-tests/${item.mockTestId}`}
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 px-4 text-sm font-semibold text-teal-800 shadow-sm transition hover:bg-brand-50"
+                >
+                  Open
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section aria-labelledby="reports-list-heading">
         <div className="flex flex-wrap items-end justify-between gap-2 border-b border-brand-200/80 pb-3">

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireInstructorApiUser } from "@/lib/server/api-auth";
-import { createPupil, listPupilsForInstructor } from "@/lib/server/repositories/instructor-mock-repository";
+import { createPupilInvite, listPupilsForInstructor } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
 export const runtime = "nodejs";
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (!pupilName || !pupilEmail) {
       return jsonError(400, "VALIDATION", "Pupil name and email are required.");
     }
-    const pupil = await createPupil({ instructorUserId: auth.userId, pupilName, pupilEmail });
+    const pupil = await createPupilInvite({ instructorUserId: auth.userId, pupilName, pupilEmail });
     return NextResponse.json({ success: true as const, pupil });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unable to create pupil.";

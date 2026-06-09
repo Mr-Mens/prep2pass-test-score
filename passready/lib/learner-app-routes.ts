@@ -10,6 +10,7 @@ const LEARNER_ROOTS = [
   "/assessment",
   "/results",
   "/my-reports",
+  "/mock-tests",
   "/sample-report",
   "/upgrade",
   "/lifetime",
@@ -23,6 +24,7 @@ export function isLearnerAppRoute(pathname: string): boolean {
   if (path === "/checkout/success") return true;
 
   if (/^\/reports\/[^/]+$/.test(path)) return true;
+  if (/^\/mock-tests(\/|$)/.test(path)) return true;
 
   for (const r of LEARNER_ROOTS) {
     if (path === r || path.startsWith(`${r}/`)) return true;

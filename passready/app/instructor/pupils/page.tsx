@@ -49,7 +49,7 @@ export default async function InstructorPupilsPage() {
       <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Saved pupils</h2>
         {pupils.length === 0 ? (
-          <p className="mt-4 text-sm text-brand-500">No pupils yet — add one above.</p>
+          <p className="mt-4 text-sm text-brand-500">No pupils yet. Add one above.</p>
         ) : (
           <ul className="mt-4 divide-y divide-brand-100">
             {pupils.map((p) => (

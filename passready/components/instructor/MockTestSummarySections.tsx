@@ -18,8 +18,8 @@ export function MockTestSummarySections({ row, summary, failReason, showCandidat
       {showCandidate ? (
         <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Candidate</h2>
-          <p className="mt-2 text-lg font-semibold text-brand-950">{row.pupil_name_snapshot?.trim() || "—"}</p>
-          <p className="text-sm text-brand-600">{row.pupil_email_snapshot || "—"}</p>
+          <p className="mt-2 text-lg font-semibold text-brand-950">{row.pupil_name_snapshot?.trim() || "Not set"}</p>
+          <p className="text-sm text-brand-600">{row.pupil_email_snapshot || "Not set"}</p>
         </section>
       ) : null}
 
@@ -80,7 +80,7 @@ export function MockTestSummarySections({ row, summary, failReason, showCandidat
                   {c}
                 </li>
               ))}
-              {summary.weakCategories.length === 0 ? <li className="text-sm text-brand-500">—</li> : null}
+              {summary.weakCategories.length === 0 ? <li className="text-sm text-brand-500">None recorded</li> : null}
             </ul>
           </section>
 
@@ -90,7 +90,7 @@ export function MockTestSummarySections({ row, summary, failReason, showCandidat
               {summary.suggestedFocus.map((line, i) => (
                 <li key={i}>{line}</li>
               ))}
-              {summary.suggestedFocus.length === 0 ? <li className="list-none text-brand-500">—</li> : null}
+              {summary.suggestedFocus.length === 0 ? <li className="list-none text-brand-500">None recorded</li> : null}
             </ul>
           </section>
         </>
@@ -101,14 +101,14 @@ export function MockTestSummarySections({ row, summary, failReason, showCandidat
         <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-brand-800">
           {formPayload.postTest?.faultDescriptions?.trim() ||
             (formPayload as { faultDescriptions?: string }).faultDescriptions?.trim() ||
-            "—"}
+            "None recorded"}
         </p>
       </section>
 
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Instructor notes</h2>
         <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-brand-800">
-          {formPayload.instructorNotes?.trim() || "—"}
+          {formPayload.instructorNotes?.trim() || "None recorded"}
         </p>
       </section>
     </>

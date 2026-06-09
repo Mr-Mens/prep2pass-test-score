@@ -527,7 +527,7 @@ export function ResultsView() {
           <p className="font-medium text-brand-900">What you might do from here</p>
           <p className="mt-2">
             {resultsLifetimeMemberUi
-              ? "When lessons or test timing move, generate a fresh checkpoint. Your Prep2Pass account keeps the full timeline under the same lifetime access—no checkout between runs."
+              ? "When lessons or test timing move, generate a fresh checkpoint. Your Prep2Pass account keeps the full timeline under the same lifetime access, with no checkout between runs."
               : "Retake the assessment if your lessons shift materially, or use Find My Report if you checked out with an email and need this on another device."}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

@@ -26,7 +26,7 @@ import type { AssessmentPayload } from "@/lib/validation";
 
 export const metadata: Metadata = {
   title: "Overview",
-  description: `${SITE.name}: your Test Ready Score home — readiness, reports, and next steps.`,
+  description: `${SITE.name}: your Test Ready Score home for readiness, reports, and next steps.`,
 };
 
 function deltaLabel(delta: number | null): { text: string; tone: string } | null {
@@ -208,7 +208,7 @@ export default async function LearnerDashboardPage() {
         <div className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-5 shadow-sm transition hover:border-amber-300/90 hover:shadow-md">
           <p className="text-xs font-semibold uppercase tracking-wide text-amber-950">Lifetime access</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-800">
-            Upgrade once for unlimited saved reports — {PRICING.lifetime.display} — billed securely through Stripe.
+            Upgrade once for unlimited saved reports ({PRICING.lifetime.display}), billed securely through Stripe.
           </p>
           <Link
             href="/upgrade"

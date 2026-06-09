@@ -4,7 +4,7 @@ const rowLabelByCompositeId = (() => {
   const m = new Map<string, string>();
   for (const sec of ALL_FAULT_SECTIONS) {
     for (const r of sec.rows) {
-      m.set(`${sec.key}:${r.id}`, `${sec.title} — ${r.label}`);
+      m.set(`${sec.key}:${r.id}`, `${sec.title}: ${r.label}`);
     }
   }
   return m;

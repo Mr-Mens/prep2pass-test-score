@@ -15,7 +15,7 @@ export default function InstructorSettingsPage() {
           update your account details or ask your administrator to set your instructor profile in the database.
         </p>
         <p className="mt-4 text-sm text-brand-500">
-          ADI number is a placeholder for now — future releases will support editable instructor credentials here.
+          ADI number is a placeholder for now. Future releases will support editable instructor credentials here.
         </p>
       </section>
     </div>

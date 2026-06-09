@@ -9,7 +9,7 @@ export function ShareInstructorPlaceholder() {
           <h2 className="mt-2 font-heading text-lg font-semibold text-brand-950">Coming soon</h2>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
             You will soon be able to share practice logs, progress summaries, and focus areas with your learner&apos;s
-            driving instructor — with your learner&apos;s consent.
+            driving instructor, with your learner&apos;s consent.
           </p>
         </div>
         <span className="inline-flex rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">

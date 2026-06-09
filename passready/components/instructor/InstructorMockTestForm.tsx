@@ -447,7 +447,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
             <p className="mock-sheet-eyebrow">Declaration</p>
             <p className="mock-sheet-body text-brand-700">
               By taking the test you declare that your vehicle is insured, taxed, UK-registered, and that you meet residency
-              requirements — as required for a driving test. This tool is for mock recording only.
+              requirements, as required for a driving test. This tool is for mock recording only.
             </p>
             <label className="mock-sheet-check-start">
               <input
@@ -1035,7 +1035,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
         </div>
         <div className="p-4">
         <p className="mock-sheet-body">
-          Optional — for your records and future pupil summary views.
+          Optional. For your records and future pupil summary views.
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="mock-sheet-label">
@@ -1045,7 +1045,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
               onChange={(e) => onSelectPupil(e.target.value)}
               className="mock-sheet-control"
             >
-              <option value="">— Manual —</option>
+              <option value="">Manual entry</option>
               {pupils.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.pupil_name} ({p.pupil_email})
@@ -1077,7 +1077,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
       <section className="rounded-2xl border border-teal-100 bg-teal-50/40 p-4 text-sm shadow-sm">
         <p className="font-heading text-sm font-semibold tracking-tight text-teal-900">Preview</p>
         <p className="mock-sheet-body text-brand-800">
-          Weak areas: {live.summary.weakCategories.slice(0, 3).join(", ") || "—"}
+          Weak areas: {live.summary.weakCategories.slice(0, 3).join(", ") || "None recorded"}
         </p>
         <Link
           href="/instructor/mock-tests"

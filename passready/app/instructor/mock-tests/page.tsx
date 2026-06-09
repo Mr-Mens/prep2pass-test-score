@@ -43,7 +43,7 @@ export default async function InstructorMockTestsListPage() {
                   <p className="truncate font-semibold text-brand-950">
                     {t.pupil_name_snapshot?.trim() || "Unnamed pupil"}
                   </p>
-                  <p className="truncate text-sm text-brand-500">{t.pupil_email_snapshot || "—"}</p>
+                  <p className="truncate text-sm text-brand-500">{t.pupil_email_snapshot || "No email"}</p>
                   <p className="mt-1 text-xs text-brand-400">
                     Updated {new Date(t.updated_at).toLocaleString()}
                   </p>

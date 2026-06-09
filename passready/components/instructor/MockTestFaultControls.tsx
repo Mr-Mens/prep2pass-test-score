@@ -44,7 +44,7 @@ export function MockTestFaultControls({ value, onChange, disabled, compact }: Pr
           title={
             escalatesToSerious
               ? `${MINOR_TALLY_CAP + 1}+ minors on this line count as a serious fault`
-              : "Driving fault (minor) — tap once per fault"
+              : "Driving fault (minor). Tap once per fault"
           }
           onClick={() => bumpMinor(1)}
           className={`flex shrink-0 items-center justify-center rounded-full border-2 font-heading font-semibold tabular-nums transition ${circleSize} ${

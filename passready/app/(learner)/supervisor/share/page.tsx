@@ -20,7 +20,7 @@ export default function SupervisorSharePage() {
         <h1 className="mt-4 font-heading text-2xl font-semibold text-brand-950">Share with instructor</h1>
         <p className="mt-3 text-sm leading-relaxed text-brand-700">
           Soon you will be able to share practice logs, progress summaries, and agreed focus areas with your
-          learner&apos;s Approved Driving Instructor — always with your learner&apos;s consent.
+          learner&apos;s Approved Driving Instructor, always with your learner&apos;s consent.
         </p>
       </header>
       <ul className="space-y-3 rounded-2xl border border-brand-100 bg-white p-6 text-sm text-brand-700 shadow-sm">

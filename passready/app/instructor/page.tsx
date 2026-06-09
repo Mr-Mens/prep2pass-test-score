@@ -109,7 +109,7 @@ export default function InstructorDashboardPage() {
             Instructor dashboard
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-brand-700 sm:text-[1.0625rem]">
-            Run DVSA-style mock tests, track pupils, and review outcomes — woven into{" "}
+            Run DVSA-style mock tests, track pupils, and review outcomes, woven into{" "}
             <span className="font-semibold text-brand-900">Test Ready Score</span> so your cockpit prep stays in one calm
             place.
           </p>
@@ -142,7 +142,7 @@ export default function InstructorDashboardPage() {
           href="/instructor/pupils"
           kicker="Pupils"
           title="My pupils"
-          body="Maintain your roster and link by email where it matches Prep2Pass — so pupil context stays tidy."
+          body="Maintain your roster and link by email where it matches Prep2Pass, so pupil context stays tidy."
           cta="Manage roster"
           icon={<IconUsers />}
           tint="from-cyan-600 to-teal-800"
@@ -151,7 +151,7 @@ export default function InstructorDashboardPage() {
           href="/instructor/mock-tests"
           kicker="History"
           title="Mock test reports"
-          body="Drafts and completed sessions in one scrollable list — open any row to revisit faults and verdict."
+          body="Drafts and completed sessions in one scrollable list. Open any row to revisit faults and verdict."
           cta="View list"
           icon={<IconStack />}
           tint="from-slate-700 to-brand-950"
@@ -160,7 +160,7 @@ export default function InstructorDashboardPage() {
           href="/instructor/diagrams"
           kicker="Diagrams"
           title="Teaching diagrams"
-          body="Starter library for the cab — placeholders today, more structured diagrams on the roadmap."
+          body="Starter library for the cab: placeholders today, more structured diagrams on the roadmap."
           cta="Browse"
           icon={<IconPhotos />}
           tint="from-teal-700 to-cyan-900"

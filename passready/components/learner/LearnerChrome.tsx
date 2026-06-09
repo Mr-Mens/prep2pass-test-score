@@ -286,7 +286,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh bg-[#f0f2f5] md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
-          <Link href="/home" className="block" aria-label={`${SITE.name}, home — FAQs, sample report, and pricing`}>
+          <Link href="/home" className="block" aria-label={`${SITE.name}, home. FAQs, sample report, and pricing`}>
             <BrandLogo variant="learnerRail" />
           </Link>
           <p className="mt-3 font-heading text-xs font-semibold uppercase tracking-wide text-white">Test Ready Score</p>

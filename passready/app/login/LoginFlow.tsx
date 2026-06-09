@@ -78,7 +78,7 @@ export function LoginFlow() {
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Sign in</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Choose your role first</h1>
         <p className="mt-3 text-sm leading-relaxed text-brand-600">
-          Sign in must start from the welcome page — Learner, Instructor, or Parent — so we open the correct workspace for
+          Sign in must start from the welcome page (Learner, Instructor, or Parent) so we open the correct workspace for
           your account.
         </p>
         <Button href="/welcome" variant="conversion" className="mt-8 w-full">

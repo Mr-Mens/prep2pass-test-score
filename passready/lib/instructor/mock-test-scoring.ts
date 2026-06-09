@@ -141,7 +141,7 @@ export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshol
   if (agg.seriousFaultCount + agg.dangerousFaultCount > 0) {
     suggestedFocus.unshift("Address serious or dangerous items before next mock.");
   } else if (agg.minorFaultCount > Math.floor(minorThreshold * 0.7)) {
-    suggestedFocus.push("Fault count is approaching typical threshold—tighten consistency.");
+    suggestedFocus.push("Fault count is approaching typical threshold. Tighten consistency.");
   }
   if (payload.instructorNotes.trim()) suggestedFocus.push("Use instructor notes below for lesson themes.");
 

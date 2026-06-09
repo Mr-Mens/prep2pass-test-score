@@ -33,7 +33,7 @@ export default async function InstructorMockTestSummaryPage({ params }: { params
         </Link>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">Mock test summary</h1>
         <p className="mt-2 text-sm text-brand-600">
-          DVSA-style mock test outcome — independent tool, not affiliated with DVSA.
+          DVSA-style mock test outcome. Independent tool, not affiliated with DVSA.
         </p>
       </div>
 

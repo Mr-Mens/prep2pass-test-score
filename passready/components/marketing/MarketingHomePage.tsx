@@ -298,7 +298,7 @@ export async function MarketingHomePage() {
         title={suppressAcquisitionPricing ? "What your membership includes" : "What you unlock after checkout"}
         subtitle={
           suppressAcquisitionPricing
-            ? "Everything below is already yours on Prep2Pass—consistent structure for every new assessment."
+            ? "Everything below is already yours on Prep2Pass, with consistent structure for every new assessment."
             : "Everything below comes from your assessment and is tuned for real lessons rather than hype."
         }
       >

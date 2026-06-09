@@ -51,7 +51,7 @@ export default async function SupervisorProgressPage() {
         <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Current score</p>
           <p className="mt-2 font-heading text-3xl font-semibold text-brand-950">
-            {view.progressSummary.currentScore ?? "—"}
+            {view.progressSummary.currentScore ?? "Not yet"}
           </p>
         </div>
         <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
@@ -63,7 +63,7 @@ export default async function SupervisorProgressPage() {
         <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Overall change</p>
           <p className="mt-2 font-heading text-3xl font-semibold text-brand-950">
-            {overallDelta !== null ? `${overallDelta >= 0 ? "+" : ""}${overallDelta}` : "—"}
+            {overallDelta !== null ? `${overallDelta >= 0 ? "+" : ""}${overallDelta}` : "Not yet"}
           </p>
         </div>
       </section>

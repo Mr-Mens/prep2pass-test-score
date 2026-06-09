@@ -86,8 +86,8 @@ export function SupervisorDashboardSections({ view }: Props) {
       <section>
         <h2 className="font-heading text-lg font-semibold text-brand-950">Progress summary</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Current score" value={progressSummary.currentScore ?? "—"} />
-          <StatCard label="Previous score" value={progressSummary.previousScore ?? "—"} />
+          <StatCard label="Current score" value={progressSummary.currentScore ?? "Not yet"} />
+          <StatCard label="Previous score" value={progressSummary.previousScore ?? "Not yet"} />
           <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm ring-1 ring-brand-50">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Improvement</p>
             <div className="mt-3">
@@ -100,7 +100,7 @@ export function SupervisorDashboardSections({ view }: Props) {
 
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm ring-1 ring-brand-50">
         <h2 className="font-heading text-lg font-semibold text-brand-950">What to practise next</h2>
-        <p className="mt-1 text-sm text-brand-600">This week&apos;s focus — based on report recommendations and skill gaps.</p>
+        <p className="mt-1 text-sm text-brand-600">This week&apos;s focus, based on report recommendations and skill gaps.</p>
         {practiceFocus.items.length > 0 ? (
           <>
             <ul className="mt-4 space-y-2">

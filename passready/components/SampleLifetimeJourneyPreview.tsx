@@ -76,7 +76,7 @@ export function SampleLifetimeJourneyPreview() {
         See how readiness moves between lessons
       </h3>
       <p className="mt-3 max-w-prose text-center text-sm leading-relaxed text-brand-600 sm:text-left">
-        With lifetime access, each saved Premium report adds another point on your private timeline—same layout as your
+        With lifetime access, each saved Premium report adds another point on your private timeline, with the same layout as your
         real dashboard. The curve below is{" "}
         <span className="font-semibold text-brand-800">illustrative</span> only.
       </p>
@@ -96,7 +96,7 @@ export function SampleLifetimeJourneyPreview() {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-100/90">Readiness arc</p>
               <p className="mt-2 text-sm leading-snug text-slate-200">
-                Each bubble is a saved report date. When routes or confidence shift, new assessments extend the story—no
+                Each bubble is a saved report date. When routes or confidence shift, new assessments extend the story. No
                 guesswork about whether you are actually improving.
               </p>
             </div>
@@ -129,7 +129,7 @@ export function SampleLifetimeJourneyPreview() {
 
           <p className="border-t border-white/10 pt-5 text-[13px] leading-relaxed text-slate-200">
             <span className="font-semibold text-white">Why learners choose lifetime.</span> Unlimited Premium reports on
-            your email, a dated score history, and this arc on your real dashboard—so you and your instructor can agree what
+            your email, a dated score history, and this arc on your real dashboard, so you and your instructor can agree what
             changed between lessons. One payment of {PRICING.lifetime.display} · no subscription.
           </p>
         </div>

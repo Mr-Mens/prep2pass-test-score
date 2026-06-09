@@ -77,7 +77,7 @@ export async function sendMockTestReportEmail({
                   <tr>
                     <td style="padding:8px 24px 18px 24px;">
                       <p style="margin:0;font-size:13px;line-height:1.6;color:#475569;">
-                        Independent instructor tool — not affiliated with DVSA.
+                        Independent instructor tool, not affiliated with DVSA.
                       </p>
                     </td>
                   </tr>

@@ -596,7 +596,7 @@ export function AssessmentForm({
         <SectionHeader
           step={3}
           title="Topics you've covered so far"
-          hint="Select the areas you've already learned or practised during lessons or private practice. Honesty narrows readiness realism—this isn't a test grade on each skill."
+          hint="Select the areas you've already learned or practised during lessons or private practice. Honesty narrows readiness realism. This isn't a test grade on each skill."
         />
         <SyllabusTopicsSection control={control} errors={errors} />
       </fieldset>
@@ -850,7 +850,7 @@ export function AssessmentForm({
         )}
         {!showLifetimeAssessmentChrome ? null : (
           <p className="mt-6 border-t border-brand-100 pt-6 text-xs leading-relaxed text-brand-500">
-            Full Premium detail loads as soon as we finish scoring—already included in your membership.
+            Full Premium detail loads as soon as we finish scoring. Already included in your membership.
           </p>
         )}
         {!showLifetimeAssessmentChrome ? (

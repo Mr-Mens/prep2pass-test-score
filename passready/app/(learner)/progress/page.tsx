@@ -61,7 +61,7 @@ export default async function LearnerProgressPage() {
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">Progress</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          Quiet timeline of Premium reports — score direction, recurring themes, and what to practise next.
+          Quiet timeline of Premium reports: score direction, recurring themes, and what to practise next.
         </p>
       </div>
 
@@ -94,7 +94,7 @@ export default async function LearnerProgressPage() {
                 <p className={`mt-4 text-base font-semibold ${delta > 0 ? "text-emerald-700" : "text-amber-800"}`}>
                   {delta > 0
                     ? `Improvement +${delta} points vs previous report.`
-                    : `${delta} points vs previous report — normal variance between routes.`}
+                    : `${delta} points vs previous report. That is normal variance between routes.`}
                 </p>
               ) : snaps.length >= 2 ? (
                 <p className="mt-4 text-sm font-medium text-brand-600">Holding steady between your last two saved checkpoints.</p>
@@ -125,7 +125,7 @@ export default async function LearnerProgressPage() {
           {weakNarrative ? (
             <p>{weakNarrative}</p>
           ) : snaps.length >= 2 ? (
-            <p>Risk-area flags have been consistent across your last stretches — refinement is about polish, not new surprises.</p>
+            <p>Risk-area flags have been consistent across your last stretches. Refinement is about polish, not new surprises.</p>
           ) : (
             <p>Once you have two or more checkpoints, we compare weak-area tags between reports here.</p>
           )}

@@ -79,7 +79,7 @@ export default async function LearnerAccountPage() {
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">Account</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          Membership, shortcuts, and help — organised like a compact app profile.
+          Membership, shortcuts, and help, organised like a compact app profile.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ export default async function LearnerAccountPage() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="truncate font-heading text-lg font-semibold text-brand-950">{greetingName}</p>
-            <p className="mt-1 break-all text-sm text-brand-600">{raw?.email ?? "—"}</p>
+            <p className="mt-1 break-all text-sm text-brand-600">{raw?.email ?? "Not set"}</p>
           </div>
         </div>
 

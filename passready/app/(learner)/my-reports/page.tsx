@@ -76,7 +76,7 @@ export default async function MyReportsPage() {
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-200/95">
             {lifetimeFlag ? (
               <>
-                <span className="font-semibold text-white">{LIFETIME_MEMBER_UI.badge}</span> — every checkpoint you save
+                <span className="font-semibold text-white">{LIFETIME_MEMBER_UI.badge}</span>. Every checkpoint you save
                 appears below with dates and readiness scores.
               </>
             ) : (
@@ -167,7 +167,7 @@ export default async function MyReportsPage() {
           <div className="mt-8 overflow-hidden rounded-3xl border border-dashed border-brand-200 bg-gradient-to-b from-brand-50/50 to-white px-6 py-16 text-center shadow-inner">
             <p className="mx-auto max-w-sm text-[15px] font-semibold text-brand-900">No saved reports yet</p>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-brand-600">
-              Complete an assessment and checkout when prompted — your Premium write-up lands here automatically, ready for
+              Complete an assessment and checkout when prompted. Your Premium write-up lands here automatically, ready for
               your next lesson conversation.
             </p>
             <Button href="/assessment" variant="conversion" className="mx-auto mt-8 min-h-[50px] min-w-[12rem]">

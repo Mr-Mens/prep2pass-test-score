@@ -150,7 +150,7 @@ export function SyllabusTopicsSection({ control, errors }: Props) {
             ) : null}
 
             <p className="text-xs leading-relaxed text-brand-500">
-              Selecting a topic tells us where you&apos;ve spent seat time—it does{" "}
+              Selecting a topic tells us where you&apos;ve spent seat time. It does{" "}
               <span className="font-semibold text-brand-700">not</span> imply top marks on test day yet.
             </p>
           </div>

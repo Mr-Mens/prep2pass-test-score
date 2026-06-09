@@ -55,7 +55,7 @@ type BrandLogoProps = {
 
 export function BrandLogo({ variant, className = "", ...rest }: BrandLogoProps) {
   const v = VARIANT[variant];
-  const alt = `Test Ready Score — ${SITE.name}`;
+  const alt = `Test Ready Score, ${SITE.name}`;
   return (
     <Image
       src={BRAND_LOGO.src}

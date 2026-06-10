@@ -130,10 +130,10 @@ export default async function ReportDetailPage({ params }: Props) {
 
         {syllabusSnapshot ? <ReportSyllabusPanel syllabus={syllabusSnapshot} /> : null}
 
-        <div className="rounded-2xl border border-teal-200/80 bg-teal-50/80 p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-semibold text-teal-950">Coach note</h2>
-          <p className="mt-3 text-sm leading-relaxed text-teal-900">{report.coach_message}</p>
-        </div>
+      <div className="rounded-2xl border border-teal-200/80 bg-teal-50/80 p-6 shadow-sm sm:p-8">
+        <h2 className="text-lg font-semibold text-teal-950">Coach note</h2>
+        <p className="mt-3 text-sm leading-relaxed text-teal-900">{report.coach_message}</p>
+      </div>
 
         <RiskAreasSection blocks={riskBlocks} />
 

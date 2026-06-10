@@ -19,7 +19,7 @@ export const LIFETIME_MEMBER_UI = {
   reportsHistory: "Report history",
   journeyInsights: "Journey insights",
   progressRhythm:
-    "Each saved checkpoint adds context to how you prepare. Revisit anytime to spot patterns across lessons.",
+    "Each saved report adds to your history. Look back to see how your score and weak areas change over time.",
 } as const;
 
 /** One-off vs lifetime TestReady Score unlock (Stripe Price IDs map to these in env). */

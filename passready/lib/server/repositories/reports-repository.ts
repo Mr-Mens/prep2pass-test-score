@@ -209,6 +209,39 @@ export async function getReportsByUserId(userId: string): Promise<ReportDbRecord
   return ((data as ReportDbRecord[]) ?? []).map(withMigratedWeakAreas);
 }
 
+export async function getLatestReportTestBooking(userId: string): Promise<{
+  reportId: string;
+  testBooked: boolean;
+  testDate: string | null;
+  mockTestTaken: boolean;
+} | null> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, test_booked, test_date, mock_test_taken")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+
+  const row = data as {
+    id: string;
+    test_booked: boolean;
+    test_date: string | null;
+    mock_test_taken: boolean;
+  };
+
+  return {
+    reportId: row.id,
+    testBooked: row.test_booked,
+    testDate: row.test_date,
+    mockTestTaken: row.mock_test_taken,
+  };
+}
+
 export async function getReportSummaryByUserId(userId: string): Promise<ReportSummaryItem[]> {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase

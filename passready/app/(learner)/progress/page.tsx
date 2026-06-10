@@ -4,11 +4,15 @@ import { redirect } from "next/navigation";
 
 import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
+import { TestCountdownPlanSection } from "@/components/learner/TestCountdownPlanSection";
 import { SITE } from "@/lib/constants";
 import { deriveDeltaVsPrior, deriveFocusArea, deriveNextMilestone } from "@/lib/dashboard/journey-insights";
 import { formatCompactDateUk, formatIsoDateUk } from "@/lib/formatting";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
-import { listJourneySnapshotsByUserId } from "@/lib/server/repositories/reports-repository";
+import {
+  getLatestReportTestBooking,
+  listJourneySnapshotsByUserId,
+} from "@/lib/server/repositories/reports-repository";
 import { getServerAuthUser } from "@/lib/supabase/server";
 import type { WeakAreaId } from "@/lib/product-skill-map";
 import { WEAK_AREA_OPTIONS } from "@/lib/product-skill-map";
@@ -30,8 +34,8 @@ function describeWeakChange(prev: WeakAreaId[] | undefined, curr: WeakAreaId[] |
   const dropped = Array.from(p).filter((x) => !c.has(x));
   if (!added.length && !dropped.length) return null;
   const parts: string[] = [];
-  if (added.length) parts.push(`New focus surfaced: ${added.map(labelWeak).join(", ")}`);
-  if (dropped.length) parts.push(`Less emphasis now on: ${dropped.map(labelWeak).join(", ")}`);
+  if (added.length) parts.push(`New areas to work on: ${added.map(labelWeak).join(", ")}`);
+  if (dropped.length) parts.push(`Less focus on: ${dropped.map(labelWeak).join(", ")}`);
   return parts.join(" · ");
 }
 
@@ -48,7 +52,10 @@ export default async function LearnerProgressPage() {
   }
   if (!lifetime) redirect("/upgrade");
 
-  const snaps = await listJourneySnapshotsByUserId(user.id);
+  const [snaps, testBooking] = await Promise.all([
+    listJourneySnapshotsByUserId(user.id),
+    getLatestReportTestBooking(user.id),
+  ]);
   const latest = snaps.length ? snaps[snaps.length - 1]! : null;
   const prev = snaps.length >= 2 ? snaps[snaps.length - 2]! : null;
   const delta = deriveDeltaVsPrior(snaps);
@@ -64,6 +71,14 @@ export default async function LearnerProgressPage() {
           Quiet timeline of Premium reports: score direction, recurring themes, and what to practise next.
         </p>
       </div>
+
+      {testBooking?.testBooked && testBooking.testDate ? (
+        <TestCountdownPlanSection
+          testDate={testBooking.testDate}
+          reportId={testBooking.reportId}
+          mockTestTaken={testBooking.mockTestTaken}
+        />
+      ) : null}
 
       {latest ? (
         <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
@@ -125,9 +140,9 @@ export default async function LearnerProgressPage() {
           {weakNarrative ? (
             <p>{weakNarrative}</p>
           ) : snaps.length >= 2 ? (
-            <p>Risk-area flags have been consistent across your last stretches. Refinement is about polish, not new surprises.</p>
+            <p>Your weak areas have stayed similar between reports. You are fine-tuning skills you already know about.</p>
           ) : (
-            <p>Once you have two or more checkpoints, we compare weak-area tags between reports here.</p>
+            <p>Once you have two or more saved reports, we compare weak areas between them here.</p>
           )}
           {delta !== null && snaps.length >= 2 ? (
             <p className="text-brand-700">
@@ -141,7 +156,7 @@ export default async function LearnerProgressPage() {
       </section>
 
       <section className="rounded-2xl border border-teal-100 bg-teal-50/35 p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-semibold text-teal-950">Next priority</h2>
+        <h2 className="text-lg font-semibold text-teal-950">What to do next</h2>
         <p className="mt-4 text-sm leading-relaxed text-brand-900">{nextPriority}</p>
         {focus ? (
           <p className="mt-4 rounded-2xl border border-teal-200/70 bg-white/80 p-4 text-sm leading-relaxed text-brand-800">{focus}</p>
@@ -149,7 +164,7 @@ export default async function LearnerProgressPage() {
       </section>
 
       <div className="rounded-2xl bg-brand-950 p-6 text-center shadow-lg sm:p-8">
-        <p className="text-sm font-medium text-teal-100">Keep the journal honest.</p>
+        <p className="text-sm font-medium text-teal-100">Ready for your next check-in?</p>
         <Link
           href="/assessment"
           className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-teal-400 px-6 text-base font-semibold text-brand-950 shadow-md transition hover:bg-teal-300"

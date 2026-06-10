@@ -6,9 +6,6 @@ type Props = {
   className?: string;
 };
 
-/**
- * Opening summary: calm panel, readable measure, tidy edges (justified body with last line left-aligned).
- */
 export function ReportSummaryDebrief({ children, className = "mt-8" }: Props) {
   return (
     <div className={`${className} print:break-inside-avoid`}>

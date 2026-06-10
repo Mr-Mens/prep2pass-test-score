@@ -25,6 +25,8 @@ import {
   WEAK_AREA_CLUSTERS,
 } from "./product-skill-map";
 import { pickCopyVariant, reportCopySalt } from "./deterministic-report-copy";
+import { formatIsoDateUk } from "./formatting";
+import { buildTestCountdownPlan } from "./test-countdown-plan";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea, type RiskAreaSkill } from "./readiness-risk-areas";
 import type { AssessmentPayload } from "./validation";
 import type { DeterministicReadinessResult, ReadinessLabel } from "./validation";
@@ -50,7 +52,6 @@ function applyReadinessEvidenceGuards(assessment: AssessmentPayload, composite: 
   score = clamp(score, 0, 100);
 
   if (assessment.mockTestTaken === "no") score -= 5;
-  if (assessment.seriousFaults === 0 && assessment.drivingFaults === 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -175,6 +176,23 @@ function daysUntilTest(assessment: AssessmentPayload): number | null {
   const test = new Date(assessment.testDate);
   if (Number.isNaN(test.getTime())) return null;
   return (test.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+}
+
+/** Fault counts are meaningful after a mock, or when the learner entered non-zero lesson counts. */
+function hasReportableFaultCounts(assessment: AssessmentPayload): boolean {
+  return (
+    assessment.mockTestTaken === "yes" || assessment.seriousFaults > 0 || assessment.drivingFaults > 0
+  );
+}
+
+function buildTestDatePlanSteps(assessment: AssessmentPayload, salt: number): string[] {
+  if (assessment.testBooked !== "yes" || !assessment.testDate) return [];
+  const plan = buildTestCountdownPlan({
+    testDate: assessment.testDate,
+    salt,
+    mockTestTaken: assessment.mockTestTaken === "yes",
+  });
+  return plan?.steps ?? [];
 }
 
 function pillarSafety(assessment: AssessmentPayload, ids: WeakAreaId[], rep: number, parkingOnly: boolean): number {
@@ -423,7 +441,7 @@ function buildGroupedRiskAreas(assessment: AssessmentPayload, salt: number): Gro
   const buckets: Partial<Record<OfficialGroupKey, RiskBucket>> = {};
   const uniqueWeak = uniqueWeakAreas(assessment);
 
-  if (assessment.seriousFaults > 0) {
+  if (hasReportableFaultCounts(assessment) && assessment.seriousFaults > 0) {
     getBucket(buckets, "basics").highlights.push(
       `Serious fault(s) reported (${assessment.seriousFaults}). Treat this as a priority with your instructor before test day.`,
     );
@@ -435,7 +453,7 @@ function buildGroupedRiskAreas(assessment: AssessmentPayload, salt: number): Gro
     );
   }
 
-  if (assessment.drivingFaults >= 12) {
+  if (hasReportableFaultCounts(assessment) && assessment.drivingFaults >= 12) {
     getBucket(buckets, "basics").highlights.push(
       `Higher driving-fault count (${assessment.drivingFaults}) in a representative session suggests consistency needs work, not one-off slips.`,
     );
@@ -498,6 +516,10 @@ function buildGroupedRiskAreas(assessment: AssessmentPayload, salt: number): Gro
 function buildNextSteps(assessment: AssessmentPayload, salt: number): string[] {
   const steps: string[] = [];
   const w = new Set(assessment.weakAreas);
+
+  if (assessment.testBooked === "yes" && assessment.testDate) {
+    steps.push(...buildTestDatePlanSteps(assessment, salt));
+  }
 
   if (assessment.lessonsTaken < 15) {
     steps.push(
@@ -589,11 +611,11 @@ function buildNextSteps(assessment: AssessmentPayload, salt: number): string[] {
     );
   }
 
-  if (assessment.mockTestTaken === "no") {
+  if (assessment.mockTestTaken === "no" && assessment.testBooked !== "yes") {
     steps.push(
       pickCopyVariant(salt, "next:noMock", [
-        "Book a mock test at least two weeks before your date. It is the closest safe proxy to exam pressure.",
-        "Plan a mock early enough that a poor result becomes data, not panic: two weeks ahead is a sensible minimum.",
+        "Book a mock test with your instructor when you can. It is the closest safe proxy to exam pressure.",
+        "Plan a mock early enough that a poor result becomes data, not panic.",
       ]),
     );
   } else if (assessment.mockTestResult === "fail") {
@@ -612,20 +634,11 @@ function buildNextSteps(assessment: AssessmentPayload, salt: number): string[] {
     );
   }
 
-  if (assessment.seriousFaults > 0) {
+  if (hasReportableFaultCounts(assessment) && assessment.seriousFaults > 0) {
     steps.push(
       pickCopyVariant(salt, "next:serious", [
         "Ask your instructor to log serious-fault themes explicitly and rehearse the exact corrections out loud.",
         "Treat serious-fault themes like a checklist: name the trigger, the correction, and repeat until your instructor hears it before the move.",
-      ]),
-    );
-  }
-
-  if (assessment.testBooked === "yes" && assessment.testDate) {
-    steps.push(
-      pickCopyVariant(salt, "next:booked", [
-        "Work backwards from your test date: schedule tougher routes mid-week, then taper to confidence-building drives.",
-        "With a date set, stack harder routes earlier in the fortnight, then shorter confidence drives as test day approaches.",
       ]),
     );
   }
@@ -653,14 +666,29 @@ function buildSummary(assessment: AssessmentPayload, score: number, salt: number
           `Latest mock outcome: ${assessment.mockTestResult === "pass" ? "pass" : assessment.mockTestResult === "fail" ? "fail" : "not recorded"}.`,
         ])
       : pickCopyVariant(salt, "sum:mockN", [
-          "You have not taken a mock yet. That is normal, but it leaves pressure untested.",
-          "No mock on record yet, which is common early on, but exam-style pressure is still unknown until you schedule one.",
+          "You have not taken a mock yet. Book one with your instructor so exam-style pressure is tested before test day.",
+          "No mock on record yet. Schedule one early enough that the result helps your plan, not your nerves.",
         ]);
 
+  const testLine =
+    assessment.testBooked === "yes" && assessment.testDate
+      ? pickCopyVariant(salt, "sum:test", [
+          `Your practical test is booked for ${formatIsoDateUk(assessment.testDate)}.`,
+          `Test day is set for ${formatIsoDateUk(assessment.testDate)}, so your action plan below works backwards from that date.`,
+        ])
+      : "";
+
+  const faultFragment = hasReportableFaultCounts(assessment)
+    ? pickCopyVariant(salt, "sum:faults", [
+        `${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) from your ${assessment.mockTestTaken === "yes" ? "mock" : "recent lesson"},`,
+        `with ${assessment.seriousFaults} serious and ${assessment.drivingFaults} driving fault(s) from your ${assessment.mockTestTaken === "yes" ? "mock" : "recent lesson"},`,
+      ])
+    : "";
+
   const body = pickCopyVariant(salt, "sum:body", [
-    `Based on ${assessment.lessonsTaken} lessons, ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine}`,
-    `Taking about ${assessment.lessonsTaken} lessons into account, with ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) from a representative session, and ${weakLabels}, TestReady Score sits at ${score}/100. Self-rated confidence is ${assessment.confidenceLevel}/10. ${mockLine}`,
-    `Across ${assessment.lessonsTaken} lessons, the snapshot flags ${assessment.seriousFaults} serious fault(s) and ${assessment.drivingFaults} driving fault(s) in a representative session, alongside ${weakLabels}. TestReady Score comes out at ${score}/100, with confidence self-rated ${assessment.confidenceLevel}/10. ${mockLine}`,
+    `Based on ${assessment.lessonsTaken} lessons${faultFragment ? `, ${faultFragment}` : ""} plus ${weakLabels}, TestReady Score estimates readiness at ${score}/100. Confidence is self-rated ${assessment.confidenceLevel}/10. ${mockLine}${testLine ? ` ${testLine}` : ""}`,
+    `Taking about ${assessment.lessonsTaken} lessons into account${faultFragment ? `, ${faultFragment}` : ""} and ${weakLabels}, TestReady Score sits at ${score}/100. Self-rated confidence is ${assessment.confidenceLevel}/10. ${mockLine}${testLine ? ` ${testLine}` : ""}`,
+    `Across ${assessment.lessonsTaken} lessons${faultFragment ? `, ${faultFragment}` : ""} alongside ${weakLabels}, TestReady Score comes out at ${score}/100, with confidence self-rated ${assessment.confidenceLevel}/10. ${mockLine}${testLine ? ` ${testLine}` : ""}`,
   ]);
 
   const footer = pickCopyVariant(salt, "sum:foot", [

@@ -231,6 +231,8 @@ export function AssessmentForm({
   useEffect(() => {
     if (mockTestTaken === "no") {
       setValue("mockTestResult", "not_taken", { shouldValidate: true });
+      setValue("seriousFaults", "", { shouldValidate: true });
+      setValue("drivingFaults", "", { shouldValidate: true });
     }
   }, [mockTestTaken, setValue]);
 
@@ -684,8 +686,13 @@ export function AssessmentForm({
         <SectionHeader
           step={6}
           title="Recent performance"
-          hint="Use one recent lesson or mock that felt typical, not your best-ever day."
+          hint={
+            mockTestTaken === "yes"
+              ? "Use one recent mock or marked lesson that felt typical, not your best-ever day."
+              : "Fault counts apply after a mock or marked session. If you have not done a mock yet, skip this section."
+          }
         />
+        {mockTestTaken === "yes" ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div>
             <label className={labelClass} htmlFor="seriousFaults">
@@ -701,7 +708,7 @@ export function AssessmentForm({
               {...register("seriousFaults")}
             />
             <p className={hintClass}>
-              From one recent marked session if you have it. Leave blank otherwise; your score still works without it.
+              From your mock or a recent marked session if you have it. Leave blank otherwise.
             </p>
             {errors.seriousFaults ? <p className={errorClass}>{errors.seriousFaults.message}</p> : null}
           </div>
@@ -721,26 +728,30 @@ export function AssessmentForm({
             <p className={hintClass}>Same session as serious faults, when you have both counts.</p>
             {errors.drivingFaults ? <p className={errorClass}>{errors.drivingFaults.message}</p> : null}
           </div>
-          <div className="sm:col-span-2">
-            <div className="flex items-end justify-between gap-4">
-              <label className={labelClass} htmlFor="confidenceLevel">
-                Confidence going into the test
-              </label>
-              <p className="text-sm font-semibold text-brand-800">{confidenceLevel ?? "-"}/10</p>
-            </div>
-            <input
-              id="confidenceLevel"
-              type="range"
-              min={1}
-              max={10}
-              className="mt-3 w-full accent-teal-700"
-              {...register("confidenceLevel", { valueAsNumber: true })}
-            />
-            <p className={hintClass}>1 = very uneasy, 10 = calm and consistent under pressure.</p>
-            {errors.confidenceLevel ? (
-              <p className={errorClass}>{errors.confidenceLevel.message}</p>
-            ) : null}
+        </div>
+        ) : (
+          <p className="mt-4 text-sm leading-relaxed text-brand-600">
+            You said you have not done a mock yet, so we will not use fault counts in your report. Book a mock with your
+            instructor when you are ready.
+          </p>
+        )}
+        <div className="mt-6">
+          <div className="flex items-end justify-between gap-4">
+            <label className={labelClass} htmlFor="confidenceLevel">
+              Confidence going into the test
+            </label>
+            <p className="text-sm font-semibold text-brand-800">{confidenceLevel ?? "-"}/10</p>
           </div>
+          <input
+            id="confidenceLevel"
+            type="range"
+            min={1}
+            max={10}
+            className="mt-3 w-full accent-teal-700"
+            {...register("confidenceLevel", { valueAsNumber: true })}
+          />
+          <p className={hintClass}>1 = very uneasy, 10 = calm and consistent under pressure.</p>
+          {errors.confidenceLevel ? <p className={errorClass}>{errors.confidenceLevel.message}</p> : null}
         </div>
       </fieldset>
 

@@ -100,7 +100,7 @@ export function DashboardTrajectory({ snapshotsChrono, userIdForIds, className =
   const areaPath = `${curvePath} L ${lastX} ${bottomFillY} L ${firstX} ${bottomFillY} Z`;
 
   const labelIdx = labelSlots(snapshotsChrono.length);
-  const ariaLabel = `Readiness trajectory across ${snapshotsChrono.length} Premium stint${snapshotsChrono.length === 1 ? "" : "s"}. Dates mark each saved report.`;
+  const ariaLabel = `Readiness trajectory across ${snapshotsChrono.length} saved report${snapshotsChrono.length === 1 ? "" : "s"}. Dates mark each assessment.`;
 
   return (
     <div className={className}>

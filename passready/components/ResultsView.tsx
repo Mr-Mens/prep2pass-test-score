@@ -199,7 +199,13 @@ export function ResultsView() {
             ? `Yes · ${a.mockTestResult === "pass" ? "Pass" : a.mockTestResult === "fail" ? "Fail" : "Not recorded"}`
             : "No",
       },
-      { k: "Serious / driving faults", v: `${a.seriousFaults} / ${a.drivingFaults}` },
+      {
+        k: "Serious / driving faults",
+        v:
+          a.mockTestTaken === "yes" || a.seriousFaults > 0 || a.drivingFaults > 0
+            ? `${a.seriousFaults} / ${a.drivingFaults}`
+            : "Not recorded (no mock yet)",
+      },
       { k: "Confidence (self-rated)", v: `${a.confidenceLevel}/10` },
       { k: "Weak areas", v: weakAreaLabels(a.weakAreas) },
       { k: "Extra notes", v: a.extraNotes?.trim() ? a.extraNotes : "None" },
@@ -379,9 +385,6 @@ export function ResultsView() {
 
           <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
             <h3 className={sectionTitle}>Coach note</h3>
-            <p className={sectionIntro}>
-              A concise takeaway before your next lesson, grounded in your answers and written to support what your instructor sees on the road.
-            </p>
             <div className="mt-4 rounded-xl border border-teal-200/80 bg-teal-50/85 px-5 py-5 text-sm leading-relaxed text-teal-950 shadow-sm ring-1 ring-teal-200/50 print:border-teal-200 print:bg-teal-50/60 print:ring-0">
               {report.coachMessage}
             </div>

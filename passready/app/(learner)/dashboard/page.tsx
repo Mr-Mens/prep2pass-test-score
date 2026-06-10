@@ -67,7 +67,7 @@ export default async function LearnerDashboardPage() {
 
   const focusCopy =
     deriveFocusArea(latestSnap) ??
-    "After your next assessment, we highlight the skills that deserve the most cockpit time.";
+    "After your next assessment, we will suggest which skills to focus on.";
   const nextMilestoneCopy = deriveNextMilestone(latestSnap);
 
   const latestReport = reports[0];
@@ -181,12 +181,12 @@ export default async function LearnerDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Next focus area</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Skills to practise</p>
           <p className="mt-4 text-sm leading-relaxed text-brand-800">{focusCopy}</p>
         </div>
 
         <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Priority</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">What to do next</p>
           <p className="mt-4 text-sm leading-relaxed text-brand-800">{nextMilestoneCopy}</p>
           {latestSnap?.created_at ? (
             <p className="mt-4 text-[11px] text-brand-500">Based on your report dated {formatIsoDateUk(latestSnap.created_at)}.</p>

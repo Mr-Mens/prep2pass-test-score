@@ -9,13 +9,13 @@ import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
 import { getInstructorPupilInsights } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
-type Props = { params: { id: string } };
+type Props = { params: { pupilId: string } };
 
 export default async function InstructorPupilDetailPage({ params }: Props) {
   const user = await requireInstructorSession();
   if (!isSupabaseConfigured()) notFound();
 
-  const insights = await getInstructorPupilInsights(params.id, user.id);
+  const insights = await getInstructorPupilInsights(params.pupilId, user.id);
   if (!insights) notFound();
 
   const { pupil, learner, parents, reports, journeySnapshots } = insights;

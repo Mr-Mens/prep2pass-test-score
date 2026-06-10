@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test:scoring": "npx --yes tsx scripts/test-scoring.ts",
+    "test:reasoning": "npx --yes tsx scripts/test-report-reasoning.ts",
     "knockout-brand-logo-bg": "node scripts/knockout-brand-logo-background.cjs"
   },
   "dependencies": {

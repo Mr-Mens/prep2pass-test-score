@@ -1,17 +1,19 @@
-import { WEAK_AREA_BEHAVIOUR_FOCUS } from "@/lib/adi-narrative";
-import { WEAK_AREA_OPTIONS, type WeakAreaId } from "@/lib/constants";
-import {
-  isManoeuvreWeakArea,
-  productMeta,
-  RISK_TIER_POINTS,
-  type RiskTier,
-} from "@/lib/product-skill-map";
+import type { WeakAreaId } from "@/lib/constants";
+import { isManoeuvreWeakArea, productMeta, RISK_TIER_POINTS, type RiskTier } from "@/lib/product-skill-map";
 import type { GroupedRiskArea } from "@/lib/readiness-risk-areas";
+import {
+  buildFaithfulPriorityCopy,
+  buildFaithfulWeakAreaRiskCopy,
+  mockReflectionRiskItems,
+  type RiskEvidenceSource,
+} from "@/lib/report-reasoning";
+import { applyRoadmapReadinessScoreCeiling } from "@/lib/readiness-calibration";
 import { syllabusLayerActive } from "@/lib/syllabus-coverage";
 import type {
   AssessmentPayload,
   ReadinessLabel,
   SyllabusProgressSnapshot,
+  WeakAreaDetailEntry,
 } from "@/lib/validation";
 
 export type TestPassRiskItem = {
@@ -20,100 +22,13 @@ export type TestPassRiskItem = {
   whyItMatters: string;
   practiceNext: string;
   severity: "high" | "moderate";
+  source?: RiskEvidenceSource;
 };
 
 export type ReportPriority = {
   rank: 1 | 2 | 3;
   title: string;
   detail: string;
-};
-
-const PASS_FAULT_CATALOG: Partial<
-  Record<
-    WeakAreaId,
-    Pick<TestPassRiskItem, "faultArea" | "whyItMatters" | "practiceNext">
-  >
-> = {
-  mirrors: {
-    faultArea: "Mirror checks",
-    whyItMatters: "Late checks often lead to poor timing when changing speed, direction, or emerging.",
-    practiceNext: "Make mirror checks before changing speed or direction, and say MSPSL aloud until it feels routine.",
-  },
-  junctions: {
-    faultArea: "Junction observations",
-    whyItMatters: "Late checks can lead to poor timing when emerging or turning.",
-    practiceNext: "Slow earlier, check both ways properly, and only commit when the gap is clearly safe.",
-  },
-  roundabouts: {
-    faultArea: "Roundabout lane positioning",
-    whyItMatters: "Late lane choice or weak exit checks often create hesitation or last-second corrections.",
-    practiceNext: "Choose your lane earlier on approach, keep observations through the exit, and match entry speed to traffic.",
-  },
-  speedControl: {
-    faultArea: "Approach speed",
-    whyItMatters: "Arriving too fast reduces time to assess hazards and can unsettle positioning at junctions.",
-    practiceNext: "Slow the approach so you have more time to assess the road, then match speed to what you can see.",
-  },
-  lanePositioning: {
-    faultArea: "Road positioning",
-    whyItMatters: "Wide or drifting position can affect gap judgement and how other road users read your intentions.",
-    practiceNext: "Hold a steady position with safe space around hazards and tighten your line before turns.",
-  },
-  movingOffSafely: {
-    faultArea: "Moving off observations",
-    whyItMatters: "Rushed pull-aways are a common test fault when observations are incomplete.",
-    practiceNext: "Take a full observation routine before moving off and join traffic only when the gap is clearly safe.",
-  },
-  independentDriving: {
-    faultArea: "Independent driving decisions",
-    whyItMatters: "Under test you must follow signs or sat nav for several minutes without constant prompting.",
-    practiceNext: "Start adding sat nav and road-sign following into normal lessons and plan lane choice earlier.",
-  },
-  forwardBayParking: {
-    faultArea: "Forward bay parking observations",
-    whyItMatters: "Examiners look for control and observations through the full manoeuvre, not just the final position.",
-    practiceNext: "Keep the approach slow with observations through the full move into the bay.",
-  },
-  reverseBayParking: {
-    faultArea: "Reverse bay parking control",
-    whyItMatters: "Rushed reversing often costs observations or accurate positioning.",
-    practiceNext: "Reverse slowly with all-round observations and accurate line control into the bay.",
-  },
-  pullUpOnRightReverse: {
-    faultArea: "Pull up on the right and reverse",
-    whyItMatters: "This manoeuvre combines positioning, observation, and rejoining traffic safely.",
-    practiceNext: "Stop safely on the right, reverse two car lengths with full observations, then rejoin smoothly.",
-  },
-  parallelParking: {
-    faultArea: "Parallel parking observations",
-    whyItMatters: "Control matters, but missing observations during the move is a common fail point.",
-    practiceNext: "Keep the manoeuvre slow with observations while positioning next to the kerb.",
-  },
-  countryRoads: {
-    faultArea: "Meeting traffic on narrow roads",
-    whyItMatters: "Limited space and sight lines need calm speed and position under pressure.",
-    practiceNext: "Meet oncoming traffic calmly with sensible speed and hold your position on narrow sections.",
-  },
-  dualCarriageways: {
-    faultArea: "Dual carriageway joining",
-    whyItMatters: "Slip-road judgement and lane discipline are easy to lose under test pressure.",
-    practiceNext: "Match joining speed on slip roads and keep lane discipline at higher speeds.",
-  },
-  motorways: {
-    faultArea: "Motorway lane discipline",
-    whyItMatters: "Even if not on every route, planning gaps early shows safe judgement at speed.",
-    practiceNext: "Plan joining gaps early and avoid lingering in the middle lane without reason.",
-  },
-  nightDriving: {
-    faultArea: "Driving in the dark",
-    whyItMatters: "Reduced visibility makes speed judgement and observations harder under pressure.",
-    practiceNext: "Use lights correctly and judge speed with reduced visibility before adding busy routes.",
-  },
-  weatherConditions: {
-    faultArea: "Low-grip conditions",
-    whyItMatters: "Rain and wind need earlier speed and space choices to stay smooth and safe.",
-    practiceNext: "Leave more space and adjust speed early when grip is lower.",
-  },
 };
 
 function tierScore(tier: RiskTier): number {
@@ -124,21 +39,19 @@ function rankWeakAreas(ids: WeakAreaId[]): WeakAreaId[] {
   return Array.from(new Set(ids)).sort((a, b) => tierScore(productMeta(b).riskTier) - tierScore(productMeta(a).riskTier));
 }
 
-function weakAreaLabel(id: WeakAreaId): string {
-  return WEAK_AREA_OPTIONS.find((o) => o.id === id)?.label ?? id;
-}
-
-function faultFromWeakArea(id: WeakAreaId, severity: "high" | "moderate"): TestPassRiskItem {
-  const catalog = PASS_FAULT_CATALOG[id];
-  const behaviour = WEAK_AREA_BEHAVIOUR_FOCUS[id];
+function faultFromWeakArea(
+  id: WeakAreaId,
+  severity: "high" | "moderate",
+  weakAreaDetails?: WeakAreaDetailEntry[],
+): TestPassRiskItem {
+  const copy = buildFaithfulWeakAreaRiskCopy(id, weakAreaDetails);
   return {
     id: id,
-    faultArea: catalog?.faultArea ?? weakAreaLabel(id),
-    whyItMatters:
-      catalog?.whyItMatters ??
-      "This area is flagged in your assessment and is a common source of test faults under pressure.",
-    practiceNext: catalog?.practiceNext ?? `Work with your instructor to ${behaviour}.`,
+    faultArea: copy.faultArea,
+    whyItMatters: copy.whyItMatters,
+    practiceNext: copy.practiceNext,
     severity,
+    source: copy.source,
   };
 }
 
@@ -150,10 +63,26 @@ function independentDrivingRisk(syllabus: SyllabusProgressSnapshot | null | unde
     id: "syllabus_independent_driving",
     faultArea: "Independent driving",
     whyItMatters:
-      "Under test you need to follow signs or sat nav for several minutes without constant prompting. Big gaps here increase test risk.",
+      "Independent driving is a major test element. Big gaps here increase test risk because you must follow signs or sat nav without constant prompting.",
     practiceNext:
       "Start adding sat nav, road-sign following, and planning ahead into normal lessons rather than leaving it until late.",
     severity: cat.covered === 0 ? "high" : "moderate",
+    source: "syllabus_gap",
+  };
+}
+
+function manoeuvreSyllabusRisk(syllabus: SyllabusProgressSnapshot | null | undefined): TestPassRiskItem | null {
+  const cat = syllabus?.categoryProgress.find((c) => c.key === "manoeuvres");
+  if (!cat || cat.covered > 2) return null;
+  return {
+    id: "syllabus_manoeuvres",
+    faultArea: "Manoeuvre coverage",
+    whyItMatters:
+      "Several manoeuvres still need building into normal lessons. Under test you may be asked to complete one you have not practised recently.",
+    practiceNext:
+      "Cover the remaining manoeuvres in short, repeated practice before moving into full mock-test style drives.",
+    severity: cat.covered <= 1 ? "high" : "moderate",
+    source: "syllabus_gap",
   };
 }
 
@@ -162,28 +91,38 @@ function confidenceRisk(confidenceLevel: number): TestPassRiskItem | null {
   return {
     id: "confidence_gap",
     faultArea: "Decision-making under pressure",
-    whyItMatters: "Low confidence often shows up as hesitation or rushed decisions when traffic gets busier.",
-    practiceNext: "Repeat familiar junction types until the routine feels steady, then add pressure in short bursts.",
+    whyItMatters:
+      "You rated your confidence low, which may show up as hesitation or rushed decisions when traffic gets busier.",
+    practiceNext:
+      "Repeat familiar junction types until the routine feels steady, then add pressure in short bursts with your instructor.",
     severity: "moderate",
+    source: "confidence",
   };
 }
 
-function mockFailRisk(mockTestTaken: AssessmentPayload["mockTestTaken"], mockTestResult: AssessmentPayload["mockTestResult"]): TestPassRiskItem | null {
+function mockFailRisk(
+  mockTestTaken: AssessmentPayload["mockTestTaken"],
+  mockTestResult: AssessmentPayload["mockTestResult"],
+): TestPassRiskItem | null {
   if (mockTestTaken !== "yes" || mockTestResult !== "fail") return null;
   return {
     id: "mock_fail",
     faultArea: "Test-day consistency",
     whyItMatters: "Your mock did not pass, which suggests pressure still exposes repeat fault themes.",
-    practiceNext: "Treat mock fault themes as a checklist with your instructor and repeat corrections on test-style routes.",
+    practiceNext:
+      "Treat mock fault themes as a checklist with your instructor and repeat corrections on test-style routes.",
     severity: "high",
+    source: "mock_evidence",
   };
 }
 
 export function buildTestPassRisks(input: {
   weakAreas: WeakAreaId[];
+  weakAreaDetails?: WeakAreaDetailEntry[];
   confidenceLevel: number;
   mockTestTaken: AssessmentPayload["mockTestTaken"];
   mockTestResult: AssessmentPayload["mockTestResult"];
+  mockReflectionDetails?: AssessmentPayload["mockReflectionDetails"];
   riskAreas: GroupedRiskArea[];
   syllabus?: SyllabusProgressSnapshot | null;
 }): TestPassRiskItem[] {
@@ -199,13 +138,33 @@ export function buildTestPassRisks(input: {
   const mockRisk = mockFailRisk(input.mockTestTaken, input.mockTestResult);
   if (mockRisk) push(mockRisk);
 
+  if (input.mockTestTaken === "yes" && input.mockReflectionDetails?.length) {
+    const assessmentStub = {
+      mockTestTaken: input.mockTestTaken,
+      mockReflectionDetails: input.mockReflectionDetails,
+    } as AssessmentPayload;
+    for (const mockItem of mockReflectionRiskItems(assessmentStub)) {
+      push({
+        id: mockItem.id,
+        faultArea: mockItem.faultArea,
+        whyItMatters: mockItem.whyItMatters,
+        practiceNext: mockItem.practiceNext,
+        severity: mockItem.severity,
+        source: mockItem.source,
+      });
+    }
+  }
+
   for (const id of rankWeakAreas(input.weakAreas).slice(0, 4)) {
     const tier = productMeta(id).riskTier;
-    push(faultFromWeakArea(id, tier === "critical" || tier === "high" ? "high" : "moderate"));
+    push(faultFromWeakArea(id, tier === "critical" || tier === "high" ? "high" : "moderate", input.weakAreaDetails));
   }
 
   const indRisk = independentDrivingRisk(input.syllabus);
   if (indRisk) push(indRisk);
+
+  const manRisk = manoeuvreSyllabusRisk(input.syllabus);
+  if (manRisk) push(manRisk);
 
   const confRisk = confidenceRisk(input.confidenceLevel);
   if (confRisk) push(confRisk);
@@ -221,6 +180,7 @@ export function buildTestPassRisks(input: {
         whyItMatters: block.summary.split(".")[0] ?? block.summary,
         practiceNext: `Work this into your next lesson with your instructor, focusing on ${skill.label.toLowerCase()} under light pressure first.`,
         severity: "high",
+        source: "inference",
       });
       if (items.length >= 5) break;
     }
@@ -253,6 +213,7 @@ function testDatePriority(
 
 export function buildTopPriorities(input: {
   weakAreas: WeakAreaId[];
+  weakAreaDetails?: WeakAreaDetailEntry[];
   syllabus?: SyllabusProgressSnapshot | null;
   testBooked: AssessmentPayload["testBooked"];
   testDate: AssessmentPayload["testDate"];
@@ -263,23 +224,36 @@ export function buildTopPriorities(input: {
   const ranked = rankWeakAreas(input.weakAreas);
 
   if (ranked[0]) {
-    const label = weakAreaLabel(ranked[0]).toLowerCase();
-    priorities.push({
-      rank: 1,
-      title: `Tighten ${label}`,
-      detail: WEAK_AREA_BEHAVIOUR_FOCUS[ranked[0]].replace(/^./, (c) => c.toUpperCase()) + ".",
-    });
+    const copy = buildFaithfulPriorityCopy(ranked[0], input.weakAreaDetails);
+    priorities.push({ rank: 1, title: copy.title, detail: copy.detail });
   } else {
     priorities.push({
       rank: 1,
       title: "Build consistent routines",
-      detail: "Keep observations and decision-making steady on familiar routes before stretching onto harder junctions.",
+      detail:
+        "Keep observations and decision-making steady on familiar routes before stretching onto harder junctions.",
     });
   }
 
-  const syllabusFocus = input.syllabus?.nextLessonFocus[0];
   const indCat = input.syllabus?.categoryProgress.find((c) => c.key === "independent_driving");
-  if (indCat && indCat.covered < indCat.total) {
+  const manCat = input.syllabus?.categoryProgress.find((c) => c.key === "manoeuvres");
+  const syllabusFocus = input.syllabus?.nextLessonFocus[0];
+
+  if (indCat && indCat.covered === 0) {
+    priorities.push({
+      rank: 2,
+      title: "Build independent driving",
+      detail:
+        "Independent driving is a major gap before test readiness. Start adding sat nav and road-sign following into normal lessons with planning ahead built in.",
+    });
+  } else if (manCat && manCat.covered <= 2) {
+    priorities.push({
+      rank: 2,
+      title: "Complete manoeuvre coverage",
+      detail:
+        "Several manoeuvres still need more practice. Cover the remaining manoeuvres in short, repeated sessions before mock-test style drives.",
+    });
+  } else if (indCat && indCat.covered < indCat.total) {
     priorities.push({
       rank: 2,
       title: "Build independent driving",
@@ -289,14 +263,12 @@ export function buildTopPriorities(input: {
     priorities.push({
       rank: 2,
       title: `Cover ${syllabusFocus.toLowerCase()}`,
-      detail: "This is a main recap area still to build into practice. Short, repeated practice is usually more useful than trying to cram everything.",
+      detail:
+        "This is a main recap area still to build into practice. Short, repeated practice is usually more useful than trying to cram everything.",
     });
   } else if (ranked[1] && !isManoeuvreWeakArea(ranked[1])) {
-    priorities.push({
-      rank: 2,
-      title: `Improve ${weakAreaLabel(ranked[1]).toLowerCase()}`,
-      detail: WEAK_AREA_BEHAVIOUR_FOCUS[ranked[1]].replace(/^./, (c) => c.toUpperCase()) + ".",
-    });
+    const copy = buildFaithfulPriorityCopy(ranked[1], input.weakAreaDetails);
+    priorities.push({ rank: 2, title: copy.title, detail: copy.detail });
   } else {
     priorities.push({
       rank: 2,
@@ -390,17 +362,5 @@ export function applyIndependenceReadinessCeiling(
   assessment: AssessmentPayload,
   syllabus: SyllabusProgressSnapshot | null | undefined,
 ): number {
-  const gap = independentDrivingGapSeverity(assessment, syllabus);
-  if (gap === "none") return score;
-
-  const strongEvidence =
-    assessment.mockTestTaken === "yes" &&
-    assessment.mockTestResult === "pass" &&
-    assessment.lessonsTaken >= 25;
-
-  if (gap === "severe") {
-    if (strongEvidence) return Math.min(score, 78);
-    return Math.min(score, 68);
-  }
-  return Math.min(score, 74);
+  return applyRoadmapReadinessScoreCeiling(score, assessment, syllabus);
 }

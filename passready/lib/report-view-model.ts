@@ -2,13 +2,23 @@ import type { EstimatedHoursInput } from "@/lib/estimated-lesson-hours";
 import { computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
 import { normalizeGroupedRiskAreas, type GroupedRiskArea } from "@/lib/risk-areas";
 import { buildTestPassRisks, buildTopPriorities } from "@/lib/report-insights";
-import type { AssessmentPayload, ReadinessLabel, SyllabusProgressSnapshot } from "@/lib/validation";
-import { syllabusProgressSnapshotSchema } from "@/lib/validation";
+import {
+  confidenceDisplayLabel,
+  reconcileReadinessOutcome,
+  type ConfidenceDisplay,
+  type ReadinessBandDisplay,
+} from "@/lib/readiness-calibration";
+import type { AssessmentPayload, ReadinessLabel, SyllabusProgressSnapshot, WeakAreaDetailEntry } from "@/lib/validation";
+import { syllabusProgressSnapshotSchema, weakAreaDetailEntrySchema } from "@/lib/validation";
 import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
+import { weakAreaDetailsFromRawMetadata } from "@/lib/weak-area-metadata";
 
 export type ReportViewModel = {
   readinessScore: number;
   readinessLabel: ReadinessLabel;
+  readinessBandDisplay: ReadinessBandDisplay;
+  confidenceLevel: number;
+  confidenceDisplay: ConfidenceDisplay;
   summary: string;
   nextSteps: string[];
   riskAreas: GroupedRiskArea[];
@@ -16,6 +26,8 @@ export type ReportViewModel = {
   topPriorities: ReturnType<typeof buildTopPriorities>;
   estimatedHours: ReturnType<typeof computeEstimatedLessonHours>;
   syllabus: SyllabusProgressSnapshot | null;
+  weakAreaDetails: WeakAreaDetailEntry[];
+  mockTestTaken: AssessmentPayload["mockTestTaken"];
 };
 
 type BuildArgs = {
@@ -34,7 +46,15 @@ type BuildArgs = {
   testBooked?: AssessmentPayload["testBooked"];
   testDate?: AssessmentPayload["testDate"] | null;
   rawMetadata?: unknown;
+  weakAreaDetailsRaw?: unknown;
+  mockReflectionDetailsRaw?: unknown;
 };
+
+function mockReflectionDetailsFromMetadata(raw: unknown): AssessmentPayload["mockReflectionDetails"] {
+  if (!raw || typeof raw !== "object") return [];
+  const details = "mockReflectionDetails" in raw ? (raw as { mockReflectionDetails: unknown }).mockReflectionDetails : undefined;
+  return Array.isArray(details) ? (details as AssessmentPayload["mockReflectionDetails"]) : [];
+}
 
 export function syllabusFromRawMetadata(raw: unknown): SyllabusProgressSnapshot | null {
   if (!raw || typeof raw !== "object") return null;
@@ -43,12 +63,27 @@ export function syllabusFromRawMetadata(raw: unknown): SyllabusProgressSnapshot 
   return p.success ? p.data : null;
 }
 
+export function weakAreaDetailsFromDb(raw: unknown, metadata?: unknown): WeakAreaDetailEntry[] {
+  const fromColumn = weakAreaDetailsFromRawMetadata(Array.isArray(raw) ? { weakAreaDetails: raw } : null);
+  if (fromColumn.length > 0) return fromColumn;
+  if (Array.isArray(raw)) {
+    const out: WeakAreaDetailEntry[] = [];
+    for (const item of raw) {
+      const parsed = weakAreaDetailEntrySchema.safeParse(item);
+      if (parsed.success) out.push(parsed.data);
+    }
+    if (out.length > 0) return out;
+  }
+  return weakAreaDetailsFromRawMetadata(metadata);
+}
+
 export function buildReportViewModel(args: BuildArgs): ReportViewModel {
   const weakAreas = migrateWeakAreaIds(
     Array.isArray(args.weakAreasRaw) ? (args.weakAreasRaw as string[]) : [],
   ) as AssessmentPayload["weakAreas"];
   const riskAreas = normalizeGroupedRiskAreas(args.riskAreasRaw);
   const syllabus = syllabusFromRawMetadata(args.rawMetadata);
+  const weakAreaDetails = weakAreaDetailsFromDb(args.weakAreaDetailsRaw, args.rawMetadata);
 
   const hoursInput: EstimatedHoursInput = {
     lessonsTaken: args.lessonsTaken,
@@ -58,19 +93,25 @@ export function buildReportViewModel(args: BuildArgs): ReportViewModel {
     drivingFaults: args.drivingFaults,
     weakAreas,
     confidenceLevel: args.confidenceLevel,
+    testBooked: args.testBooked,
+    testDate: args.testDate ?? undefined,
+    syllabus,
   };
 
   const testPassRisks = buildTestPassRisks({
     weakAreas,
+    weakAreaDetails,
     confidenceLevel: args.confidenceLevel,
     mockTestTaken: args.mockTestTaken ? "yes" : "no",
     mockTestResult: args.mockTestResult,
+    mockReflectionDetails: mockReflectionDetailsFromMetadata(args.rawMetadata),
     riskAreas,
     syllabus,
   });
 
   const topPriorities = buildTopPriorities({
     weakAreas,
+    weakAreaDetails,
     syllabus,
     testBooked: args.testBooked ?? "no",
     testDate: args.testDate ?? undefined,
@@ -78,16 +119,33 @@ export function buildReportViewModel(args: BuildArgs): ReportViewModel {
     nextSteps: args.nextSteps,
   });
 
+  const estimatedHours = computeEstimatedLessonHours(hoursInput, args.readinessScore);
+
+  const reconciled = reconcileReadinessOutcome({
+    score: args.readinessScore,
+    label: args.readinessLabel,
+    estimatedHours,
+    assessment: {
+      syllabusCaptureVersion: syllabus ? 1 : undefined,
+    },
+    syllabus,
+  });
+
   return {
-    readinessScore: args.readinessScore,
-    readinessLabel: args.readinessLabel,
+    readinessScore: reconciled.score,
+    readinessLabel: reconciled.label,
+    readinessBandDisplay: reconciled.displayBand,
+    confidenceLevel: args.confidenceLevel,
+    confidenceDisplay: confidenceDisplayLabel(args.confidenceLevel),
     summary: args.summary,
     nextSteps: args.nextSteps,
     riskAreas,
     testPassRisks,
     topPriorities,
-    estimatedHours: computeEstimatedLessonHours(hoursInput, args.readinessScore),
+    estimatedHours,
     syllabus,
+    weakAreaDetails,
+    mockTestTaken: args.mockTestTaken ? "yes" : "no",
   };
 }
 
@@ -118,5 +176,6 @@ export function buildReportViewModelFromAssessment(
     testBooked: assessment.testBooked,
     testDate: assessment.testDate,
     rawMetadata: result.metadata ? { syllabus: result.metadata.syllabus } : undefined,
+    weakAreaDetailsRaw: assessment.weakAreaDetails,
   });
 }

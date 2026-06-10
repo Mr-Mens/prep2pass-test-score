@@ -3,6 +3,7 @@ import { mergeNextStepsPreserveOrder } from "@/lib/syllabus-coverage";
 import { computeMockReadiness } from "@/lib/scoring";
 import { generateReadinessReport } from "@/lib/server/generate-readiness-report";
 import { deterministicToReport } from "@/lib/transformers/deterministic-to-report";
+import { weakAreaDetailsForMetadata } from "@/lib/weak-area-metadata";
 import type { AssessmentPayload, MockReadinessResult } from "@/lib/validation";
 
 export type ScoreAssessmentResult = {
@@ -54,6 +55,7 @@ export async function scoreAssessment(
         model: aiReport.model,
         generatedAt: new Date().toISOString(),
         ...(deterministic.syllabusProgress ? { syllabus: deterministic.syllabusProgress } : {}),
+        ...weakAreaDetailsForMetadata(assessment),
       },
     };
     return { assessment, result: sanitiseReportLearnerCopy(result) };

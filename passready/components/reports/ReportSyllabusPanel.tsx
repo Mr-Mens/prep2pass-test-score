@@ -1,5 +1,6 @@
 "use client";
 
+import { categoryRoadmapGapLabel } from "@/lib/report-reasoning";
 import { roadmapStatusLabel } from "@/lib/report-insights";
 import type { SyllabusProgressSnapshot } from "@/lib/validation";
 
@@ -56,6 +57,7 @@ export function ReportSyllabusPanel({ syllabus }: Props) {
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {syllabus.categoryProgress.map((c) => {
           const low = c.completionPercent < 50;
+          const gapLabel = categoryRoadmapGapLabel(c.key, c.covered, c.total);
           return (
             <div
               key={c.key}
@@ -64,7 +66,10 @@ export function ReportSyllabusPanel({ syllabus }: Props) {
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-brand-950">{c.title}</p>
+                <div>
+                  <p className="text-sm font-semibold text-brand-950">{c.title}</p>
+                  {gapLabel ? <p className="mt-1 text-xs font-medium text-amber-900">{gapLabel}</p> : null}
+                </div>
                 <span
                   className={`shrink-0 text-[11px] font-bold tabular-nums ${low ? "text-amber-900" : "text-teal-800"}`}
                 >

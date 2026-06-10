@@ -1,4 +1,5 @@
 import { buildFallbackCoachMessage, buildFallbackDebrief } from "@/lib/fallback-adi-narrative";
+import { weakAreaDetailsForMetadata } from "@/lib/weak-area-metadata";
 import type { AssessmentPayload, DeterministicReadinessResult, MockReadinessResult } from "@/lib/validation";
 
 type Options = {
@@ -28,6 +29,7 @@ export function deterministicToReport(
       model: options.model,
       generatedAt,
       ...(deterministic.syllabusProgress ? { syllabus: deterministic.syllabusProgress } : {}),
+      ...weakAreaDetailsForMetadata(assessment),
     },
   };
 }

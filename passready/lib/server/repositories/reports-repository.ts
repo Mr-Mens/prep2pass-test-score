@@ -1,12 +1,17 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/server/supabase";
-import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
 import type { JourneySnapshot } from "@/lib/dashboard/journey-types";
 import type { AssessmentPayload, MockReadinessResult, ReportDbRecord, ReportSummaryItem } from "@/lib/validation";
+import { migrateWeakAreaIds } from "@/lib/weak-area-migration";
+import { weakAreaDetailsFromRawMetadata } from "@/lib/weak-area-metadata";
 
 function withMigratedWeakAreas(row: ReportDbRecord): ReportDbRecord {
-  return { ...row, weak_areas: migrateWeakAreaIds(row.weak_areas) };
+  const weak_areas = migrateWeakAreaIds(row.weak_areas);
+  const columnDetails = row.weak_area_details ?? [];
+  const metaDetails = weakAreaDetailsFromRawMetadata(row.raw_metadata);
+  const weak_area_details = columnDetails.length > 0 ? columnDetails : metaDetails;
+  return { ...row, weak_areas, weak_area_details };
 }
 
 type CreateReportInput = {
@@ -19,6 +24,7 @@ type CreateReportInput = {
 
 function toDbPayload(input: CreateReportInput) {
   const { assessment, result } = input;
+  const weakAreaDetails = assessment.weakAreaDetails ?? result.metadata.weakAreaDetails ?? [];
   return {
     user_id: input.userId,
     stripe_session_id: input.stripeSessionId,
@@ -37,6 +43,7 @@ function toDbPayload(input: CreateReportInput) {
     driving_faults: assessment.drivingFaults,
     confidence_level: assessment.confidenceLevel,
     weak_areas: assessment.weakAreas,
+    weak_area_details: weakAreaDetails,
     extra_notes: assessment.extraNotes ?? null,
     readiness_score: result.readinessScore,
     readiness_label: result.readinessLabel,
@@ -48,7 +55,10 @@ function toDbPayload(input: CreateReportInput) {
     report_source: result.metadata.source,
     model_name: result.metadata.model ?? null,
     generated_at: result.metadata.generatedAt,
-    raw_metadata: result.metadata,
+    raw_metadata: {
+      ...result.metadata,
+      ...(weakAreaDetails.length > 0 ? { weakAreaDetails } : {}),
+    },
   };
 }
 
@@ -59,13 +69,60 @@ function isUniqueStripeSessionViolation(error: { code?: string; message?: string
   return m.includes("duplicate key") && m.includes("stripe_session_id");
 }
 
-export async function createReport(input: CreateReportInput): Promise<ReportDbRecord> {
-  const supabase = getSupabaseServerClient();
-  const payload = toDbPayload(input);
-  const { data, error } = await supabase.from("reports").insert(payload).select("*").single();
+function isMissingWeakAreaDetailsColumn(error: { message?: string } | null): boolean {
+  const m = error?.message ?? "";
+  return m.includes("weak_area_details") && m.includes("schema cache");
+}
 
-  if (!error && data) {
-    return withMigratedWeakAreas(data as ReportDbRecord);
+async function insertReportRow(payload: ReturnType<typeof toDbPayload>) {
+  const supabase = getSupabaseServerClient();
+  let attempt = payload;
+  for (let i = 0; i < 2; i++) {
+    const { data, error } = await supabase.from("reports").insert(attempt).select("*").single();
+    if (!error && data) return { data: data as ReportDbRecord, error: null };
+    if (i === 0 && isMissingWeakAreaDetailsColumn(error)) {
+      console.warn(
+        "[reports] weak_area_details column missing; retrying insert with raw_metadata only. Run supabase/migrations/009_weak_area_details.sql",
+      );
+      const { weak_area_details: _omit, ...withoutColumn } = attempt;
+      attempt = withoutColumn as typeof attempt;
+      continue;
+    }
+    return { data: null, error };
+  }
+  return { data: null, error: { message: "insert failed" } };
+}
+
+async function updateReportRow(stripeSessionId: string, payload: ReturnType<typeof toDbPayload>) {
+  const supabase = getSupabaseServerClient();
+  let attempt = payload;
+  for (let i = 0; i < 2; i++) {
+    const { data, error } = await supabase
+      .from("reports")
+      .update(attempt)
+      .eq("stripe_session_id", stripeSessionId)
+      .select("*")
+      .single();
+    if (!error && data) return { data: data as ReportDbRecord, error: null };
+    if (i === 0 && isMissingWeakAreaDetailsColumn(error)) {
+      console.warn(
+        "[reports] weak_area_details column missing; retrying update with raw_metadata only. Run supabase/migrations/009_weak_area_details.sql",
+      );
+      const { weak_area_details: _omit, ...withoutColumn } = attempt;
+      attempt = withoutColumn as typeof attempt;
+      continue;
+    }
+    return { data: null, error };
+  }
+  return { data: null, error: { message: "update failed" } };
+}
+
+export async function createReport(input: CreateReportInput): Promise<ReportDbRecord> {
+  const payload = toDbPayload(input);
+  const { data, error } = await insertReportRow(payload);
+
+  if (data) {
+    return withMigratedWeakAreas(data);
   }
 
   if (isUniqueStripeSessionViolation(error)) {
@@ -108,19 +165,13 @@ export async function updateReportByStripeSessionId(
   stripeSessionId: string,
   input: CreateReportInput,
 ): Promise<ReportDbRecord> {
-  const supabase = getSupabaseServerClient();
   const payload = toDbPayload(input);
-  const { data, error } = await supabase
-    .from("reports")
-    .update(payload)
-    .eq("stripe_session_id", stripeSessionId)
-    .select("*")
-    .single();
+  const { data, error } = await updateReportRow(stripeSessionId, payload);
 
   if (error || !data) {
     throw new Error("Failed to update report");
   }
-  return withMigratedWeakAreas(data as ReportDbRecord);
+  return withMigratedWeakAreas(data);
 }
 
 export async function getReportById(id: string): Promise<ReportDbRecord | null> {

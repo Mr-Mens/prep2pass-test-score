@@ -26,6 +26,7 @@ const baseLearner = (): Omit<
   email: "benchmark@prep2pass.test",
   mockReflectionCategories: [],
   mockReflectionDetails: [],
+  weakAreaDetails: [],
   extraNotes: undefined,
 });
 

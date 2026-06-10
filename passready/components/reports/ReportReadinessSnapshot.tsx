@@ -2,15 +2,26 @@ import type { ReactNode } from "react";
 
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { readinessBandStyles } from "@/lib/report-insights";
+import type { ConfidenceDisplay, ReadinessBandDisplay } from "@/lib/readiness-calibration";
 import type { ReadinessLabel } from "@/lib/validation";
 
 type Props = {
   score: number;
   label: ReadinessLabel;
+  bandDisplay: ReadinessBandDisplay;
+  confidenceLevel: number;
+  confidenceDisplay: ConfidenceDisplay;
   summary: ReactNode;
 };
 
-export function ReportReadinessSnapshot({ score, label, summary }: Props) {
+export function ReportReadinessSnapshot({
+  score,
+  label,
+  bandDisplay,
+  confidenceLevel,
+  confidenceDisplay,
+  summary,
+}: Props) {
   const styles = readinessBandStyles(label);
 
   return (
@@ -29,8 +40,15 @@ export function ReportReadinessSnapshot({ score, label, summary }: Props) {
             <span
               className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset ${styles.badge}`}
             >
-              {label}
+              {bandDisplay}
             </span>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-brand-100 bg-brand-50/50 px-4 py-3 text-left">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Confidence</p>
+              <p className="mt-1 text-sm font-semibold text-brand-950">{confidenceDisplay}</p>
+              <p className="mt-0.5 text-xs text-brand-600">Self-rated {confidenceLevel}/10</p>
+            </div>
           </div>
           <div
             className="mt-5 h-2.5 overflow-hidden rounded-full bg-brand-100"

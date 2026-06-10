@@ -1,13 +1,19 @@
 import { pickCopyVariant } from "@/lib/deterministic-report-copy";
-import type { AssessmentPayload, EstimatedLessonHours } from "@/lib/validation";
-import { isManoeuvreWeakArea, type WeakAreaId } from "@/lib/product-skill-map";
+import type { AssessmentPayload, EstimatedLessonHours, SyllabusProgressSnapshot } from "@/lib/validation";
+import { productMeta, type WeakAreaId } from "@/lib/product-skill-map";
 
 export const ESTIMATED_HOURS_TITLE = "Estimated hours to test readiness";
 
 export const ESTIMATED_HOURS_SUPPORTING =
-  "Planning range depends on consistency, private practice, and your instructor's judgement on the road.";
+  "This estimate reflects remaining syllabus areas, identified weaknesses, and your reported experience.";
 
 export const ESTIMATED_HOURS_DISCLAIMER = "This is a planning guide, not a guarantee.";
+
+const BASE_GUIDED_HOURS = 10;
+const PLANNING_RANGE_SPREAD = 5;
+
+/** @deprecated Legacy estimation modes; retained for type compatibility. */
+export type EstimationPath = "minimal" | "partial" | "full";
 
 /** Inputs needed for hour estimation (subset of {@link AssessmentPayload}). */
 export type EstimatedHoursInput = Pick<
@@ -21,152 +27,118 @@ export type EstimatedHoursInput = Pick<
   | "confidenceLevel"
   | "syllabusCaptureVersion"
   | "topicsCovered"
->;
+> &
+  Partial<Pick<AssessmentPayload, "testBooked" | "testDate">> & {
+    syllabus?: SyllabusProgressSnapshot | null;
+  };
 
-export type EstimationPath = "minimal" | "partial" | "full";
-
-/**
- * Which deterministic path applies. Not shown in the UI; keeps copy consistent while allowing sparse data.
- *
- * - **full**: mock taken or any fault count above zero → use readiness score + fault/weak adjustments.
- * - **partial**: otherwise weak areas or very low / very high self-rated confidence → DVSA-style baseline plus light tweaks.
- * - **minimal**: only lessons + mid confidence, no mock/fault/weak signals → DVSA public planning band vs lessons taken.
- */
-export function resolveEstimationPath(input: EstimatedHoursInput): EstimationPath {
-  if (input.mockTestTaken === "yes" || input.seriousFaults > 0 || input.drivingFaults > 0) return "full";
-  if (input.weakAreas.length > 0 || input.confidenceLevel <= 3 || input.confidenceLevel >= 9) return "partial";
-  return "minimal";
+function clamp(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, n));
 }
 
-function clampBand(min: number, max: number, openEndedHigh: boolean, likely?: number): EstimatedLessonHours {
-  let m = Math.max(0, Math.min(min, 72));
-  let M = Math.max(m + 2, Math.min(max, 78));
-  if (M <= m) M = m + 2;
-  const point = likely ?? Math.round((m + M) / 2);
-  return { min: m, max: M, openEndedHigh, likely: point };
+function categoryPct(syllabus: SyllabusProgressSnapshot | null | undefined, key: string): number | null {
+  const cat = syllabus?.categoryProgress.find((c) => c.key === key);
+  if (!cat || cat.total <= 0) return null;
+  return cat.completionPercent;
 }
 
-function ensureMinRange(min: number, max: number): { min: number; max: number } {
-  if (max <= min) return { min, max: min + 2 };
-  return { min, max };
+function independentDrivingHoursAdd(pct: number | null): number {
+  if (pct == null) return 0;
+  if (pct === 0) return 2;
+  if (pct < 50) return 1;
+  return 0;
 }
 
-/** DVSA public messaging often quotes a wide band of typical guided hours before test; we use it when fault/mock data is absent. */
-const DVSA_TYPICAL_TOTAL_MIN = 35;
-const DVSA_TYPICAL_TOTAL_MAX = 45;
-
-/**
- * Minimal path: remaining hours ≈ typical total band minus lessons already taken.
- * If the learner is already past the upper planning band, return a small “polish / maintenance” band.
- */
-function estimateMinimal(lessonsTaken: number): EstimatedLessonHours {
-  let min = Math.max(0, DVSA_TYPICAL_TOTAL_MIN - lessonsTaken);
-  let max = Math.max(0, DVSA_TYPICAL_TOTAL_MAX - lessonsTaken);
-  if (max === 0 && min === 0 && lessonsTaken >= DVSA_TYPICAL_TOTAL_MIN - 5) {
-    return clampBand(0, 10, false);
-  }
-  const spread = ensureMinRange(min, Math.max(max, min + 2));
-  return clampBand(spread.min, spread.max, false);
+function manoeuvresHoursAdd(pct: number | null): number {
+  if (pct == null) return 0;
+  if (pct <= 40) return 4;
+  if (pct <= 79) return 2;
+  return 0;
 }
 
-/** Partial path: same baseline as minimal, then nudge for weak-area count and confidence extremes. */
-function estimatePartial(input: EstimatedHoursInput): EstimatedLessonHours {
-  const base = estimateMinimal(input.lessonsTaken);
-  let min = base.min;
-  let max = base.max;
-  const w = input.weakAreas.length;
-  min += Math.min(10, w * 2);
-  max += Math.min(16, 4 + Math.round(w * 2.5));
-  const c = input.confidenceLevel;
-  if (c <= 3) {
-    min += 2;
-    max += 6;
-  }
-  if (c >= 9) {
-    min = Math.max(0, min - 1);
-    max = Math.max(min + 2, max - 4);
-  }
-  return clampBand(min, max, false);
+function weakAreaSeverityUnits(id: WeakAreaId): number {
+  const tier = productMeta(id).riskTier;
+  if (tier === "critical" || tier === "high") return 2;
+  if (tier === "medium") return 1;
+  return 1;
 }
 
-function baseBandFromScore(score: number): EstimatedLessonHours {
-  if (score >= 80) return { min: 0, max: 5, openEndedHigh: false };
-  if (score >= 65) return { min: 5, max: 12, openEndedHigh: false };
-  if (score >= 50) return { min: 10, max: 20, openEndedHigh: false };
-  if (score >= 35) return { min: 15, max: 30, openEndedHigh: false };
-  return { min: 25, max: 45, openEndedHigh: true };
+function weakAreaHoursAdd(input: EstimatedHoursInput): number {
+  let add = 0;
+  const weak = new Set(input.weakAreas);
+
+  if (weak.has("junctions")) add += 1;
+  if (weak.has("roundabouts")) add += Math.min(2, weakAreaSeverityUnits("roundabouts"));
+  if (weak.has("independentDriving")) add += Math.min(2, weakAreaSeverityUnits("independentDriving"));
+
+  if (input.confidenceLevel <= 4) add += 2;
+  else if (input.confidenceLevel <= 6) add += 1;
+
+  return add;
 }
 
-function parkingOnlyWeakAreas(weakAreas: readonly WeakAreaId[]): boolean {
-  return weakAreas.length > 0 && weakAreas.every((id) => isManoeuvreWeakArea(id));
-}
+function mockTestHoursAdjust(input: EstimatedHoursInput): number {
+  if (input.mockTestTaken !== "yes") return 0;
 
-function hasCoreMirrorsOrJunctions(weakAreas: readonly WeakAreaId[]): boolean {
-  return weakAreas.some((id) => id === "mirrors" || id === "junctions");
-}
-
-/** Full path: readiness score is primary; faults and weak areas apply capped adjustments (existing behaviour). */
-function estimateFull(input: EstimatedHoursInput, readinessScore: number): EstimatedLessonHours {
-  const base = baseBandFromScore(readinessScore);
-  let min = base.min;
-  let max = base.max;
-  const openEndedHigh = base.openEndedHigh;
-
-  const weak = input.weakAreas;
-  const parkingOnly = parkingOnlyWeakAreas(weak);
-  const scale = parkingOnly ? 0.45 : 1;
-
-  const rawSeriousMin = input.seriousFaults * 4;
-  const rawSeriousMax = input.seriousFaults * 8;
-  const seriousMin = Math.min(Math.round(rawSeriousMin * scale), 18);
-  const seriousMax = Math.min(Math.round(rawSeriousMax * scale), 24);
-  min += seriousMin;
-  max += seriousMax;
-
-  if (input.drivingFaults > 8) {
-    const dm = Math.round(3 * scale);
-    const dM = Math.round(6 * scale);
-    min += dm;
-    max += dM;
+  if (input.mockTestResult === "fail") {
+    const faultSignal = input.seriousFaults * 2 + Math.min(6, Math.floor(input.drivingFaults / 3));
+    return clamp(2 + faultSignal, 2, 6);
   }
 
-  if (hasCoreMirrorsOrJunctions(weak)) {
-    if (!parkingOnly) {
-      min += 3;
-      max += 6;
-    } else {
-      min += 1;
-      max += 2;
-    }
+  if (input.mockTestResult === "pass") {
+    const clean = input.seriousFaults === 0 && input.drivingFaults <= 5;
+    const moderate = input.seriousFaults === 0 && input.drivingFaults <= 10;
+    if (clean) return -4;
+    if (moderate) return -2;
+    return -1;
   }
 
-  const maxUplift = 34;
-  const uplift = Math.max(0, max - base.max);
-  const upliftMin = Math.max(0, min - base.min);
-  const combined = Math.max(uplift, upliftMin);
-  if (combined > maxUplift) {
-    const factor = maxUplift / combined;
-    min = base.min + Math.round((min - base.min) * factor);
-    max = base.max + Math.round((max - base.max) * factor);
-  }
+  return 0;
+}
 
-  const spread = ensureMinRange(min, max);
-  return clampBand(spread.min, spread.max, openEndedHigh);
+/** Proxy when assessment form has no private-practice field: broad syllabus vs lesson ratio. */
+function privatePracticeHoursAdjust(input: EstimatedHoursInput): number {
+  const topics = input.topicsCovered?.length ?? 0;
+  if (topics >= 18 && input.lessonsTaken >= 25) return -3;
+  if (topics >= 14 && input.lessonsTaken >= 18) return -2;
+  if (topics >= 10 && input.lessonsTaken >= 12) return -1;
+  return 0;
+}
+
+function buildCalibratedHours(input: EstimatedHoursInput): EstimatedLessonHours {
+  const indPct = categoryPct(input.syllabus, "independent_driving");
+  const manPct = categoryPct(input.syllabus, "manoeuvres");
+
+  let likely =
+    BASE_GUIDED_HOURS +
+    independentDrivingHoursAdd(indPct) +
+    manoeuvresHoursAdd(manPct) +
+    weakAreaHoursAdd(input) +
+    mockTestHoursAdjust(input) +
+    privatePracticeHoursAdjust(input);
+
+  likely = clamp(Math.round(likely), 5, 45);
+
+  const min = clamp(likely - PLANNING_RANGE_SPREAD, 0, likely);
+  const max = likely + PLANNING_RANGE_SPREAD;
+
+  return {
+    min,
+    max,
+    likely,
+    openEndedHigh: false,
+  };
 }
 
 /**
- * Deterministic hour band. Chooses minimal / partial / full from available signals; never exposes the mode in copy.
- *
- * Examples (deterministic): minimal ~35–45 total minus lessons; partial adds weak-area and confidence nudges; full uses score bands plus fault tweaks.
+ * Calibrated guided-hour estimate from roadmap gaps, weak areas, mock performance, and experience signals.
  */
 export function computeEstimatedLessonHours(
   input: EstimatedHoursInput,
-  readinessScore: number,
+  _readinessScore?: number,
 ): EstimatedLessonHours {
-  const path = resolveEstimationPath(input);
-  if (path === "full") return estimateFull(input, readinessScore);
-  if (path === "partial") return estimatePartial(input);
-  return estimateMinimal(input.lessonsTaken);
+  void _readinessScore;
+  return buildCalibratedHours(input);
 }
 
 export function computeLikelyHours(hours: EstimatedLessonHours): number {
@@ -176,29 +148,28 @@ export function computeLikelyHours(hours: EstimatedLessonHours): number {
 
 export function computePlanningRange(hours: EstimatedLessonHours): { min: number; max: number } {
   const likely = computeLikelyHours(hours);
-  const span = Math.max(4, hours.max - hours.min);
-  const half = Math.max(3, Math.round(span * 0.35));
-  const min = Math.max(hours.min, likely - half);
-  const max = hours.openEndedHigh ? Math.max(likely + half, hours.max) : Math.min(hours.max, likely + half);
-  return { min, max: Math.max(min + 2, max) };
+  return {
+    min: clamp(likely - PLANNING_RANGE_SPREAD, 0, likely),
+    max: likely + PLANNING_RANGE_SPREAD,
+  };
 }
 
 export function formatEstimatedLessonHoursMainLine(hours: EstimatedLessonHours): string {
   const likely = computeLikelyHours(hours);
   const planning = computePlanningRange(hours);
-  const hi = planning.max;
-  return `Most likely estimate: around ${likely} more guided hours. Planning range: ${planning.min}–${hi} hours.`;
+  return `Most likely estimate: ${likely} hours. Planning range: ${planning.min}–${planning.max} hours.`;
 }
 
 /** @deprecated prefer formatEstimatedLessonHoursMainLine */
 export function formatEstimatedLessonHoursLegacyLine(hours: EstimatedLessonHours): string {
-  const hi = hours.openEndedHigh ? `${hours.max}+` : String(hours.max);
-  return `You may need around ${hours.min} to ${hi} more hours of lessons`;
+  const likely = computeLikelyHours(hours);
+  const planning = computePlanningRange(hours);
+  return `You may need around ${planning.min} to ${planning.max} more hours of lessons (most likely ${likely})`;
 }
 
 export function hourBandPhrase(hours: EstimatedLessonHours): string {
-  if (hours.openEndedHigh) return `${hours.min} to ${hours.max} or more`;
-  return `${hours.min} to ${hours.max}`;
+  const planning = computePlanningRange(hours);
+  return `${planning.min} to ${planning.max}`;
 }
 
 export function reportNarrativeSalt(reportId: string): number {
@@ -213,10 +184,9 @@ export function reportNarrativeSalt(reportId: string): number {
 export function buildRecommendedHoursNarrative(hours: EstimatedLessonHours, salt: number): string {
   const likely = computeLikelyHours(hours);
   const planning = computePlanningRange(hours);
-  const band = hours.openEndedHigh ? `${planning.min}–${planning.max}+` : `${planning.min}–${planning.max}`;
   return pickCopyVariant(salt, "hrs:narrative", [
-    `You are likely looking at around ${likely} more guided hours if the next lessons stay focused. Plan for ${band} hours depending on consistency, private practice, and instructor judgement.`,
-    `Most learners at this stage need roughly ${likely} more hours with their ADI. Keep ${band} hours as a planning range, not a deadline.`,
-    `Think of ${likely} hours as the most likely next stretch, with ${band} hours as a sensible planning range while your instructor paces practice on the road.`,
+    `Based on your assessment, around ${likely} additional guided hours may be a reasonable planning estimate. ${ESTIMATED_HOURS_SUPPORTING} Plan for ${planning.min}–${planning.max} hours depending on lesson frequency and instructor judgement.`,
+    `Based on this assessment, around ${likely} additional guided hours may be a reasonable planning estimate. ${ESTIMATED_HOURS_SUPPORTING} A sensible planning range is ${planning.min}–${planning.max} hours.`,
+    `Around ${likely} additional guided hours may be a reasonable planning estimate from this assessment. ${ESTIMATED_HOURS_SUPPORTING} Keep ${planning.min}–${planning.max} hours as a planning range, not a deadline.`,
   ]);
 }

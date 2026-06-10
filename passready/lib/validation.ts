@@ -9,6 +9,12 @@ import {
 } from "./readiness-risk-areas";
 import { MOCK_REFLECTION_CATEGORIES, MOCK_REFLECTION_SUB_OPTIONS } from "./mock-reflection";
 import { SYLLABUS_TOPIC_ID_SET, SYLLABUS_TOTAL_TOPIC_COUNT } from "./syllabus-topics";
+import {
+  activeFollowUpCategories,
+  WEAK_AREA_FOLLOW_UP_SUBTOPICS,
+  weakAreaFollowUpCategoryIds,
+  weakAreaFollowUpSubtopicIds,
+} from "./weak-area-follow-up";
 import { migrateWeakAreaIds } from "./weak-area-migration";
 
 type WeakAreaId = (typeof WEAK_AREA_OPTIONS)[number]["id"];
@@ -25,6 +31,57 @@ const mockReflectionSubOptionIds = MOCK_REFLECTION_SUB_OPTIONS.map((o) => o.id) 
 const mockReflectionSubOptionCategoryById = new Map(
   MOCK_REFLECTION_SUB_OPTIONS.map((opt) => [opt.id, opt.categoryId] as const),
 );
+
+const weakAreaFollowUpSubtopicCategoryById = new Map(
+  WEAK_AREA_FOLLOW_UP_SUBTOPICS.map((opt) => [opt.id, opt.categoryId] as const),
+);
+
+export const weakAreaDetailEntrySchema = z.object({
+  category: z.enum(weakAreaFollowUpCategoryIds),
+  subtopics: z.array(z.enum(weakAreaFollowUpSubtopicIds)).default([]),
+  notes: z
+    .string()
+    .trim()
+    .max(200, "Keep notes under 200 characters")
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
+});
+export type WeakAreaDetailEntry = z.infer<typeof weakAreaDetailEntrySchema>;
+
+function refineWeakAreaDetails(
+  data: {
+    weakAreas: WeakAreaId[];
+    confidenceLevel: number;
+    weakAreaDetails: WeakAreaDetailEntry[];
+  },
+  ctx: z.RefinementCtx,
+) {
+  const allowed = new Set(
+    activeFollowUpCategories({ weakAreas: data.weakAreas, confidenceLevel: data.confidenceLevel }),
+  );
+
+  for (const entry of data.weakAreaDetails) {
+    if (!allowed.has(entry.category)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Follow-up detail must match a selected focus area",
+        path: ["weakAreaDetails"],
+      });
+      break;
+    }
+    for (const subtopicId of entry.subtopics) {
+      const cat = weakAreaFollowUpSubtopicCategoryById.get(subtopicId);
+      if (cat !== entry.category) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Each selected detail must match its category",
+          path: ["weakAreaDetails"],
+        });
+        return;
+      }
+    }
+  }
+}
 
 function refineSyllabusPayload(
   data: { syllabusCaptureVersion?: 1; topicsCovered?: string[] },
@@ -156,6 +213,7 @@ export const assessmentSchema = z
       .default([])
       .transform((ids) => migrateWeakAreaIds(ids))
       .pipe(z.array(z.enum(weakAreaIds))),
+    weakAreaDetails: z.array(weakAreaDetailEntrySchema).default([]),
     mockReflectionCategories: z.array(z.enum(mockReflectionCategoryIds)).default([]),
     mockReflectionDetails: z.array(z.enum(mockReflectionSubOptionIds)).default([]),
     extraNotes: z
@@ -219,6 +277,7 @@ export const assessmentSchema = z
       }
     }
 
+    refineWeakAreaDetails(data, ctx);
     refineSyllabusPayload(data, ctx);
   })
   .transform(normalizeSyllabusOutput);
@@ -250,6 +309,7 @@ export const assessmentDataSchema = z.object({
     .default([])
     .transform((ids) => migrateWeakAreaIds(ids))
     .pipe(z.array(z.enum(weakAreaIds))),
+  weakAreaDetails: z.array(weakAreaDetailEntrySchema).optional().default([]),
   mockReflectionCategories: z.array(z.enum(mockReflectionCategoryIds)).optional().default([]),
   mockReflectionDetails: z.array(z.enum(mockReflectionSubOptionIds)).optional().default([]),
   extraNotes: z.string().optional(),
@@ -257,6 +317,7 @@ export const assessmentDataSchema = z.object({
   topicsCovered: z.array(z.string()).max(SYLLABUS_TOTAL_TOPIC_COUNT).optional(),
 })
   .superRefine((data, ctx) => {
+    refineWeakAreaDetails(data, ctx);
     refineSyllabusPayload(data, ctx);
   })
   .transform(normalizeSyllabusOutput);
@@ -344,6 +405,7 @@ export const reportMetadataSchema = z.object({
   model: z.string().optional(),
   generatedAt: z.string(),
   syllabus: syllabusProgressSnapshotSchema.optional(),
+  weakAreaDetails: z.array(weakAreaDetailEntrySchema).optional(),
 });
 export type ReportMetadata = z.infer<typeof reportMetadataSchema>;
 
@@ -570,6 +632,7 @@ export const reportDbRecordSchema = z.object({
   driving_faults: z.number().int(),
   confidence_level: z.number().int(),
   weak_areas: z.array(z.string()),
+  weak_area_details: z.array(weakAreaDetailEntrySchema).optional().default([]),
   extra_notes: z.string().nullable(),
   readiness_score: z.number().int(),
   readiness_label: z.string(),

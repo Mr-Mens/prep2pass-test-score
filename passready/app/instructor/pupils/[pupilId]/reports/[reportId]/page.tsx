@@ -45,6 +45,7 @@ export default async function InstructorPupilReportPage({ params }: Props) {
     testBooked: report.test_booked ? "yes" : "no",
     testDate: report.test_date,
     rawMetadata: report.raw_metadata,
+    weakAreaDetailsRaw: report.weak_area_details,
   });
 
   return (

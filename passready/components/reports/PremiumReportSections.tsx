@@ -1,6 +1,7 @@
 import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
 import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
 import { RiskAreasSection } from "@/components/RiskAreasSection";
+import { LearnerIdentifiedAreasSection } from "@/components/reports/LearnerIdentifiedAreasSection";
 import { ReportDisclaimerFooter } from "@/components/reports/ReportDisclaimerFooter";
 import { ReportReadinessSnapshot } from "@/components/reports/ReportReadinessSnapshot";
 import { ReportSyllabusPanel } from "@/components/reports/ReportSyllabusPanel";
@@ -35,6 +36,9 @@ export function PremiumReportSections({
       <ReportReadinessSnapshot
         score={model.readinessScore}
         label={model.readinessLabel}
+        bandDisplay={model.readinessBandDisplay}
+        confidenceLevel={model.confidenceLevel}
+        confidenceDisplay={model.confidenceDisplay}
         summary={
           <ReportSummaryDebrief className="mt-0">
             <p>{model.summary}</p>
@@ -44,7 +48,9 @@ export function PremiumReportSections({
 
       {model.syllabus ? <ReportSyllabusPanel syllabus={model.syllabus} /> : null}
 
-      <TestPassRisksSection risks={model.testPassRisks} />
+      <LearnerIdentifiedAreasSection details={model.weakAreaDetails} />
+
+      <TestPassRisksSection risks={model.testPassRisks} mockTestTaken={model.mockTestTaken} />
 
       <TopPrioritiesSection priorities={model.topPriorities} />
 

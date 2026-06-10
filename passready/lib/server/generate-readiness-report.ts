@@ -16,6 +16,7 @@ import {
   type DeterministicReadinessResult,
 } from "@/lib/validation";
 import { createOpenAiJsonCompletion, getOpenAiConfig } from "@/lib/server/openai";
+import { buildWeakAreaAiContext } from "@/lib/weak-area-follow-up";
 import { isManoeuvreWeakArea } from "@/lib/weak-area-migration";
 
 type GenerateArgs = {
@@ -50,6 +51,14 @@ Lesson hours: never invent numbers. The app adds hour estimates separately. Do n
 Punctuation: no Unicode em dash (U+2014) or en dash (U+2013). Use commas, full stops, or hyphen-minus. Hour ranges in prose: "8 to 12 hours".
 
 Safety: no pass guarantees, no unsafe advice, no claiming official DVSA authority. Prep2Pass supports real instructor judgement.
+
+Learner weak-area follow-up (critical):
+- Distinguish KNOWN FACTS (explicitly in weakAreaDetails / knownFacts), LIKELY AREAS (reasonable inference from weak area IDs only), and UNKNOWNS (not collected).
+- Never present assumptions as facts. If a weak area is flagged but no follow-up detail was given, say the learner flagged it and suggest working with their instructor to pin down whether observations, positioning, speed, or decision-making is the main issue.
+- When knownFacts are provided, quote them naturally: "You specifically identified..." and give concrete behaviour advice tied to those subtopics.
+- Do not invent subtopics the learner did not select.
+- Do not praise observations, planning, or control as "sound" unless mock pass, low faults, syllabus coverage, or learner-selected strengths support it. Use safer wording such as "You have covered a broad spread of the syllabus" when evidence is limited.
+- Use "The assessment suggests..." for broad weak areas without follow-up detail. Use "You reported..." when knownFacts exist.
 
 JSON shape (STRICT JSON only):
 - readinessScore, readinessLabel, summary, riskAreas, nextSteps, coachMessage
@@ -149,12 +158,15 @@ export async function generateReadinessReport({ assessment, deterministic }: Gen
       : "";
 
   const first = learnerFirstName(assessment.fullName);
+  const weakAreaContext = buildWeakAreaAiContext(assessment);
 
   const userPrompt = `Learner first name (use once in summary and once in coachMessage): "${first}"
 
 Assessment data (normalised):
 ${JSON.stringify(assessment)}
 ${manoeuvrePrompt}
+Weak-area follow-up context (KNOWN FACTS vs gaps — do not treat gaps as known facts):
+${JSON.stringify(weakAreaContext)}
 Deterministic baseline (source of truth for score/label and grouped risk structure). Template summary omitted: write a fresh ADI debrief from this data.
 ${JSON.stringify(deterministicForPrompt)}
 

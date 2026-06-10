@@ -26,6 +26,7 @@ import {
 
 import { Button } from "./Button";
 import { MockTestReflectionSection } from "./MockTestReflectionSection";
+import { WeakAreaFollowUpSection } from "./assessment/WeakAreaFollowUpSection";
 import { SyllabusTopicsSection } from "./assessment/SyllabusTopicsSection";
 
 const fieldClass =
@@ -187,6 +188,7 @@ export function AssessmentForm({
       drivingFaults: "",
       confidenceLevel: 6,
       weakAreas: [],
+      weakAreaDetails: [],
       mockReflectionCategories: [],
       mockReflectionDetails: [],
       extraNotes: "",
@@ -796,6 +798,8 @@ export function AssessmentForm({
           )}
         />
         {errors.weakAreas ? <p className={errorClass}>{errors.weakAreas.message as string}</p> : null}
+
+        <WeakAreaFollowUpSection control={control} setValue={setValue} />
       </fieldset>
 
       <div className="rounded-2xl border border-brand-200/90 bg-white p-5 shadow-card ring-1 ring-teal-900/[0.06] sm:p-8 sm:shadow-sm sm:ring-0">

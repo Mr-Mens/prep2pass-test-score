@@ -1,10 +1,13 @@
 import type { TestPassRiskItem } from "@/lib/report-insights";
+import { testRisksSourceCaption } from "@/lib/report-reasoning";
+import type { AssessmentPayload } from "@/lib/validation";
 
 type Props = {
   risks: TestPassRiskItem[];
+  mockTestTaken?: AssessmentPayload["mockTestTaken"];
 };
 
-export function TestPassRisksSection({ risks }: Props) {
+export function TestPassRisksSection({ risks, mockTestTaken = "no" }: Props) {
   if (risks.length === 0) return null;
 
   return (
@@ -12,7 +15,7 @@ export function TestPassRisksSection({ risks }: Props) {
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Your most likely test risks</p>
       <h2 className="mt-2 text-lg font-semibold text-brand-950">Most likely faults if tested tomorrow</h2>
       <p className="mt-2 max-w-prose text-sm text-brand-600">
-        Based on your weak areas, roadmap gaps, confidence, and mock result if available.
+        {testRisksSourceCaption(mockTestTaken)}
       </p>
       <div className="mt-6 space-y-4">
         {risks.map((risk) => (

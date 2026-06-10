@@ -2,7 +2,6 @@ import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/l
 import {
   appendSyllabusSentenceToSummary,
   blendReadinessWithSyllabus,
-  boostLessonHoursForSyllabusGaps,
   buildSyllabusFocusSteps,
   buildSyllabusProgressSnapshot,
   buildSyllabusRoadmapSteps,
@@ -28,6 +27,12 @@ import { pickCopyVariant, reportCopySalt } from "./deterministic-report-copy";
 import { formatIsoDateUk } from "./formatting";
 import { buildTestCountdownPlan } from "./test-countdown-plan";
 import { applyIndependenceReadinessCeiling } from "./report-insights";
+import { applySyllabusCriticalGapPenalties } from "./report-reasoning";
+import {
+  labelForScore,
+  reconcileReadinessOutcome,
+  READINESS_SCORE_LABEL_GUIDE,
+} from "./readiness-calibration";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea, type RiskAreaSkill } from "./readiness-risk-areas";
 import type { AssessmentPayload } from "./validation";
 import type { DeterministicReadinessResult, ReadinessLabel } from "./validation";
@@ -81,23 +86,8 @@ export const READINESS_PILLAR_WEIGHTS = {
   testDayReliability: 0.14,
 } as const;
 
-/** Ordered bands for product copy and debugging (label uses inclusive ranges in `labelForScore`). */
-export const READINESS_SCORE_LABEL_GUIDE = [
-  { maxScore: 44, label: "Needs More Time" as const },
-  { maxScore: 64, label: "Building Consistency" as const },
-  { maxScore: 79, label: "Nearly Test Ready" as const },
-  { maxScore: 100, label: "Test Ready" as const },
-] as const;
-
 const JUNCTION_OBSERVATION_CORE = new Set<WeakAreaId>(["mirrors", "junctions", "roundabouts"]);
 const CORE_CONTROL_IDS = new Set<WeakAreaId>(["speedControl", "lanePositioning", "movingOffSafely"]);
-
-function labelForScore(score: number): ReadinessLabel {
-  if (score <= 44) return "Needs More Time";
-  if (score <= 64) return "Building Consistency";
-  if (score <= 79) return "Nearly Test Ready";
-  return "Test Ready";
-}
 
 const weakAreaLabel = (id: WeakAreaId) => WEAK_AREA_OPTIONS.find((o) => o.id === id)?.label ?? id;
 
@@ -721,8 +711,27 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
   let score = syllabusLayerActive(assessment)
     ? blendReadinessWithSyllabus(pillarScore, weightedSyllabus)
     : pillarScore;
+  score = applySyllabusCriticalGapPenalties(score, assessment, syllabusSnapshot);
   score = applyIndependenceReadinessCeiling(score, assessment, syllabusSnapshot);
-  const readinessLabel = labelForScore(score);
+
+  const estimatedLessonHours = computeEstimatedLessonHours(
+    {
+      ...assessment,
+      syllabus: syllabusSnapshot,
+    },
+    score,
+  );
+
+  const reconciled = reconcileReadinessOutcome({
+    score,
+    label: labelForScore(score),
+    estimatedHours: estimatedLessonHours,
+    assessment,
+    syllabus: syllabusSnapshot,
+  });
+
+  score = reconciled.score;
+  const readinessLabel = reconciled.label;
   const copySalt = reportCopySalt(assessment);
 
   const syllabusFocusSteps = buildSyllabusFocusSteps(assessment, copySalt);
@@ -736,10 +745,6 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
     8,
   );
 
-  let estimatedLessonHours = computeEstimatedLessonHours(assessment, score);
-  if (syllabusLayerActive(assessment)) {
-    estimatedLessonHours = boostLessonHoursForSyllabusGaps(estimatedLessonHours, weightedSyllabus);
-  }
   const recommendedHours = buildRecommendedHoursNarrative(estimatedLessonHours, copySalt);
   const summary = appendSyllabusSentenceToSummary(buildSummary(assessment, score, copySalt), assessment, copySalt);
 

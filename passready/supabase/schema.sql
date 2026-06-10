@@ -21,6 +21,7 @@ create table if not exists public.reports (
   driving_faults int not null,
   confidence_level int not null,
   weak_areas jsonb not null default '[]'::jsonb,
+  weak_area_details jsonb not null default '[]'::jsonb,
   extra_notes text null,
   readiness_score int not null,
   readiness_label text not null,

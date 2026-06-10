@@ -1,5 +1,6 @@
 import { WEAK_AREA_OPTIONS, type WeakAreaId } from "@/lib/constants";
 import { productMeta } from "@/lib/product-skill-map";
+import { readinessVerdictForScore } from "@/lib/readiness-calibration";
 import type { ReadinessLabel } from "@/lib/validation";
 
 /** Phrases UK ADIs rarely use; map to natural UK alternatives. */
@@ -27,7 +28,8 @@ const VAGUE_COPY_PATTERNS: RegExp[] = [
   /\bimprove junctions\b/i,
   /\bwork on observations\b/i,
   /\bbe more confident\b/i,
-  /\byour control is there\b/i,
+  /\byour observations and planning are generally sound\b/i,
+  /\bclear strengths in your control and planning\b/i,
   /\bmoving towards test readiness\b/i,
   /\bin a sensible way\b/i,
   /\bthe learner (is|has|was)\b/i,
@@ -62,12 +64,13 @@ export function learnerFirstName(fullName: string): string {
   return t.split(/\s+/)[0] ?? "there";
 }
 
-export function readinessVerdictPhrase(label: ReadinessLabel): string {
+export function readinessVerdictPhrase(label: ReadinessLabel, score?: number): string {
+  if (score != null) return readinessVerdictForScore(label, score);
   switch (label) {
     case "Needs More Time":
       return "you are still building foundations and not close to test ready yet";
     case "Building Consistency":
-      return "you are making progress, but you are not test ready yet";
+      return "you are developing well but not test ready yet";
     case "Nearly Test Ready":
       return "you are nearly test ready";
     case "Test Ready":

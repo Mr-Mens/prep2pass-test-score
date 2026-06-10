@@ -5,9 +5,9 @@ import { isManoeuvreWeakArea, type WeakAreaId } from "@/lib/product-skill-map";
 export const ESTIMATED_HOURS_TITLE = "Estimated hours to test readiness";
 
 export const ESTIMATED_HOURS_SUPPORTING =
-  "Most learners need a spread of guided hours before test standard. This band is a planning guide, not a promise about how fast you will progress.";
+  "Planning range depends on consistency, private practice, and your instructor's judgement on the road.";
 
-export const ESTIMATED_HOURS_DISCLAIMER = "This is a guide, not a guarantee.";
+export const ESTIMATED_HOURS_DISCLAIMER = "This is a planning guide, not a guarantee.";
 
 /** Inputs needed for hour estimation (subset of {@link AssessmentPayload}). */
 export type EstimatedHoursInput = Pick<
@@ -38,11 +38,12 @@ export function resolveEstimationPath(input: EstimatedHoursInput): EstimationPat
   return "minimal";
 }
 
-function clampBand(min: number, max: number, openEndedHigh: boolean): EstimatedLessonHours {
+function clampBand(min: number, max: number, openEndedHigh: boolean, likely?: number): EstimatedLessonHours {
   let m = Math.max(0, Math.min(min, 72));
   let M = Math.max(m + 2, Math.min(max, 78));
   if (M <= m) M = m + 2;
-  return { min: m, max: M, openEndedHigh };
+  const point = likely ?? Math.round((m + M) / 2);
+  return { min: m, max: M, openEndedHigh, likely: point };
 }
 
 function ensureMinRange(min: number, max: number): { min: number; max: number } {
@@ -168,7 +169,29 @@ export function computeEstimatedLessonHours(
   return estimateMinimal(input.lessonsTaken);
 }
 
+export function computeLikelyHours(hours: EstimatedLessonHours): number {
+  if (hours.likely != null) return hours.likely;
+  return Math.round((hours.min + hours.max) / 2);
+}
+
+export function computePlanningRange(hours: EstimatedLessonHours): { min: number; max: number } {
+  const likely = computeLikelyHours(hours);
+  const span = Math.max(4, hours.max - hours.min);
+  const half = Math.max(3, Math.round(span * 0.35));
+  const min = Math.max(hours.min, likely - half);
+  const max = hours.openEndedHigh ? Math.max(likely + half, hours.max) : Math.min(hours.max, likely + half);
+  return { min, max: Math.max(min + 2, max) };
+}
+
 export function formatEstimatedLessonHoursMainLine(hours: EstimatedLessonHours): string {
+  const likely = computeLikelyHours(hours);
+  const planning = computePlanningRange(hours);
+  const hi = planning.max;
+  return `Most likely estimate: around ${likely} more guided hours. Planning range: ${planning.min}–${hi} hours.`;
+}
+
+/** @deprecated prefer formatEstimatedLessonHoursMainLine */
+export function formatEstimatedLessonHoursLegacyLine(hours: EstimatedLessonHours): string {
   const hi = hours.openEndedHigh ? `${hours.max}+` : String(hours.max);
   return `You may need around ${hours.min} to ${hi} more hours of lessons`;
 }
@@ -188,10 +211,12 @@ export function reportNarrativeSalt(reportId: string): number {
 }
 
 export function buildRecommendedHoursNarrative(hours: EstimatedLessonHours, salt: number): string {
-  const band = hourBandPhrase(hours);
+  const likely = computeLikelyHours(hours);
+  const planning = computePlanningRange(hours);
+  const band = hours.openEndedHigh ? `${planning.min}–${planning.max}+` : `${planning.min}–${planning.max}`;
   return pickCopyVariant(salt, "hrs:narrative", [
-    `Plan roughly ${band} more lesson hours with your ADI, spread across normal sessions rather than one block. Aim most of that time at the risk areas in this report, and add a mock when your instructor agrees you are close to test standard.`,
-    `Use about ${band} more guided hours as a working budget with your instructor. Week by week, tie each lesson to one or two themes from this report, then revisit your readiness before you lock your test.`,
-    `Think of ${band} more hours as a realistic band, not a deadline. Let your instructor pace it around what they see on the road, and slot a mock once the themes that worry you both feel under control.`,
+    `You are likely looking at around ${likely} more guided hours if the next lessons stay focused. Plan for ${band} hours depending on consistency, private practice, and instructor judgement.`,
+    `Most learners at this stage need roughly ${likely} more hours with their ADI. Keep ${band} hours as a planning range, not a deadline.`,
+    `Think of ${likely} hours as the most likely next stretch, with ${band} hours as a sensible planning range while your instructor paces practice on the road.`,
   ]);
 }

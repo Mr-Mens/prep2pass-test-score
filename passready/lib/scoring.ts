@@ -27,6 +27,7 @@ import {
 import { pickCopyVariant, reportCopySalt } from "./deterministic-report-copy";
 import { formatIsoDateUk } from "./formatting";
 import { buildTestCountdownPlan } from "./test-countdown-plan";
+import { applyIndependenceReadinessCeiling } from "./report-insights";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea, type RiskAreaSkill } from "./readiness-risk-areas";
 import type { AssessmentPayload } from "./validation";
 import type { DeterministicReadinessResult, ReadinessLabel } from "./validation";
@@ -242,6 +243,15 @@ function pillarIndependence(assessment: AssessmentPayload, ids: WeakAreaId[]): n
   let s = 74;
 
   if (ids.includes("independentDriving")) s -= 15;
+
+  if (syllabusLayerActive(assessment)) {
+    const covered = new Set(assessment.topicsCovered ?? []);
+    const indIds = ["sat_nav_driving", "following_signs", "planning_ahead", "independent_decision_making"] as const;
+    const indCovered = indIds.filter((id) => covered.has(id)).length;
+    if (indCovered === 0) s -= 12;
+    else if (indCovered <= 1) s -= 8;
+    else if (indCovered <= 2) s -= 4;
+  }
 
   if (assessment.lessonsTaken < 10) s -= 10;
   else if (assessment.lessonsTaken < 18) s -= 5;
@@ -707,13 +717,14 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
   const weightedSyllabus = syllabusLayerActive(assessment)
     ? computeWeightedSyllabusRatio(assessment.topicsCovered ?? [])
     : 1;
-  const score = syllabusLayerActive(assessment)
+  const syllabusSnapshot = buildSyllabusProgressSnapshot(assessment);
+  let score = syllabusLayerActive(assessment)
     ? blendReadinessWithSyllabus(pillarScore, weightedSyllabus)
     : pillarScore;
+  score = applyIndependenceReadinessCeiling(score, assessment, syllabusSnapshot);
   const readinessLabel = labelForScore(score);
   const copySalt = reportCopySalt(assessment);
 
-  const syllabusSnapshot = buildSyllabusProgressSnapshot(assessment);
   const syllabusFocusSteps = buildSyllabusFocusSteps(assessment, copySalt);
   const syllabusRoadmapSteps = buildSyllabusRoadmapSteps(assessment, copySalt);
 

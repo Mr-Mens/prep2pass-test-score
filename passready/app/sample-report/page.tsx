@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
 
 import { Button } from "@/components/Button";
-import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
-import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
-import { RiskAreasSection } from "@/components/RiskAreasSection";
+import { PremiumReportSections } from "@/components/reports/PremiumReportSections";
 import { SampleLifetimeJourneyPreview } from "@/components/SampleLifetimeJourneyPreview";
 import { Section } from "@/components/Section";
 import { PRICING } from "@/lib/constants";
-import {
-  buildRecommendedHoursNarrative,
-  computeEstimatedLessonHours,
-  type EstimatedHoursInput,
-} from "@/lib/estimated-lesson-hours";
+import { buildRecommendedHoursNarrative, type EstimatedHoursInput } from "@/lib/estimated-lesson-hours";
+import { buildReportViewModel } from "@/lib/report-view-model";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
 
 export const metadata: Metadata = {
@@ -108,31 +103,30 @@ export default function SampleReportPage() {
     readinessScore: 66,
     readinessLabel: "Nearly Test Ready" as const,
     summary:
-      "This sample learner shows solid lesson exposure but still has repeat risk patterns around observations at junctions and mirror routine under pressure. Confidence is improving, but consistency is not yet reliable enough for a high-certainty test outcome.",
-    coachMessage:
-      "You are close. For the next two weeks, focus on observation timing and mirror discipline on every route change. Consistency beats perfection.",
+      "Alex, you are nearly test ready. Your vehicle control is steady and you have covered a good range of driving, but consistency at junctions is still the main thing holding you back, especially your observations and decision-making when emerging. Before your test, prioritise emerging, right turns, and busier junctions, then move towards mock-test style drives nearer the day.",
     nextSteps: [
       "Run two focused junction sessions with your instructor, prioritising early observation timing.",
       "Use a verbal mirror routine on every pull-away and lane adjustment until automatic.",
       "Complete one full mock in your test area and review only the faults that repeat.",
-      "Schedule one confidence-maintenance drive close to test week.",
     ],
   };
 
-  const sampleEstimatedHours = computeEstimatedLessonHours(sampleHoursInput, sampleCore.readinessScore);
-  const sample = {
-    ...sampleCore,
-    recommendedHours: buildRecommendedHoursNarrative(sampleEstimatedHours, 42),
-  };
+  const model = buildReportViewModel({
+    readinessScore: sampleCore.readinessScore,
+    readinessLabel: sampleCore.readinessLabel,
+    summary: sampleCore.summary,
+    nextSteps: sampleCore.nextSteps,
+    riskAreasRaw: sortGroupedRiskAreasByImpact(sampleRiskAreas),
+    weakAreasRaw: sampleHoursInput.weakAreas,
+    lessonsTaken: sampleHoursInput.lessonsTaken,
+    mockTestTaken: sampleHoursInput.mockTestTaken === "yes",
+    mockTestResult: sampleHoursInput.mockTestResult,
+    seriousFaults: sampleHoursInput.seriousFaults,
+    drivingFaults: sampleHoursInput.drivingFaults,
+    confidenceLevel: sampleHoursInput.confidenceLevel,
+  });
 
-  const badgeClass =
-    sample.readinessLabel === "Nearly Test Ready"
-      ? "bg-sky-50 text-sky-950 ring-sky-200"
-      : sample.readinessLabel === "Building Consistency"
-        ? "bg-amber-50 text-amber-950 ring-amber-200"
-        : sample.readinessLabel === "Needs More Time"
-          ? "bg-red-50 text-red-900 ring-red-200"
-          : "bg-teal-50 text-teal-950 ring-teal-200";
+  const recommendedHours = buildRecommendedHoursNarrative(model.estimatedHours, 42);
 
   return (
     <Section
@@ -140,56 +134,10 @@ export default function SampleReportPage() {
       contentClassName="max-w-3xl"
       eyebrow="Preview"
       title="Sample Premium Test Ready Score report"
-      subtitle="Illustrative example. Your paid report keeps the same layout (score, risks, action plan, coach note, lesson-hour estimate). After checkout we save everything to your secure account."
+      subtitle="Illustrative example. Your paid report uses the same layout: readiness snapshot, debrief, roadmap, test risks, priorities, and lesson-hour estimate."
     >
       <div className="space-y-8 print:space-y-4">
-        <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] print:border-brand-200 print:shadow-none print:ring-0">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-brand-600/90">Readiness score</p>
-              <p className="mt-2 font-heading text-5xl font-semibold tabular-nums tracking-tight text-brand-950">
-                {sample.readinessScore}
-                <span className="text-3xl font-semibold text-brand-400">/100</span>
-              </p>
-            </div>
-            <span
-              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${badgeClass}`}
-            >
-              {sample.readinessLabel}
-            </span>
-          </div>
-          <ReportSummaryDebrief className="mt-6">
-            <p>{sample.summary}</p>
-          </ReportSummaryDebrief>
-        </div>
-
-        <div className="rounded-2xl border border-teal-200/80 bg-teal-50/80 p-6 shadow-card ring-1 ring-teal-200/45 print:border-teal-200 print:shadow-none print:ring-0">
-          <h2 className="text-lg font-semibold text-teal-950">Coach note</h2>
-          <p className="mt-3 text-sm leading-relaxed text-teal-900">{sample.coachMessage}</p>
-        </div>
-
-        <RiskAreasSection blocks={sortGroupedRiskAreasByImpact(sampleRiskAreas)} compact />
-
-        <div className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] print:shadow-none print:ring-0 sm:p-8">
-          <h2 className="text-lg font-semibold text-brand-950">Next steps</h2>
-          <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm text-brand-700">
-            {sample.nextSteps.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ol>
-          <div className="mt-6">
-            <EstimatedLessonHoursBlock hours={sampleEstimatedHours} />
-          </div>
-          <p className="mt-6 text-sm font-medium text-brand-800">
-            Recommended lesson guidance: {sample.recommendedHours}
-          </p>
-          <div className="mt-8 flex items-center justify-center border-t border-brand-100 pt-8 print:hidden">
-            <p className="max-w-lg text-center text-[13px] leading-relaxed text-brand-500">
-              <span className="font-semibold text-brand-700">End of single Premium report sample.</span> The layout above
-              is what you get from one assessment: score, coach note, risks, next steps, and lesson-hour band.
-            </p>
-          </div>
-        </div>
+        <PremiumReportSections model={model} recommendedHoursNarrative={recommendedHours} />
 
         <SampleLifetimeJourneyPreview />
 

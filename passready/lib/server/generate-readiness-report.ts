@@ -62,12 +62,7 @@ JSON shape (STRICT JSON only):
 - Do not narrate entire checklists. Summarise syllabus breadth in one clause; name at most three gaps.
 - Do not repeat the coach note.
 
-**coachMessage** ("Coach note"):
-- One paragraph, about 60-90 words.
-- Address learner by first name once.
-- Written report the learner reads alone: say "you and your instructor" or "agree one target with your instructor", not "give me one target".
-- One named strength, one concrete focus behaviour, one clear next-lesson action.
-- Must not repeat the debrief paragraph verbatim.
+**coachMessage**: optional one-sentence closing line only (~20-35 words). Must not repeat the debrief. If the debrief is complete, keep coachMessage minimal.
 
 **riskAreas[]**: Prefer you/your. Include every baseline groupKey. Each object: groupKey, groupLabel, severity, skills, summary, optional highlights.
 

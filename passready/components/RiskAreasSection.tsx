@@ -48,10 +48,9 @@ export function RiskAreasSection({ blocks, compact }: Props) {
     <div
       className={`rounded-2xl border border-brand-100 bg-white shadow-sm print:break-inside-avoid print:shadow-none ${compact ? "p-5 sm:p-6" : "p-6 sm:p-8"}`}
     >
-      <h2 className="text-lg font-semibold tracking-tight text-brand-950">Your Test Risk Areas</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-brand-950">Skill area breakdown</h2>
       <p className="mt-2 max-w-prose text-xs leading-relaxed text-brand-600/90">
-        Grouped by core driving skill areas. Prep2Pass is created by a DVSA-approved driving instructor, is independent,
-        not affiliated with DVSA, and this is not an official DVSA score.
+        Grouped by core driving skill areas for instructors who want more detail.
       </p>
       <div className={`mt-5 space-y-4 sm:mt-6 sm:space-y-5 ${compact ? "print:space-y-4" : ""}`}>
         {blocks.map((block) => (

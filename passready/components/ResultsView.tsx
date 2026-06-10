@@ -8,17 +8,15 @@ import { requestEntitlementLookup } from "@/lib/api/entitlement-lookup";
 import { requestProgress } from "@/lib/api/progress";
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { Button } from "@/components/Button";
+import { PremiumReportSections } from "@/components/reports/PremiumReportSections";
 import { ProgressTrackingSection } from "@/components/ProgressTrackingSection";
-import { EstimatedLessonHoursBlock } from "@/components/EstimatedLessonHoursBlock";
-import { ReportSummaryDebrief } from "@/components/ReportSummaryDebrief";
-import { RiskAreasSection } from "@/components/RiskAreasSection";
 import { Section } from "@/components/Section";
 import { LIFETIME_MEMBER_UI, PRICING, SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { reportCopySalt } from "@/lib/deterministic-report-copy";
-import { buildRecommendedHoursNarrative, computeEstimatedLessonHours } from "@/lib/estimated-lesson-hours";
-import { normalizeGroupedRiskAreas } from "@/lib/risk-areas";
+import { buildRecommendedHoursNarrative } from "@/lib/estimated-lesson-hours";
+import { buildReportViewModelFromAssessment } from "@/lib/report-view-model";
 import { loadPersistedRecord, saveScoredAssessment } from "@/lib/storage";
 import type { MockReadinessResult } from "@/lib/types";
 import type {
@@ -32,13 +30,6 @@ const reportCard =
   "rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8 sm:ring-0 print:border-brand-200 print:shadow-none";
 const sectionTitle = "text-base font-semibold tracking-tight text-brand-950 sm:text-lg";
 const sectionIntro = "mt-2 max-w-prose text-sm leading-relaxed text-brand-600";
-
-function labelBadgeClass(label: MockReadinessResult["readinessLabel"]) {
-  if (label === "Needs More Time") return "bg-red-50 text-red-900 ring-red-200";
-  if (label === "Building Consistency") return "bg-amber-50 text-amber-950 ring-amber-200";
-  if (label === "Nearly Test Ready") return "bg-sky-50 text-sky-950 ring-sky-200";
-  return "bg-teal-50 text-teal-950 ring-teal-200";
-}
 
 function weakAreaLabels(ids: AssessmentPayload["weakAreas"]) {
   if (ids.length === 0) return "None selected";
@@ -283,10 +274,8 @@ export function ResultsView() {
   }
 
   const { result: report, assessment } = state.data;
-  const riskGroups = normalizeGroupedRiskAreas(report.riskAreas as unknown);
-  const estimatedHours =
-    report.estimatedLessonHours ?? computeEstimatedLessonHours(assessment, report.readinessScore);
-  const lessonHoursNarrative = buildRecommendedHoursNarrative(estimatedHours, reportCopySalt(assessment));
+  const model = buildReportViewModelFromAssessment(assessment, report);
+  const lessonHoursNarrative = buildRecommendedHoursNarrative(model.estimatedHours, reportCopySalt(assessment));
   const resultsLifetimeMemberUi = progressUi.kind === "ready" && progressUi.data.hasLifetimeAccess;
 
   return (
@@ -313,140 +302,54 @@ export function ResultsView() {
           </div>
         ) : null}
 
-        {/* A: score summary */}
-        <div className={`${reportCard} print:break-inside-avoid`}>
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-500/90 sm:text-left">
-            Your TestReady Score
-          </p>
-
-          <div className="mt-8 flex flex-col items-center gap-6 sm:mt-10 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
-            <div className="text-center sm:text-left">
-              <p
-                className="text-6xl font-semibold tracking-tight text-brand-950 tabular-nums sm:text-7xl"
-                aria-label={`Readiness score ${report.readinessScore} out of 100`}
-              >
-                {report.readinessScore}
-              </p>
-              <p className="mt-1 text-sm text-brand-500/85">out of 100</p>
-            </div>
-            <span
-              className={`inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold ring-2 ring-inset ${labelBadgeClass(
-                report.readinessLabel,
-              )}`}
-            >
-              {report.readinessLabel}
-            </span>
-          </div>
-
-          <ReportSummaryDebrief>
-            <p>{report.summary}</p>
-          </ReportSummaryDebrief>
-
-          {progressUi.kind === "idle" ? null : progressUi.kind === "loading" ? (
-            <ProgressTrackingSection status="loading" />
-          ) : progressUi.kind === "off" ? null : (
+        <PremiumReportSections
+          model={model}
+          recommendedHoursNarrative={lessonHoursNarrative}
+          showDisclaimer={false}
+          journeySection={
             <>
-              <ProgressTrackingSection
-                status="ready"
-                hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
-                entries={progressUi.data.entries}
-                currentScore={report.readinessScore}
-              />
-              {progressUi.data.hasLifetimeAccess ? (
-                <div className={`${reportCard} print:hidden`}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">
-                    {LIFETIME_MEMBER_UI.journeyInsights}
-                  </p>
-                  <h3 className="mt-2 text-base font-semibold tracking-tight text-brand-950 sm:text-lg">
-                    {LIFETIME_MEMBER_UI.reportsHistory}
-                  </h3>
-                  <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
-                    The arc on your dashboard shows how checkpoints cluster over time; this screen keeps focus on today&apos;s
-                    reading. Open saved write-ups anytime from My reports, same steady cadence across lessons.
-                  </p>
-                  <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Link
-                      href="/progress"
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
-                    >
-                      {LIFETIME_MEMBER_UI.journey}
-                    </Link>
-                    <Link
-                      href="/my-reports"
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
-                    >
-                      All saved reports
-                    </Link>
-                  </div>
-                </div>
+              {progressUi.kind === "loading" ? <ProgressTrackingSection status="loading" /> : null}
+              {progressUi.kind === "ready" ? (
+                <>
+                  <ProgressTrackingSection
+                    status="ready"
+                    hasLifetimeAccess={progressUi.data.hasLifetimeAccess}
+                    entries={progressUi.data.entries}
+                    currentScore={report.readinessScore}
+                  />
+                  {progressUi.data.hasLifetimeAccess ? (
+                    <div className={`${reportCard} print:hidden`}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-500">
+                        {LIFETIME_MEMBER_UI.journeyInsights}
+                      </p>
+                      <h3 className="mt-2 text-base font-semibold tracking-tight text-brand-950 sm:text-lg">
+                        {LIFETIME_MEMBER_UI.reportsHistory}
+                      </h3>
+                      <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
+                        The arc on your dashboard shows how checkpoints cluster over time. Open saved write-ups anytime
+                        from My reports.
+                      </p>
+                      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        <Link
+                          href="/progress"
+                          className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
+                        >
+                          {LIFETIME_MEMBER_UI.journey}
+                        </Link>
+                        <Link
+                          href="/my-reports"
+                          className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
+                        >
+                          All saved reports
+                        </Link>
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </>
-          )}
-
-          <div className="mt-10 border-t border-brand-100 pt-8 print:break-inside-avoid">
-            <h3 className={sectionTitle}>Coach note</h3>
-            <div className="mt-4 rounded-xl border border-teal-200/80 bg-teal-50/85 px-5 py-5 text-sm leading-relaxed text-teal-950 shadow-sm ring-1 ring-teal-200/50 print:border-teal-200 print:bg-teal-50/60 print:ring-0">
-              {report.coachMessage}
-            </div>
-          </div>
-
-        </div>
-
-        {/* B: risk areas */}
-        <div className="print:break-inside-avoid">
-          <RiskAreasSection blocks={riskGroups} />
-        </div>
-
-        {/* C: next steps */}
-        <div className={`${reportCard} print:break-inside-avoid`}>
-          <h2 className={sectionTitle}>What to do next</h2>
-          <p className={sectionIntro}>
-            A focused lesson plan from your report. Work through it in order with your instructor where you can.
-          </p>
-          <ol className="mt-6 space-y-3">
-            {report.nextSteps.map((item, i) => (
-              <li
-                key={`next-step-${i}`}
-                className="flex gap-4 rounded-xl border border-brand-100/90 bg-brand-50/50 px-4 py-3.5 text-sm leading-relaxed text-brand-800 print:border-brand-200 print:bg-white"
-              >
-                <span
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-brand-800 ring-1 ring-brand-200/80 print:bg-brand-50"
-                  aria-hidden
-                >
-                  {i + 1}
-                </span>
-                <span className="pt-0.5">{item}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* D: lesson guidance featured (deal-breaker section) */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-teal-300/80 bg-gradient-to-br from-teal-50/95 via-white to-brand-50/60 p-5 shadow-card ring-1 ring-teal-600/[0.07] sm:p-8 print:border-brand-200 print:bg-white print:shadow-none print:ring-0 print:break-inside-avoid">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-teal-400 to-teal-500 print:hidden" aria-hidden />
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
-              Featured guidance
-            </p>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-teal-800 ring-1 ring-teal-200/80 print:hidden">
-              <span aria-hidden>★</span>
-              Plan with your instructor
-            </span>
-          </div>
-          <h2 className="mt-3 font-heading text-xl font-semibold tracking-tight text-brand-950 sm:text-2xl">
-            How many more lesson hours you may need
-          </h2>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-            A realistic range to share with your instructor. Use it as a starting point, not a fixed rule.
-          </p>
-          <div className="mt-5 rounded-xl bg-white/80 p-4 ring-1 ring-teal-200/70 sm:p-5 print:bg-white print:ring-0">
-            <EstimatedLessonHoursBlock hours={estimatedHours} />
-          </div>
-          <div className="mt-5 border-t border-teal-200/70 pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">How to use that time</p>
-            <p className="mt-2 text-sm font-medium leading-relaxed text-brand-900">{lessonHoursNarrative}</p>
-          </div>
-        </div>
+          }
+        />
 
         {/* E: use this report well */}
         <div className={`${reportCard} print:break-inside-avoid`}>
@@ -471,7 +374,7 @@ export function ResultsView() {
               <span className="font-semibold text-brand-700" aria-hidden>
                 ·
               </span>
-              <span>Use the numbered steps above as a checklist and revisit them after a couple of sessions.</span>
+              <span>Use your top three priorities above as a checklist and revisit them after a couple of sessions.</span>
             </li>
           </ul>
         </div>

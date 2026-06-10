@@ -298,6 +298,8 @@ export const estimatedLessonHoursSchema = z.object({
   min: z.number().int().min(0).max(120),
   max: z.number().int().min(0).max(120),
   openEndedHigh: z.boolean(),
+  /** Point estimate for display; optional on older payloads. */
+  likely: z.number().int().min(0).max(120).optional(),
 });
 export type EstimatedLessonHours = z.infer<typeof estimatedLessonHoursSchema>;
 

@@ -159,7 +159,7 @@ export function buildSyllabusFocusSteps(assessment: AssessmentPayload, salt: num
   if (snap.uncoveredPriorityLabels.length >= 2) {
     const pair = `${snap.uncoveredPriorityLabels[0]} and ${snap.uncoveredPriorityLabels[1]}`;
     lineB = pickCopyVariant(salt, "syl:pair", [
-      `Largest syllabus gaps spotted now include ${pair}. Short repeats beat long theory.`,
+      `Largest main recap areas spotted now include ${pair}. Short, repeated practice is usually more useful than trying to cram everything.`,
       `${pair} still read as unexplored roadmap items. Sandwich them across the next bookings.`,
       `Before chasing polish, earmark sessions for ${pair} so examiner-style routes feel reachable.`,
     ]);
@@ -189,7 +189,7 @@ export function buildSyllabusRoadmapSteps(assessment: AssessmentPayload, salt: n
 
   const catLine = pickCopyVariant(salt, "syl:roadCats", [
     `Rotate practise across thinning pillars too: highlight ${named} so examiner-style breadth does not wait until your test week.`,
-    `Balance upcoming lessons across ${named}, not only the top two syllabus buzzwords on the recap card.`,
+    `Balance upcoming lessons across ${named}, not only the top two main recap areas on the report.`,
     `Keep routing variety honest: earmark drives that deliberately touch ${named} before chasing polish elsewhere.`,
   ]);
 

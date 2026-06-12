@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { MarketingHomePage } from "@/components/marketing/MarketingHomePage";
+import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
-export const metadata: Metadata = {
-  title: "Home",
-  description:
-    "Test Ready Score: a clear UK learner assessment with practical risks and focused next steps before your practical test. Created by a DVSA-approved driving instructor.",
-};
-
-export default MarketingHomePage;
+export default async function LearnerMarketingHomeRedirect() {
+  await redirectIfAuthenticated();
+  redirect("/");
+}

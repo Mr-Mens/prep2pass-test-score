@@ -8,7 +8,7 @@ export function TopPrioritiesSection({ priorities }: Props) {
   if (priorities.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm sm:p-8">
+    <section id="priorities" className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm sm:p-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Your next 3 priorities</p>
       <h2 className="mt-2 text-lg font-semibold text-brand-950">Focused action plan</h2>
       <ol className="mt-6 space-y-4">

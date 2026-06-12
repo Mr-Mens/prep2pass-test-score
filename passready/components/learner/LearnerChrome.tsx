@@ -8,43 +8,38 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { PRICING, SITE } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type NavMatch = "site" | "dashboard" | "score" | "progress" | "reports-child" | "account";
-
-const MARKETING_LINKS = [
-  { href: "/sample-report", label: "Sample report" },
-  { href: "/home#faq", label: "FAQs" },
-  { href: "/home#pricing", label: "Pricing" },
-] as const;
+type NavMatch = "home" | "reports" | "progress" | "assessment" | "account";
 
 const railNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/home", label: "Home", match: "site" },
-  { href: "/dashboard", label: "Overview", match: "dashboard" },
-  { href: "/assessment", label: "Score", match: "score" },
+  { href: "/dashboard", label: "Home", match: "home" },
+  { href: "/my-reports", label: "Reports", match: "reports" },
   { href: "/progress", label: "Progress", match: "progress" },
-  { href: "/my-reports", label: "Reports", match: "reports-child" },
+  { href: "/assessment", label: "Assessment", match: "assessment" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
-/** Mobile dock: Overview on sidebar — Progress only for lifetime members */
+/** Mobile dock: Home, Reports, Progress (lifetime), Assessment, Account */
 const dockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/home", label: "Home", match: "site" },
-  { href: "/assessment", label: "Score", match: "score" },
+  { href: "/dashboard", label: "Home", match: "home" },
+  { href: "/my-reports", label: "Reports", match: "reports" },
   { href: "/progress", label: "Progress", match: "progress" },
-  { href: "/my-reports", label: "Reports", match: "reports-child" },
+  { href: "/assessment", label: "Assessment", match: "assessment" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
 function activeFor(pathname: string, match: NavMatch): boolean {
-  if (match === "site") return pathname === "/home";
-  if (match === "dashboard") return pathname === "/dashboard";
-  if (match === "score") return pathname === "/assessment" || pathname.startsWith("/assessment/");
+  if (match === "home") return pathname === "/dashboard";
+  if (match === "reports") {
+    return (
+      pathname.startsWith("/my-reports") ||
+      pathname.startsWith("/reports") ||
+      pathname.startsWith("/mock-tests")
+    );
+  }
   if (match === "progress") return pathname === "/progress" || pathname.startsWith("/progress/");
+  if (match === "assessment") return pathname === "/assessment" || pathname.startsWith("/assessment/");
   if (match === "account") return pathname === "/account" || pathname.startsWith("/account/");
-  return (
-    pathname.startsWith("/my-reports") ||
-    /^\/reports\/[^/]+$/.test(pathname) ||
-    pathname.startsWith("/mock-tests")
-  );
+  return false;
 }
 
 function IconHome({ stroke }: { stroke: string }) {
@@ -56,17 +51,6 @@ function IconHome({ stroke }: { stroke: string }) {
         strokeWidth="2"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-function IconLayout({ stroke }: { stroke: string }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="3" y="3" width="8" height="8" rx="1.75" stroke={stroke} strokeWidth="2" />
-      <rect x="13" y="3" width="8" height="8" rx="1.75" stroke={stroke} strokeWidth="2" />
-      <rect x="3" y="13" width="8" height="8" rx="1.75" stroke={stroke} strokeWidth="2" />
-      <rect x="13" y="13" width="8" height="8" rx="1.75" stroke={stroke} strokeWidth="2" />
     </svg>
   );
 }
@@ -116,16 +100,14 @@ function IconUser({ stroke }: { stroke: string }) {
 
 function iconForMatch(match: NavMatch, stroke: string) {
   switch (match) {
-    case "site":
+    case "home":
       return <IconHome stroke={stroke} />;
-    case "dashboard":
-      return <IconLayout stroke={stroke} />;
-    case "score":
-      return <IconTarget stroke={stroke} />;
+    case "reports":
+      return <IconFolder stroke={stroke} />;
     case "progress":
       return <IconChart stroke={stroke} />;
-    case "reports-child":
-      return <IconFolder stroke={stroke} />;
+    case "assessment":
+      return <IconTarget stroke={stroke} />;
     case "account":
       return <IconUser stroke={stroke} />;
     default:
@@ -223,20 +205,6 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-slate-700/80 px-5 pb-6 pt-5">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Decide & commit</p>
-          <div className="mt-3 flex flex-col gap-1">
-            {MARKETING_LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-800/90 hover:text-white"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-        </div>
       </>
     );
   }
@@ -286,7 +254,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh bg-[#f0f2f5] md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
-          <Link href="/home" className="block" aria-label={`${SITE.name}, home. FAQs, sample report, and pricing`}>
+          <Link href="/dashboard" className="block" aria-label={`${SITE.name}, dashboard`}>
             <BrandLogo variant="learnerRail" />
           </Link>
           <p className="mt-3 font-heading text-xs font-semibold uppercase tracking-wide text-white">Test Ready Score</p>
@@ -337,17 +305,15 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
           <div className="mx-auto flex min-h-[52px] w-full max-w-xl items-center gap-3 px-4 py-3 sm:min-h-[3.25rem]">
             <Link
-              href="/home"
+              href="/dashboard"
               className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-3 py-2 shadow-sm"
-              aria-label={`${SITE.name}, home`}
+              aria-label={`${SITE.name}, dashboard`}
             >
               <BrandLogo variant="learnerMobile" />
             </Link>
             <div className="min-w-0 flex-1">
               <p className="font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>
-              <Link href="/dashboard" className="truncate text-[11px] font-medium leading-tight text-teal-800 underline-offset-2 hover:underline">
-                App overview · saved reports arc
-              </Link>
+              <p className="truncate text-[11px] font-medium leading-tight text-teal-800">Test Ready Score dashboard</p>
             </div>
           </div>
         </header>

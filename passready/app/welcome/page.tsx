@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { WelcomeLanding } from "@/components/welcome/WelcomeLanding";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
-/** Canonical entry is `/`; `/welcome` is a bookmark-friendly alias. */
-export default async function WelcomeAliasPage() {
+export const metadata: Metadata = {
+  title: "Sign in · Test Ready Score",
+  description: "Choose your path: learner, instructor, or parent.",
+};
+
+export default async function WelcomePage() {
   const user = await getServerAuthUser();
   if (user?.emailConfirmedAt) {
-    redirect(dashboardPathForAppRole(await getUserAppRole(user.id)));
+    const role = await getUserAppRole(user.id);
+    redirect(dashboardPathForAppRole(role));
   }
-  redirect("/");
+
+  return <WelcomeLanding />;
 }

@@ -8,12 +8,23 @@ import { Navbar } from "@/components/Navbar";
 
 import { isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
 import { isLearnerAppRoute } from "@/lib/learner-app-routes";
+import { isMarketingRoute } from "@/lib/marketing-routes";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
 
-  if (pathname === "/" || pathname === "/welcome") {
+  if (pathname === "/welcome") {
     return <div className="min-h-dvh">{children}</div>;
+  }
+
+  if (isMarketingRoute(pathname)) {
+    return (
+      <div className="flex min-h-dvh flex-col">
+        <Navbar />
+        <main className="relative flex-1 max-md:overflow-x-hidden">{children}</main>
+        <Footer />
+      </div>
+    );
   }
 
   if (isStandaloneAuthRoute(pathname)) {

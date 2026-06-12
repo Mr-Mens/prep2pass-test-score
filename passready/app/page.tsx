@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { WelcomeLanding } from "@/components/welcome/WelcomeLanding";
-import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
-import { getUserAppRole } from "@/lib/server/user-app-role";
-import { getServerAuthUser } from "@/lib/supabase/server";
+import { MarketingHomePage } from "@/components/marketing/MarketingHomePage";
+import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
 export const metadata: Metadata = {
-  title: "Welcome · Test Ready Score",
+  title: "Test Ready Score by Prep2Pass",
   description:
-    "Choose your path: learner, instructor, or parent. Test Ready Score helps UK drivers prepare for the practical test.",
+    "Test Ready Score: a clear UK learner assessment with practical risks and focused next steps before your practical test. Created by a DVSA-approved driving instructor.",
 };
 
-export default async function WelcomeEntryPage() {
-  const user = await getServerAuthUser();
-  if (user?.emailConfirmedAt) {
-    const role = await getUserAppRole(user.id);
-    redirect(dashboardPathForAppRole(role));
-  }
-
-  return <WelcomeLanding />;
+export default async function HomePage() {
+  await redirectIfAuthenticated();
+  return <MarketingHomePage />;
 }

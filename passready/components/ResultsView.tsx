@@ -237,7 +237,7 @@ export function ResultsView() {
           >
             Start assessment
           </Button>
-          <Button href="/home" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
+          <Button href="/dashboard" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
             Back to home
           </Button>
         </div>
@@ -443,7 +443,7 @@ export function ResultsView() {
             <Button href="/report-lookup" variant="secondary" className="w-full min-h-[48px] sm:w-auto sm:min-w-[11rem]">
               Find another report
             </Button>
-            <Button href="/home" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
+            <Button href="/dashboard" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
               Back to home
             </Button>
           </div>

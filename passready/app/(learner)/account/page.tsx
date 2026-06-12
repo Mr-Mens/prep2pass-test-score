@@ -132,8 +132,7 @@ export default async function LearnerAccountPage() {
         className="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
         aria-label="Shortcuts"
       >
-        <MenuRow href="/home" title="Home" hint="FAQs, sample report, pricing" />
-        <MenuRow href="/dashboard" title="Overview" hint="Readiness hub and checkpoints" />
+        <MenuRow href="/dashboard" title="Home" hint="Your Test Ready Score dashboard" />
         <MenuRow href="/assessment" title="Check test readiness" hint="Short assessment flow" />
         {entitlements.hasLifetimeAccess ? (
           <MenuRow href="/progress" title="Progress timeline" hint="Score arc across Premium reports" />

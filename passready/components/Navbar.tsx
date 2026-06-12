@@ -11,14 +11,14 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "./Button";
 
 const links = [
-  { href: "/explore", label: "Explore" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/faq", label: "FAQ" },
   { href: "/sample-report", label: "Sample report" },
-  { href: "/my-reports", label: "My reports" },
+  { href: "/about", label: "About" },
 ] as const;
 
 const memberPrimaryLinks = [
-  { href: "/home", label: "Home" },
-  { href: "/sample-report", label: "Sample report" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/my-reports", label: "My reports" },
 ] as const;
 

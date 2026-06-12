@@ -8,6 +8,7 @@ import { PRICING } from "@/lib/constants";
 import { buildRecommendedHoursNarrative, type EstimatedHoursInput } from "@/lib/estimated-lesson-hours";
 import { buildReportViewModel } from "@/lib/report-view-model";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
+import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
 export const metadata: Metadata = {
   title: "Sample Premium Test Ready Score Report",
@@ -98,7 +99,9 @@ const sampleHoursInput: EstimatedHoursInput = {
   confidenceLevel: 6,
 };
 
-export default function SampleReportPage() {
+export default async function SampleReportPage() {
+  await redirectIfAuthenticated();
+
   const sampleCore = {
     readinessScore: 66,
     readinessLabel: "Nearly Test Ready" as const,

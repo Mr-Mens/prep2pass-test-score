@@ -2,12 +2,13 @@
 
 import { usePathname } from "next/navigation";
 
+import { AssessmentAppShell } from "@/components/AssessmentAppShell";
 import { Footer } from "@/components/Footer";
 import { LearnerChrome } from "@/components/learner/LearnerChrome";
 import { Navbar } from "@/components/Navbar";
 
 import { isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
-import { isLearnerAppRoute } from "@/lib/learner-app-routes";
+import { isAssessmentRoute, isLearnerAppRoute } from "@/lib/learner-app-routes";
 import { isMarketingRoute } from "@/lib/marketing-routes";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (pathname.startsWith("/supervisor")) {
     return <div className="flex min-h-dvh flex-col">{children}</div>;
+  }
+
+  if (isAssessmentRoute(pathname)) {
+    return <AssessmentAppShell>{children}</AssessmentAppShell>;
   }
 
   if (isLearnerAppRoute(pathname)) {

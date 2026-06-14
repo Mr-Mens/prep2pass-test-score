@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import Link from "next/link";
+
 import { AssessmentForm } from "@/components/AssessmentForm";
 import { Button } from "@/components/Button";
 import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING } from "@/lib/constants";
@@ -23,6 +25,7 @@ const VALUE_BULLETS = [
 
 export default async function AssessmentPage() {
   const sessionUser = await getServerAuthUser();
+  const isConfirmedLearner = Boolean(sessionUser?.emailConfirmedAt);
 
   let hasLifetimeAccess = false;
   let canStartAssessment = true;
@@ -60,15 +63,27 @@ export default async function AssessmentPage() {
           {BRAND_CTA.entrySubtext}
         </p>
         <p className="mt-3 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
-          {hasLifetimeAccess ? (
+          {isConfirmedLearner && hasLifetimeAccess ? (
             <>
               Signed in securely · Unlimited Premium reports · {PREMIUM_MEMBER_UI.journey}
             </>
+          ) : isConfirmedLearner ? (
+            <>Signed in · Subscribe for unlimited reports · {PRICING.subscription.display}/month</>
           ) : (
-            <>Subscribe for unlimited assessments · {PRICING.subscription.display}/month after your free preview.</>
+            <>
+              No sign-in needed to start · {PRICING.subscription.display}/month after your free score preview
+            </>
           )}
         </p>
-        {!hasLifetimeAccess ? (
+        {!isConfirmedLearner ? (
+          <p className="mt-2 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
+            Already have an account?{" "}
+            <Link href="/welcome?role=learner&next=%2Fassessment" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+              Sign in
+            </Link>{" "}
+            to save reports to your learner dashboard.
+          </p>
+        ) : !hasLifetimeAccess ? (
           <p className="mt-2 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
             Your reports are saved securely to your account so only you can access them.
           </p>
@@ -113,8 +128,8 @@ export default async function AssessmentPage() {
         </section>
       ) : (
         <AssessmentForm
-          lockedAccountEmail={sessionUser?.email}
-          prefilledFullName={firstNameHint || undefined}
+          lockedAccountEmail={isConfirmedLearner ? sessionUser?.email : undefined}
+          prefilledFullName={isConfirmedLearner ? firstNameHint || undefined : undefined}
           hasLifetimeAccess={hasLifetimeAccess}
         />
       )}

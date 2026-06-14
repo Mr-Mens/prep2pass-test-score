@@ -6,7 +6,6 @@ const LEARNER_ROOTS = [
   "/dashboard",
   "/account",
   "/progress",
-  "/assessment",
   "/results",
   "/my-reports",
   "/reports",
@@ -16,6 +15,12 @@ const LEARNER_ROOTS = [
   "/graduate",
   "/lifetime",
 ] as const;
+
+/** Public entry for new visitors; authenticated learners use LearnerChrome via AppShell. */
+export function isAssessmentRoute(pathname: string): boolean {
+  const path = pathname.split("?")[0] ?? pathname;
+  return path === "/assessment" || path.startsWith("/assessment/");
+}
 
 export function isLearnerAppRoute(pathname: string): boolean {
   if (!pathname || pathname.startsWith("/instructor") || pathname.startsWith("/supervisor")) return false;

@@ -11,24 +11,53 @@ export const BRAND_LOGO = {
   height: 682,
 } as const;
 
-/** Calm membership copy inside authenticated flows when entitlement is lifetime (avoid prospect/pricing framing). */
-export const LIFETIME_MEMBER_UI = {
-  badge: "Lifetime access active",
-  unlimited: "Unlimited reports unlocked",
+/** Branded call-to-action copy — prefer these over generic “assessment” wording. */
+export const BRAND_CTA = {
+  getMyScore: "Get My Test Ready Score",
+  getYourScore: "Get Your Test Ready Score",
+  updateMyScore: "Update My Test Ready Score",
+  getUpdatedScore: "Get an Updated Score",
+  getAnotherScore: "Get Another Test Ready Score",
+  viewScoreHistory: "View My Test Ready Score History",
+  viewSampleReport: "View Sample Report",
+  invitePupil: "Invite Pupil to Get Their Test Ready Score",
+  sendScoreInvite: "Send Test Ready Score Invite",
+  helpLearnerGetScore: "Help Your Learner Get Their Test Ready Score",
+  takesFiveMinutes: "⏱ Takes around 5 minutes",
+  entrySubtext:
+    "Answer a few questions and receive your personalised Test Ready Score, risks and action plan.",
+} as const;
+
+/** Calm membership copy inside authenticated flows when entitlement is active. */
+export const PREMIUM_MEMBER_UI = {
+  badge: "Subscription active",
+  unlimited: "Unlimited assessments unlocked",
   journey: "Your driving journey",
-  reportsHistory: "Report history",
+  reportsHistory: "View My Test Ready Score History",
   journeyInsights: "Journey insights",
   progressRhythm:
     "Each saved report adds to your history. Look back to see how your score and weak areas change over time.",
+  graduateBadge: "Graduate — congratulations!",
+  graduateNote: "Your account and reports stay available. New Test Ready Scores are disabled after you pass.",
 } as const;
 
-/** One-off vs lifetime TestReady Score unlock (Stripe Price IDs map to these in env). */
+/** @deprecated use PREMIUM_MEMBER_UI */
+export const LIFETIME_MEMBER_UI = PREMIUM_MEMBER_UI;
+
+/** Learner subscription pricing (Stripe Price ID maps in env). */
 export const PRICING = {
-  single: { display: "£3.99", label: "One-off report", hint: "Single Premium report for this assessment" },
+  subscription: {
+    display: "£6.99",
+    label: "Monthly subscription",
+    hint: "Unlimited assessments, progress tracking, AI reports, and roadmap access.",
+    interval: "month" as const,
+  },
+  /** Legacy one-off tiers — retained for historical payment metadata only. */
+  single: { display: "£3.99", label: "One-off report", hint: "Legacy single report purchase" },
   lifetime: {
     display: "£9.99",
     label: "Lifetime unlimited",
-    hint: "Unlimited Premium reports. Track progress over time.",
+    hint: "Legacy lifetime access (grandfathered accounts)",
   },
 } as const;
 

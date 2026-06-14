@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { BRAND_CTA } from "@/lib/constants";
+
 export function AddPupilForm() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -38,7 +40,7 @@ export function AddPupilForm() {
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Add pupil</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">{BRAND_CTA.invitePupil}</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-medium text-brand-800">
           Name
@@ -70,7 +72,7 @@ export function AddPupilForm() {
         disabled={busy}
         className="mt-4 min-h-[44px] rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:opacity-50"
       >
-        {busy ? "Sending…" : "Send invitation"}
+        {busy ? "Sending…" : BRAND_CTA.sendScoreInvite}
       </button>
     </form>
   );

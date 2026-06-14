@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { BrandLogo } from "@/components/BrandLogo";
-import { PRICING, SITE } from "@/lib/constants";
+import { BRAND_CTA, PRICING, SITE } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type NavMatch = "home" | "reports" | "progress" | "assessment" | "account";
@@ -14,7 +14,7 @@ const railNavItems: readonly { href: string; label: string; match: NavMatch }[] 
   { href: "/dashboard", label: "Home", match: "home" },
   { href: "/my-reports", label: "Reports", match: "reports" },
   { href: "/progress", label: "Progress", match: "progress" },
-  { href: "/assessment", label: "Assessment", match: "assessment" },
+  { href: "/assessment", label: "Score", match: "assessment" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
@@ -23,7 +23,7 @@ const dockNavItems: readonly { href: string; label: string; match: NavMatch }[] 
   { href: "/dashboard", label: "Home", match: "home" },
   { href: "/my-reports", label: "Reports", match: "reports" },
   { href: "/progress", label: "Progress", match: "progress" },
-  { href: "/assessment", label: "Assessment", match: "assessment" },
+  { href: "/assessment", label: "Score", match: "assessment" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
@@ -268,12 +268,12 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         {me && !me.lifetimeAccess ? (
           <div className="border-t border-slate-700/80 px-4 pb-5 pt-4">
             <Link
-              href="/upgrade"
+              href="/subscribe"
               className="block rounded-xl border border-teal-500/40 bg-teal-500/10 px-4 py-3 text-xs leading-relaxed text-teal-100 transition hover:border-teal-400/60 hover:bg-teal-500/20"
             >
-              <p className="font-semibold text-white">Lifetime access</p>
-              <p className="mt-1 text-slate-300">Unlimited reports · {PRICING.lifetime.display} one-time</p>
-              <p className="mt-2 text-[11px] font-semibold text-teal-200">Upgrade →</p>
+              <p className="font-semibold text-white">Subscribe</p>
+              <p className="mt-1 text-slate-300">Unlimited access · {PRICING.subscription.display}/month</p>
+              <p className="mt-2 text-[11px] font-semibold text-teal-200">Subscribe →</p>
             </Link>
           </div>
         ) : null}

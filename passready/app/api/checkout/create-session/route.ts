@@ -78,11 +78,12 @@ export async function POST(request: Request) {
     }
 
     const assessmentId = randomUUID();
+    const tier = parsed.data.tier ?? "subscription";
     const session = await createCheckoutSession({
       assessmentId,
       email: parsed.data.assessment.email,
       weakAreaCount: parsed.data.assessment.weakAreas.length,
-      tier: parsed.data.tier,
+      tier,
       userId: auth.userId,
     });
 

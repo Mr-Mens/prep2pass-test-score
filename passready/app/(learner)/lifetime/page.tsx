@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { LIFETIME_MEMBER_UI } from "@/lib/constants";
+import { LIFETIME_MEMBER_UI, BRAND_CTA } from "@/lib/constants";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -79,7 +79,7 @@ export default async function LifetimeMembershipPage() {
             href="/assessment"
             className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-brand-100 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:border-teal-200 hover:shadow-md"
           >
-            New assessment
+            {BRAND_CTA.getAnotherScore}
           </Link>
         </nav>
 

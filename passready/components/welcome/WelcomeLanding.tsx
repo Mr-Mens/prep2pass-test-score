@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { BrandLogo } from "@/components/BrandLogo";
 import { SITE } from "@/lib/constants";
@@ -13,6 +14,16 @@ const ROLE_DEST: Record<RoleKey, string> = {
   instructor: "/instructor",
   parent: "/supervisor",
 };
+
+function parseRoleKey(raw: string | null): RoleKey | null {
+  if (raw === "learner" || raw === "instructor" || raw === "parent") return raw;
+  return null;
+}
+
+function safeNextPath(raw: string | null): string | null {
+  if (raw?.startsWith("/") && !raw.startsWith("//")) return raw;
+  return null;
+}
 
 const ROLES: readonly {
   key: RoleKey;
@@ -60,9 +71,20 @@ const ROLES: readonly {
 ];
 
 export function WelcomeLanding() {
-  const [selected, setSelected] = useState<RoleKey | null>(null);
+  const searchParams = useSearchParams();
+  const roleFromUrl = parseRoleKey(searchParams.get("role"));
+  const nextFromUrl = safeNextPath(searchParams.get("next"));
+  const [selected, setSelected] = useState<RoleKey | null>(roleFromUrl);
 
-  const dest = selected ? ROLE_DEST[selected] : "/dashboard";
+  useEffect(() => {
+    if (roleFromUrl) setSelected(roleFromUrl);
+  }, [roleFromUrl]);
+
+  const dest = useMemo(() => {
+    if (nextFromUrl) return nextFromUrl;
+    if (selected) return ROLE_DEST[selected];
+    return "/dashboard";
+  }, [nextFromUrl, selected]);
   const loginHref = `/login?next=${encodeURIComponent(dest)}`;
   const signupHref = `/signup?next=${encodeURIComponent(dest)}`;
 
@@ -90,7 +112,15 @@ export function WelcomeLanding() {
           <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-brand-700 sm:text-base">
             Your journey to test readiness starts here.
           </p>
-          <p className="mt-2 text-sm font-medium text-brand-600">{selected ? "Sign in or create an account" : "Choose your role to continue"}</p>
+          <p className="mt-2 text-sm font-medium text-brand-600">
+            {selected
+              ? selected === "learner"
+                ? "Sign in or create your learner account"
+                : selected === "instructor"
+                  ? "Sign in or create your instructor account"
+                  : "Sign in or create your parent account"
+              : "Choose your role to continue"}
+          </p>
         </header>
 
         {!selected ? (

@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 
 import { AssessmentForm } from "@/components/AssessmentForm";
-import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
-import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
+import { Button } from "@/components/Button";
+import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING } from "@/lib/constants";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Test Ready Score Assessment",
+  title: "Get Your Test Ready Score",
   description:
-    "Complete your Test Ready Score assessment, then checkout for your full Premium report: score, risks, next steps, coach note, and lesson-hour band. Created by a DVSA-approved driving instructor.",
+    "Answer a few questions and receive your personalised Test Ready Score, risks and action plan. Created by a DVSA-approved driving instructor.",
 };
 
 const VALUE_BULLETS = [
@@ -24,9 +25,12 @@ export default async function AssessmentPage() {
   const sessionUser = await getServerAuthUser();
 
   let hasLifetimeAccess = false;
+  let canStartAssessment = true;
   if (sessionUser?.id && isSupabaseConfigured()) {
     try {
-      hasLifetimeAccess = await getEffectiveLifetimeAccessByUserId(sessionUser.id);
+      const access = await getLearnerAccessStatus(sessionUser.id);
+      hasLifetimeAccess = access.hasPremiumAccess;
+      canStartAssessment = access.canStartAssessment;
     } catch {
       hasLifetimeAccess = false;
     }
@@ -50,15 +54,18 @@ export default async function AssessmentPage() {
       <div className="mx-auto w-full max-w-3xl">
       <div className="mb-10 rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:mb-12 sm:p-8">
         <h1 className="text-center font-heading text-2xl font-semibold leading-tight tracking-tight text-brand-950 sm:text-left sm:text-3xl">
-          Start your Test Ready Score assessment
+          {BRAND_CTA.getYourScore}
         </h1>
         <p className="mt-3 text-center text-sm leading-relaxed text-brand-600 sm:text-left sm:text-base">
+          {BRAND_CTA.entrySubtext}
+        </p>
+        <p className="mt-3 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
           {hasLifetimeAccess ? (
             <>
-              Signed in securely · Unlimited Premium reports · {LIFETIME_MEMBER_UI.journey}
+              Signed in securely · Unlimited Premium reports · {PREMIUM_MEMBER_UI.journey}
             </>
           ) : (
-            <>Secure account · Progress saved · Instant access once checkout clears.</>
+            <>Subscribe for unlimited assessments · {PRICING.subscription.display}/month after your free preview.</>
           )}
         </p>
         {!hasLifetimeAccess ? (
@@ -67,7 +74,7 @@ export default async function AssessmentPage() {
           </p>
         ) : (
           <p className="mt-2 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
-            {LIFETIME_MEMBER_UI.badge} · {LIFETIME_MEMBER_UI.unlimited}
+            {PREMIUM_MEMBER_UI.badge} · {PREMIUM_MEMBER_UI.unlimited}
           </p>
         )}
         <ul className="mt-6 space-y-2.5 text-sm leading-relaxed text-brand-800">
@@ -82,20 +89,35 @@ export default async function AssessmentPage() {
         </ul>
         {!hasLifetimeAccess ? (
           <p className="mt-6 border-t border-brand-100 pt-5 text-center text-xs leading-relaxed text-brand-500 sm:text-left">
-            {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime · Full Premium report after checkout,
-            including lesson-hour estimate
+            {PRICING.subscription.display}/month · Full Premium report after subscription · Cancel or Graduate Mode
+            when you pass
           </p>
         ) : (
           <p className="mt-6 border-t border-brand-100 pt-5 text-center text-xs leading-relaxed text-brand-600 sm:text-left">
-            Your next report saves straight to Prep2Pass and opens in full Premium. No checkout step on this journey.
+            Your next report saves straight to Prep2Pass and opens in full Premium. No per-report checkout.
           </p>
         )}
       </div>
-      <AssessmentForm
-        lockedAccountEmail={sessionUser?.email}
-        prefilledFullName={firstNameHint || undefined}
-        hasLifetimeAccess={hasLifetimeAccess}
-      />
+      {!canStartAssessment ? (
+        <section className="rounded-2xl border border-teal-200 bg-teal-50/60 p-6 text-center">
+          <h2 className="font-heading text-xl font-semibold text-brand-950">Graduate Mode active</h2>
+          <p className="mt-3 text-sm text-brand-700">{PREMIUM_MEMBER_UI.graduateNote}</p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button href="/my-reports" variant="conversion" className="min-h-[48px]">
+              {BRAND_CTA.viewScoreHistory}
+            </Button>
+            <Button href="/dashboard" variant="secondary" className="min-h-[48px]">
+              Dashboard
+            </Button>
+          </div>
+        </section>
+      ) : (
+        <AssessmentForm
+          lockedAccountEmail={sessionUser?.email}
+          prefilledFullName={firstNameHint || undefined}
+          hasLifetimeAccess={hasLifetimeAccess}
+        />
+      )}
       </div>
     </section>
   );

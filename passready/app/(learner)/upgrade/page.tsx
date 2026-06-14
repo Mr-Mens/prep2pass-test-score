@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { UpgradeFlow } from "@/components/UpgradeFlow";
+import { SubscribeFlow } from "@/components/SubscribeFlow";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
+import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Upgrade to lifetime · Prep2Pass",
-  description:
-    "One-time upgrade for unlimited Premium TestReady reports and a private progress timeline tied to your email.",
+  title: "Subscribe · Test Ready Score",
+  description: "£6.99/month for unlimited assessments, AI reports, and progress tracking.",
 };
 
-export default function UpgradePage() {
+/** Legacy /upgrade path — redirects to subscription flow. */
+export default async function UpgradePage() {
+  const user = (await getServerAuthUser())!;
+  const access = await getLearnerAccessStatus(user.id);
+  if (access.hasPremiumAccess) redirect("/dashboard");
+  if (access.isGraduated) redirect("/graduate");
+
   return (
     <div className="pb-4">
-      <UpgradeFlow />
+      <SubscribeFlow />
     </div>
   );
 }

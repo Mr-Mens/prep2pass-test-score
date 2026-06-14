@@ -1,20 +1,16 @@
 import "server-only";
 
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
-import { getUserAppRole } from "@/lib/server/user-app-role";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 
 /**
- * Stored lifetime entitlement, or complementary premium access for instructor accounts.
+ * Premium access for learners: active subscription, legacy lifetime, or instructor role.
  */
 export async function getEffectiveLifetimeAccessByUserId(userId: string): Promise<boolean> {
-  const [storedResult, roleResult] = await Promise.allSettled([
-    getLifetimeAccessByUserId(userId),
-    getUserAppRole(userId),
-  ]);
+  const access = await getLearnerAccessStatus(userId);
+  return access.hasPremiumAccess;
+}
 
-  const stored = storedResult.status === "fulfilled" && storedResult.value;
-  if (stored) return true;
-
-  const role = roleResult.status === "fulfilled" ? roleResult.value : "learner";
-  return role === "instructor";
+export async function canLearnerStartAssessment(userId: string): Promise<boolean> {
+  const access = await getLearnerAccessStatus(userId);
+  return access.canStartAssessment;
 }

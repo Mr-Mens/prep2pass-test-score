@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/Button";
 import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
-import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
+import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { readinessBandDisplayLabel } from "@/lib/readiness-calibration";
 import type { LearnerDashboardView } from "@/lib/server/build-learner-dashboard-view";
@@ -78,12 +78,12 @@ export function LearnerDashboardHome({ view, userId }: Props) {
           </div>
         ) : (
           <div className="mt-4">
-            <p className="text-lg font-semibold text-brand-950">Run your first assessment</p>
+            <p className="text-lg font-semibold text-brand-950">Get your first Test Ready Score</p>
             <p className="mt-2 text-sm leading-relaxed text-brand-600">
-              A short questionnaire leads to checkout, then your personalised Premium report is saved here.
+              Answer a few questions to receive your personalised score, risks, and action plan.
             </p>
             <Button href="/assessment" variant="conversion" className="mt-5 min-h-[48px]">
-              Start Assessment
+              {BRAND_CTA.getMyScore}
             </Button>
           </div>
         )}
@@ -214,7 +214,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <SectionLabel>Recent reports</SectionLabel>
             <Link href="/my-reports" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
-              See all reports
+              {BRAND_CTA.viewScoreHistory}
             </Link>
           </div>
           <ul className="mt-4 space-y-3">
@@ -241,15 +241,20 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Section 7 — Start new assessment */}
+      {/* Section 7 — Update score */}
       <DashboardCard className="border-teal-200/80 bg-gradient-to-br from-teal-50/80 to-white">
         <h2 className="font-heading text-xl font-semibold text-brand-950">Ready for another checkpoint?</h2>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
           Run a fresh Test Ready Score when your practice has moved on.
         </p>
-        <Button href="/assessment" variant="conversion" className="mt-5 min-h-[52px] w-full sm:w-auto">
-          Start Assessment
-        </Button>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button href="/assessment" variant="conversion" className="min-h-[52px] w-full sm:w-auto">
+            {BRAND_CTA.updateMyScore}
+          </Button>
+          <Button href="/assessment" variant="secondary" className="min-h-[52px] w-full sm:w-auto">
+            {BRAND_CTA.getUpdatedScore}
+          </Button>
+        </div>
       </DashboardCard>
 
       {/* Section 8 — Journey insights */}
@@ -267,30 +272,33 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Lifetime / upgrade */}
+      {/* Subscription / upgrade */}
       {view.hasLifetimeAccess ? (
         <DashboardCard className="border-teal-200/80 bg-teal-50/40">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{LIFETIME_MEMBER_UI.badge}</p>
-          <p className="mt-2 text-sm font-semibold text-teal-950">{LIFETIME_MEMBER_UI.unlimited}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{PREMIUM_MEMBER_UI.badge}</p>
+          <p className="mt-2 text-sm font-semibold text-teal-950">{PREMIUM_MEMBER_UI.unlimited}</p>
           <Link href="/progress" className="mt-3 inline-block text-sm font-semibold text-teal-900 underline-offset-4 hover:underline">
             Open progress tracking →
+          </Link>
+          <Link href="/graduate" className="mt-2 block text-sm font-medium text-brand-600 underline-offset-4 hover:underline">
+            Passed your test? Record Graduate Mode →
           </Link>
         </DashboardCard>
       ) : (
         <DashboardCard className="border-amber-200/80 bg-amber-50/35">
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-950">Lifetime access</p>
-          <p className="mt-2 text-sm font-semibold text-brand-950">Upgrade to Lifetime</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-950">Subscribe</p>
+          <p className="mt-2 text-sm font-semibold text-brand-950">{PRICING.subscription.label}</p>
           <ul className="mt-3 space-y-1.5 text-sm text-brand-700">
-            <li>Unlimited reports</li>
+            <li>Unlimited assessments</li>
             <li>Progress tracking</li>
-            <li>Report history</li>
+            <li>AI Premium reports</li>
             <li>Roadmap insights</li>
           </ul>
           <Link
-            href="/upgrade"
+            href="/subscribe"
             className="mt-4 inline-flex min-h-[48px] items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
           >
-            Upgrade to Lifetime · {PRICING.lifetime.display}
+            Subscribe · {PRICING.subscription.display}/month
           </Link>
         </DashboardCard>
       )}

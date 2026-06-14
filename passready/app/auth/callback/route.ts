@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
+import { autoAcceptPupilInviteByToken } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -31,6 +32,20 @@ export async function GET(request: Request) {
         user.id,
         user.user_metadata as Record<string, unknown> | undefined,
       );
+      const meta = user.user_metadata as Record<string, unknown> | undefined;
+      const inviteToken =
+        typeof meta?.pending_invite_token === "string" ? meta.pending_invite_token.trim() : "";
+      if (inviteToken && user.email) {
+        try {
+          await autoAcceptPupilInviteByToken({
+            inviteToken,
+            learnerUserId: user.id,
+            learnerEmail: user.email,
+          });
+        } catch (e) {
+          console.error("[auth/callback] invite_auto_link_failed", e);
+        }
+      }
     }
   }
 

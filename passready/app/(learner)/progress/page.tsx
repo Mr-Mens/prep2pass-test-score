@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { TestCountdownPlanSection } from "@/components/learner/TestCountdownPlanSection";
-import { SITE } from "@/lib/constants";
+import { BRAND_CTA, SITE } from "@/lib/constants";
 import { deriveDeltaVsPrior, deriveFocusArea, deriveNextMilestone } from "@/lib/dashboard/journey-insights";
 import { formatCompactDateUk, formatIsoDateUk } from "@/lib/formatting";
-import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import {
   getLatestReportTestBooking,
   listJourneySnapshotsByUserId,
@@ -46,11 +46,12 @@ export default async function LearnerProgressPage() {
 
   let lifetime = false;
   try {
-    lifetime = await getEffectiveLifetimeAccessByUserId(user.id);
+    const access = await getLearnerAccessStatus(user.id);
+    lifetime = access.hasPremiumAccess;
   } catch {
     lifetime = false;
   }
-  if (!lifetime) redirect("/upgrade");
+  if (!lifetime) redirect("/subscribe");
 
   const [snaps, testBooking] = await Promise.all([
     listJourneySnapshotsByUserId(user.id),
@@ -121,7 +122,7 @@ export default async function LearnerProgressPage() {
         <section className="rounded-2xl border border-dashed border-brand-200 bg-white/80 p-8 text-center text-sm leading-relaxed text-brand-700">
           Save your first Premium report and we chart every next visit here automatically.
           <Link href="/assessment" className="mt-4 inline-flex min-h-[48px] items-center justify-center text-base font-semibold text-teal-800 underline-offset-4 hover:underline">
-            Start assessment
+            {BRAND_CTA.getMyScore}
           </Link>
         </section>
       )}
@@ -169,13 +170,13 @@ export default async function LearnerProgressPage() {
           href="/assessment"
           className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-teal-400 px-6 text-base font-semibold text-brand-950 shadow-md transition hover:bg-teal-300"
         >
-          Start new assessment
+          {BRAND_CTA.updateMyScore}
         </Link>
         <Link
           href="/my-reports"
           className="mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-white/20 bg-transparent px-6 text-base font-semibold text-white hover:bg-white/10"
         >
-          Track saved reports
+          {BRAND_CTA.viewScoreHistory}
         </Link>
       </div>
     </div>

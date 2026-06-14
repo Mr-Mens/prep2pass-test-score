@@ -1,384 +1,382 @@
+import Link from "next/link";
+
 import { Button } from "@/components/Button";
 import { FaqItem } from "@/components/FaqItem";
-import { FeatureCard } from "@/components/FeatureCard";
-import { HomeReportPreview } from "@/components/HomeReportPreview";
 import { LandingPricing } from "@/components/LandingPricing";
+import { HeroScoreCard } from "@/components/marketing/HeroScoreCard";
+import { MarketingStickyCta } from "@/components/marketing/MarketingStickyCta";
+import { PremiumReportFeatures } from "@/components/marketing/PremiumReportFeatures";
+import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
+import { TestCountdownPreview } from "@/components/marketing/TestCountdownPreview";
 import { Section } from "@/components/Section";
-import { TestimonialCard } from "@/components/TestimonialCard";
 import { TrustBadge } from "@/components/TrustBadge";
-import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
+import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA } from "@/lib/constants";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
+const audienceCards = [
+  {
+    label: "Learners",
+    headline: "Know if you're genuinely test ready.",
+    body: "Track readiness, monitor progress, and know exactly what to practise next.",
+    href: "/welcome?role=learner&next=%2Fassessment",
+    cta: BRAND_CTA.getMyScore,
+  },
+  {
+    label: "Instructors",
+    headline: "Free tools for better pupil coaching.",
+    body: "Digital mock tests, pupil tracking, readiness insights, and teaching support.",
+    href: "/welcome?role=instructor",
+    cta: "Instructor Access",
+  },
+  {
+    label: "Parents",
+    headline: "Support private practice with confidence.",
+    body: "Know exactly what to practise and help your learner progress safely.",
+    href: "/welcome?role=parent",
+    cta: "Parent Access",
+  },
+] as const;
+
+const socialProof = [
+  { title: "Designed using real lesson experience", body: "Built from patterns seen across everyday teaching." },
+  { title: "Built around practical test readiness", body: "Focused on what actually affects test day." },
+  { title: "Created by a DVSA-approved driving instructor", body: "Instructor-led, not generic advice." },
+  { title: "Focused on clear, practical next steps", body: "Plain English you can use straight away." },
+] as const;
+
+const failedTestCards = [
+  {
+    emoji: "💷",
+    title: "Money",
+    body: "A failed test can mean another test fee, additional lessons and months of waiting.",
+  },
+  {
+    emoji: "⏰",
+    title: "Time",
+    body: "Many learners wait weeks or months for another practical test appointment.",
+  },
+  {
+    emoji: "😟",
+    title: "Confidence",
+    body: "A failed test can knock confidence and make the next attempt feel more stressful.",
+  },
+] as const;
+
+const valueCards = [
+  {
+    title: "Avoid expensive failed tests",
+    body: "Spot weak areas before test day.",
+    icon: "£",
+  },
+  {
+    title: "Know what to practise next",
+    body: "Turn uncertainty into a clear action plan.",
+    icon: "→",
+  },
+  {
+    title: "Track progress over time",
+    body: "See your score improve.",
+    icon: "↗",
+  },
+  {
+    title: "Use it with your instructor",
+    body: "Bring reports to lessons and agree clear targets.",
+    icon: "✓",
+  },
+] as const;
+
+const faqItems = [
+  {
+    q: "How much does it cost?",
+    a: `Learner Premium is ${PRICING.subscription.display}/month until you pass or cancel. Instructor and parent accounts are free.`,
+  },
+  {
+    q: "Is this official DVSA guidance?",
+    a: "No. Prep2Pass is independent and not affiliated with DVSA. Test Ready Score is produced by a DVSA-approved driving instructor to complement lessons.",
+  },
+  {
+    q: "Does this guarantee I will pass?",
+    a: "No. There is no pass guarantee. You still need real-road performance and professional instruction.",
+  },
+  {
+    q: "Can I use this with my instructor?",
+    a: "Yes. Test Ready Score is built to support—not replace—your instructor's professional judgement. Bring your report to agree clear next steps together.",
+  },
+  {
+    q: "Can parents use this for private practice?",
+    a: "Yes. Supervisors can use the risk breakdown and next steps to plan practice drives between paid lessons.",
+  },
+  {
+    q: "What happens when I pass?",
+    a: "Record your pass in Graduate Mode and we automatically stop future billing. Your account and reports stay available.",
+  },
+  {
+    q: "Is my report saved securely?",
+    a: "Yes. Saved reports stay linked to your account. Only you access them while signed in.",
+  },
+] as const;
+
+function CtaMicrocopy({ className = "text-brand-600" }: { className?: string }) {
+  return (
+    <p className={`mt-3 text-xs leading-relaxed ${className}`}>
+      <span className="opacity-90">{BRAND_CTA.takesFiveMinutes}</span>
+    </p>
+  );
+}
+
 export async function MarketingHomePage() {
   const sessionUser = await getServerAuthUser();
 
-  let hasLifetimeAccess = false;
+  let hasPremiumAccess = false;
   if (sessionUser?.id && sessionUser.emailConfirmedAt && isSupabaseConfigured()) {
     try {
-      hasLifetimeAccess = await getEffectiveLifetimeAccessByUserId(sessionUser.id);
+      hasPremiumAccess = await getEffectiveLifetimeAccessByUserId(sessionUser.id);
     } catch {
-      hasLifetimeAccess = false;
+      hasPremiumAccess = false;
     }
   }
 
-  const suppressAcquisitionPricing = Boolean(sessionUser?.emailConfirmedAt && hasLifetimeAccess);
-
-  const faqItems = suppressAcquisitionPricing
-    ? ([
-        {
-          q: "Is this official DVSA guidance?",
-          a: "No. Prep2Pass is independent and not affiliated with DVSA. Test Ready Score is produced by a DVSA-approved driving instructor to complement lessons. Nothing here substitutes for your instructor or official DVSA materials.",
-        },
-        {
-          q: "Does this guarantee I will pass?",
-          a: "No. There is no pass guarantee. You still need real-road performance and professional instruction. This tool helps you prioritise weak areas with a structured view.",
-        },
-        {
-          q: "Can I use this with my instructor?",
-          a: "Yes. Many learners bring the readiness score and action plan into their next lesson to agree focused practice. It is meant to complement your instructor, not substitute for them.",
-        },
-        {
-          q: "Can parents use this for private practice?",
-          a: "Yes. Supervisors can use the risk breakdown and next steps to plan practice drives between paid lessons.",
-        },
-        {
-          q: "Can I track my progress over time?",
-          a: `${LIFETIME_MEMBER_UI.unlimited} Your Prep2Pass account keeps a dated timeline so you can see how checkpoints move between lessons.`,
-        },
-        {
-          q: "Is my report saved securely?",
-          a: "Yes. Saved reports stay linked to your account. Only you access them while signed in with your Prep2Pass credentials.",
-        },
-      ] satisfies { q: string; a: string }[])
-    : ([
-        {
-          q: "Is this official DVSA guidance?",
-          a: "No. Prep2Pass is independent and not affiliated with DVSA. Test Ready Score is produced by a DVSA-approved driving instructor to complement lessons. Nothing here substitutes for your instructor or official DVSA materials.",
-        },
-        {
-          q: "Does this guarantee I will pass?",
-          a: "No. There is no pass guarantee. You still need real-road performance and professional instruction. This tool helps you prioritise weak areas with a structured view.",
-        },
-        {
-          q: "Can I use this with my instructor?",
-          a: "Yes. Many learners bring the readiness score and action plan into their next lesson to agree focused practice. It is meant to complement your instructor, not substitute for them.",
-        },
-        {
-          q: "Can parents use this for private practice?",
-          a: "Yes. Supervisors can use the risk breakdown and next steps to plan practice drives between paid lessons.",
-        },
-        {
-          q: "Can I track my progress over time?",
-          a: `Yes. Pick ${PRICING.lifetime.display} lifetime progress access for a private timeline of scores and saved reports tied to your account email.`,
-        },
-        {
-          q: "What happens after I pay?",
-          a: "Your payment is confirmed through Stripe; your Premium report is generated and shown in-app. Your report stays linked to your secure account so you can retrieve it later using the email you used at checkout.",
-        },
-        {
-          q: "How much does it cost?",
-          a: `${PRICING.single.display} for one premium report or ${PRICING.lifetime.display} for unlimited premium reports and progress tracking on your email. No subscription.`,
-        },
-        {
-          q: "Is my report saved securely?",
-          a: "Reports are stored for your email-linked account via secure retrieval. Checkout is encrypted through Stripe.",
-        },
-      ] satisfies { q: string; a: string }[]);
-
-  const trustProgressBody = suppressAcquisitionPricing
-    ? "Saved reports stack into a dated timeline whenever you rerun the assessment signed in."
-    : "Lifetime access keeps scores and plans in one timeline.";
-
-  const howSteps = suppressAcquisitionPricing
-    ? [
-        {
-          step: "01",
-          title: "Complete your assessment",
-          body: "Answer questions about lessons, confidence, mock test outcomes, fault patterns, and areas you find difficult.",
-        },
-        {
-          step: "02",
-          title: "Generate your Premium report",
-          body: "Included with your Prep2Pass account: your full score, coaching note, action plan, and lesson-hour estimate save automatically.",
-        },
-        {
-          step: "03",
-          title: "Improve with focused action",
-          body: "Use your report with your instructor, parent, or private practice plan to focus on what matters most.",
-        },
-      ]
-    : [
-        {
-          step: "01",
-          title: "Complete your assessment",
-          body: "Answer questions about lessons, confidence, mock test outcomes, fault patterns, and areas you find difficult.",
-        },
-        {
-          step: "02",
-          title: "Unlock your Test Ready Score",
-          body: "Get your score, risk breakdown, coach note, action plan, and lesson-hour estimate after secure checkout.",
-        },
-        {
-          step: "03",
-          title: "Improve with focused action",
-          body: "Use your report with your instructor, parent, or private practice plan to focus on what matters most.",
-        },
-      ];
+  const hideLearnerPricing = Boolean(sessionUser?.emailConfirmedAt && hasPremiumAccess);
 
   return (
-    <>
-      <section className="relative isolate overflow-hidden border-b border-brand-200/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-50/95 via-white to-teal-50/40" aria-hidden />
+    <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      {/* Hero */}
+      <section className="relative isolate overflow-hidden border-b border-brand-200/40">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-50/90 via-white to-teal-50/35" aria-hidden />
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-[min(36rem,70vh)] bg-[radial-gradient(ellipse_75%_55%_at_50%_-8%,rgba(45,212,191,0.2),transparent_68%)]"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute right-[-15%] top-[10%] h-[28rem] w-[28rem] rounded-full bg-teal-200/30 blur-[100px]"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute bottom-[-20%] left-[-18%] h-[24rem] w-[24rem] rounded-full bg-brand-300/25 blur-[90px]"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(28,43,56,0.035)_1px,transparent_1px)] [background-size:26px_26px]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(45,212,191,0.18),transparent)]"
           aria-hidden
         />
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-[5.25rem] sm:px-6 sm:pb-16 sm:pt-24 lg:px-8 lg:pb-[4.75rem] lg:pt-[6.75rem]">
-          <div className="mx-auto grid max-w-md grid-cols-1 items-start gap-9 text-center sm:max-w-2xl md:gap-10 lg:mx-0 lg:max-w-none lg:grid-cols-12 lg:gap-x-12 lg:gap-y-8 lg:text-left">
-            <div className="flex flex-col items-center lg:col-span-7 lg:items-start lg:py-2">
-              <div className="flex flex-col items-center gap-2 lg:items-start">
-                <p className="inline-flex items-center rounded-full border border-teal-200/70 bg-white/75 px-[13px] py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-teal-800 shadow-sm backdrop-blur-sm lg:text-[11.5px]">
-                  Prep2Pass · Test Ready Score
-                </p>
-                <p className="text-[11px] font-medium leading-snug text-brand-600 lg:text-xs">
-                  Created by a DVSA-approved driving instructor
-                </p>
-              </div>
-              <h1 className="mt-5 font-heading text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-brand-950 sm:mt-6 sm:text-[2.125rem] md:text-4xl lg:mt-7 lg:text-[2.875rem] lg:leading-[1.06]">
-                Know if you&apos;re ready to pass before you book your test
-              </h1>
-              <p className="mt-4 max-w-xl text-pretty text-[0.9375rem] leading-relaxed text-brand-700 sm:mt-5 sm:text-lg lg:max-w-xl">
-                Get a clear readiness score, risk breakdown, and focused action plan so you know exactly what to improve
-                before test day.
+        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8 lg:pb-24 lg:pt-16">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-16">
+            <div className="text-center lg:text-left">
+              <p className="inline-flex items-center rounded-full border border-teal-200/70 bg-white/80 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                Prep2Pass · Test Ready Score
               </p>
-            </div>
+              <p className="mt-3 text-xs font-medium text-brand-600">
+                Created by a DVSA-approved driving instructor
+              </p>
+              <h1 className="mt-5 font-heading text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.025em] text-brand-950 sm:text-4xl lg:text-[2.75rem]">
+                Stop guessing if you&apos;re ready for your driving test.
+              </h1>
+              <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-brand-700 lg:mx-0">
+                Get your Test Ready Score, personalised action plan and realistic lesson-hour estimate in minutes.
+              </p>
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-brand-600 lg:mx-0">
+                Stop wasting money on failed tests and stop guessing whether you&apos;re ready. Know where you stand
+                and what to improve next.
+              </p>
 
-            <div className="mx-auto flex w-full max-w-[22rem] justify-center sm:max-w-md lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:-mt-4 lg:self-center lg:justify-end">
-              <div
-                className="relative w-full overflow-hidden rounded-[1.375rem] border border-white/90 bg-white/80 px-[18px] py-[18px] text-left shadow-[0_38px_80px_-38px_rgba(15,40,54,0.45),inset_0_1px_0_0_rgba(255,255,255,0.92)] ring-1 ring-brand-950/[0.045] backdrop-blur-md sm:px-[22px] sm:py-[22px]"
-                role="group"
-                aria-label="Example Test Ready Score breakdown"
-              >
-                <div
-                  className="pointer-events-none absolute -right-14 -top-16 h-[11rem] w-[11rem] rounded-full bg-teal-200/35 blur-[48px]"
-                  aria-hidden
-                />
-                <div className="relative space-y-[14px] sm:space-y-4">
-                  <div className="flex flex-wrap items-end justify-between gap-3 border-b border-brand-100 pb-3.5">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-400 sm:text-[11px]">
-                        Sample score
-                      </p>
-                      <p className="mt-1 font-heading text-3xl font-semibold tabular-nums tracking-tight text-brand-900 sm:text-[2.125rem]">
-                        72/100
-                      </p>
-                    </div>
-                    <span className="shrink-0 rounded-full bg-gradient-to-br from-teal-50 to-teal-100/95 px-[14px] py-1 text-xs font-semibold text-teal-950 ring-1 ring-teal-200/85 sm:text-sm">
-                      Nearly Test Ready
-                    </span>
-                  </div>
-                  <p className="text-xs leading-snug text-brand-700 sm:text-[13px]">
-                    <span className="font-semibold text-brand-900">Focus areas:</span> roundabouts, observations,
-                    junction planning
-                  </p>
-                  <p className="text-xs leading-snug text-brand-700 sm:text-[13px]">
-                    <span className="font-semibold text-brand-900">Estimated:</span> 8–12 lesson hours
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center lg:col-span-7 lg:items-start lg:space-y-1">
-              <div className="flex w-full max-w-[22rem] justify-center lg:max-w-none lg:justify-start">
-                <Button
-                  href="/assessment"
-                  variant="conversion"
-                  className="w-full lg:w-auto lg:min-w-[17.75rem]"
-                >
-                  Get My Test Ready Score
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+                <Button href="/assessment" variant="conversion" className="w-full sm:w-auto sm:min-w-[12rem]">
+                  {BRAND_CTA.getMyScore}
+                </Button>
+                <Button href="/sample-report" variant="secondary" className="w-full sm:w-auto sm:min-w-[12rem]">
+                  {BRAND_CTA.viewSampleReport}
                 </Button>
               </div>
-              <p className="mt-4 max-w-md text-[11px] leading-relaxed text-brand-600 md:text-[12px]">
-                Secure account · Progress saved · Instant access
+              <CtaMicrocopy />
+              <p className="mt-3 text-xs text-brand-600">Secure account · Progress saved · Cancel anytime</p>
+              <p className="mt-2 text-xs text-brand-500">
+                Built for learners, instructors and parents supporting private practice.
               </p>
-              <p className="mt-3 max-w-md text-[11px] leading-relaxed text-brand-500 md:text-[12px]">
-                Built for learners, parents supervising practice, and driving instructors.
-              </p>
-              {suppressAcquisitionPricing ? (
-                <p className="mt-2 max-w-md text-[11px] leading-relaxed text-teal-800/95 md:text-[12px]">
-                  {LIFETIME_MEMBER_UI.badge} · {LIFETIME_MEMBER_UI.unlimited}
-                </p>
+              {!hideLearnerPricing ? (
+                <div className="mt-5 text-left">
+                  <p className="text-sm font-semibold text-brand-800">
+                    {PRICING.subscription.display}/month until you pass or cancel.
+                  </p>
+                  <PricingTrustBadges className="mt-3" />
+                </div>
               ) : (
-                <p className="mt-2 max-w-md text-[11px] leading-relaxed text-brand-400 md:text-[12px]">
-                  From £3.99 one-off · £9.99 lifetime progress access · Secure checkout
+                <p className="mt-4 text-sm text-teal-800">
+                  {PREMIUM_MEMBER_UI.badge} ·{" "}
+                  <Link href="/dashboard" className="font-semibold underline-offset-4 hover:underline">
+                    Go to dashboard
+                  </Link>
                 </p>
               )}
             </div>
-          </div>
 
-          {!suppressAcquisitionPricing ? (
-            <div
-              id="pricing"
-              className="relative mx-auto mt-14 max-w-5xl border-t border-brand-200/55 pt-12 sm:mt-16 sm:pt-14 lg:mt-20"
-            >
-              <LandingPricing />
+            <div className="mx-auto w-full max-w-md lg:max-w-none">
+              <HeroScoreCard />
             </div>
-          ) : (
-            <div id="pricing" className="relative mx-auto mt-14 max-w-5xl border-t border-teal-200/40 pt-12 sm:mt-16 sm:pt-14 lg:mt-20">
-              <p className="text-center text-sm font-medium leading-relaxed text-teal-900">{LIFETIME_MEMBER_UI.badge}</p>
-              <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-brand-700">
-                {LIFETIME_MEMBER_UI.unlimited}{" "}
-                <span className="text-brand-600">
-                  Go to{" "}
-                  <a href="/dashboard" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-                    your dashboard
-                  </a>
-                  {" · "}
-                  <a href="/my-reports" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-                    saved reports
-                  </a>
-                </span>
-              </p>
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
+      {/* FOMO / problem statement */}
       <Section
-        className="bg-white"
-        eyebrow="Before you book"
-        title="Avoid booking before you&apos;re ready"
-        subtitle="Failed tests cost money, confidence, and time. Test Ready Score helps you spot weak areas early, plan better lessons, and avoid guessing whether you&apos;re ready."
+        className="border-b border-brand-100/80 bg-gradient-to-b from-teal-50/30 to-white"
+        eyebrow="Clarity"
+        title="Stop relying on guesswork and start preparing with a plan."
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { title: "Avoid wasting money on failed tests", body: "See where risk sits before you pay test fees twice." },
-            { title: "Know what to practise next", body: "Turn your answers into priorities for your upcoming sessions." },
-            {
-              title: "Turn vague feedback into clear actions",
-              body: 'Structured next steps instead of guessing what “almost ready” meant.',
-            },
-            {
-              title: "Track progress before test day",
-              body: trustProgressBody,
-            },
-          ].map((item) => (
-            <TrustBadge key={item.title} title={item.title} description={item.body} />
-          ))}
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Preview"
-        title="See what your report includes"
-        subtitle="Your premium report turns your answers into a clear score, risk breakdown, and practical next steps."
-      >
-        <div className="mx-auto max-w-5xl">
-          <HomeReportPreview />
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Premium report"
-        title={suppressAcquisitionPricing ? "What your membership includes" : "What you unlock after checkout"}
-        subtitle={
-          suppressAcquisitionPricing
-            ? "Everything below is already yours on Prep2Pass, with consistent structure for every new assessment."
-            : "Everything below comes from your assessment and is tuned for real lessons rather than hype."
-        }
-      >
-        <div className="grid gap-6 md:grid-cols-2">
-          <FeatureCard
-            title="Readiness score"
-            description="A clear score out of 100 showing how close you are to test readiness."
-            icon={<span aria-hidden>◎</span>}
-          />
-          <FeatureCard
-            title="Risk breakdown"
-            description="Your highest-risk driving skills, organised by what is most likely to affect your practical test."
-            icon={<span aria-hidden>▦</span>}
-          />
-          <FeatureCard
-            title="Focused action plan"
-            description="Specific next steps for your upcoming lessons or private practice."
-            icon={<span aria-hidden>→</span>}
-          />
-          <FeatureCard
-            title="Coach note + lesson-hour estimate"
-            description="Instructor-style guidance with a realistic range of how many more lesson hours you may need."
-            icon={<span aria-hidden>✓</span>}
-          />
-        </div>
-      </Section>
-
-      <Section className="bg-white" eyebrow="How it works" title="Three clear steps" subtitle="Fast to complete, straightforward to act on.">
-        <ol className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
-          {howSteps.map((item) => (
-            <li key={item.step} className="rounded-2xl border border-brand-100 bg-brand-50/40 p-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">{item.step}</p>
-              <h3 className="mt-2 text-lg font-semibold text-brand-950">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-brand-600">{item.body}</p>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
-      <Section
-        eyebrow="Trust"
-        title="Built to give honest, practical guidance"
-        subtitle="No promises, no hype. Created by a DVSA-approved driving instructor to give learners clear, structured insight they can use in real lessons."
-      >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <TrustBadge
-            title="Created by an approved driving instructor"
-            description="Structured around how practical tests assess skill, explained in calm, plain English."
-          />
-          <TrustBadge
-            title="Built around practical test readiness"
-            description="Risks and actions relate to recurring test themes, not generic tips."
-          />
-          <TrustBadge
-            title="Clear, plain-English guidance"
-            description="Straightforward language you can bring to your next lesson conversation."
-          />
-          <TrustBadge
-            title={suppressAcquisitionPricing ? "Secure account · saved reports" : "Secure checkout and saved progress"}
-            description={
-              suppressAcquisitionPricing
-                ? "Each checkpoint stays tied to Prep2Pass so signed-in retrieval stays simple between devices."
-                : "Stripe payments and saved reports tied to your account so you can come back anytime."
-            }
-          />
-        </div>
-        <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-brand-500">
-          Prep2Pass is independent and not affiliated with DVSA.
+        <p className="mx-auto max-w-2xl text-center text-base leading-relaxed text-brand-700">
+          Know where you stand, understand your biggest risks and focus your lessons on what matters most.
         </p>
       </Section>
 
-      <Section className="bg-white" eyebrow="Use cases" title="Example ways learners use the report">
-        <div className="grid gap-6 md:grid-cols-3">
-          <TestimonialCard quote={"I can show my instructor exactly what I'm struggling with."} />
-          <TestimonialCard quote={"I know what to focus on instead of just hoping I'm ready."} />
-          <TestimonialCard quote="My parent can help me practise the right things between lessons." />
+      {/* Failed test cost */}
+      <Section
+        className="bg-white"
+        eyebrow="The real cost"
+        title="Failed tests cost more than just the test fee."
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          {failedTestCards.map((card) => (
+            <div
+              key={card.title}
+              className="rounded-2xl border border-brand-100 bg-brand-50/30 p-6 shadow-sm transition hover:border-amber-200/60 hover:shadow-md"
+            >
+              <p className="text-2xl" aria-hidden>
+                {card.emoji}
+              </p>
+              <h3 className="mt-3 font-heading text-base font-semibold text-brand-950">{card.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-brand-600">{card.body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-brand-700">
+          Test Ready Score helps you make more informed decisions about when to book and what to improve before test
+          day.
+        </p>
+      </Section>
+
+      {/* Premium report */}
+      <Section
+        eyebrow="Premium report"
+        title="What's included in your Premium Report"
+        subtitle="Designed to help you and your instructor focus on what matters most before test day."
+      >
+        <PremiumReportFeatures />
+        <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-brand-100 bg-brand-50/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-700">
+          Built to support—not replace—your instructor&apos;s professional judgement. Test Ready Score gives learners,
+          instructors and parents a structured way to understand progress and agree clear next steps together.
+        </div>
+        <p className="mt-6 text-center">
+          <Link href="/sample-report" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
+            View full sample report →
+          </Link>
+        </p>
+      </Section>
+
+      {/* Test countdown */}
+      <Section className="bg-white" eyebrow="Test day focus" title="Stay focused as test day approaches">
+        <TestCountdownPreview />
+      </Section>
+
+      {/* Why learners use Test Ready Score */}
+      <Section eyebrow="Value" title="Why learners use Test Ready Score">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {valueCards.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm transition hover:border-teal-200/70 hover:shadow-md"
+            >
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-sm font-bold text-teal-800 ring-1 ring-teal-100"
+                aria-hidden
+              >
+                {item.icon}
+              </span>
+              <h3 className="mt-4 text-sm font-semibold text-brand-950">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-brand-600">{item.body}</p>
+            </div>
+          ))}
         </div>
       </Section>
 
-      <Section id="faq" eyebrow="FAQ" title="Questions before you start">
+      {/* Audience */}
+      <Section className="bg-white" eyebrow="Audience" title="Built for everyone involved in learning to drive">
+        <div className="grid gap-5 md:grid-cols-3">
+          {audienceCards.map((card) => (
+            <Link
+              key={card.label}
+              href={card.href}
+              className="group flex h-full flex-col rounded-2xl border border-brand-100 bg-gradient-to-b from-white to-brand-50/40 p-7 shadow-sm ring-1 ring-brand-50 transition hover:-translate-y-0.5 hover:border-teal-200/70 hover:shadow-md"
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-teal-700">{card.label}</p>
+              <h3 className="mt-3 font-heading text-lg font-semibold leading-snug text-brand-950">{card.headline}</h3>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-brand-600">{card.body}</p>
+              <span className="mt-6 inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-800 underline-offset-4 group-hover:underline">
+                {card.cta} →
+              </span>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      {/* Social proof — preserved with existing metric badges */}
+      <Section
+        eyebrow="Experience"
+        title="Built from real-world driving instruction experience"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {socialProof.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-brand-100 bg-brand-50/25 p-5 shadow-sm transition hover:border-teal-200/60 hover:shadow-md"
+            >
+              <h3 className="text-sm font-semibold leading-snug text-brand-950">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-brand-600">{item.body}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <span className="rounded-full border border-brand-200 bg-white px-4 py-2 text-xs font-medium text-brand-600">
+            1000+ lessons&apos; worth of teaching experience
+          </span>
+          <span className="rounded-full border border-dashed border-brand-200 bg-brand-50/50 px-4 py-2 text-xs font-medium text-brand-500">
+            Used by learners and instructors across the UK
+          </span>
+        </div>
+      </Section>
+
+      {/* Pricing */}
+      <Section id="pricing" className="bg-white" eyebrow="Plans" title="Simple pricing">
+        {hideLearnerPricing ? (
+          <div className="mx-auto mb-8 max-w-2xl text-center">
+            <p className="text-sm font-medium text-teal-900">{PREMIUM_MEMBER_UI.badge}</p>
+            <p className="mt-3 text-sm leading-relaxed text-brand-700">
+              <Link href="/dashboard" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+                Open dashboard
+              </Link>
+            </p>
+          </div>
+        ) : null}
+        <LandingPricing hideLearnerCard={hideLearnerPricing} />
+      </Section>
+
+      {/* Trust */}
+      <Section
+        eyebrow="Trust"
+        title="Built to give honest, practical guidance"
+        subtitle="Created by a DVSA-approved driving instructor to provide structured insight learners can use alongside real lessons."
+      >
+        <div className="mx-auto mb-6 max-w-3xl rounded-2xl border border-teal-200/70 bg-teal-50/50 p-6 text-center shadow-sm ring-1 ring-teal-100/80">
+          <h3 className="font-heading text-base font-semibold text-brand-950 sm:text-lg">
+            Built to support—not replace—your instructor&apos;s professional judgement.
+          </h3>
+          <p className="mt-3 text-sm leading-relaxed text-brand-700">
+            Test Ready Score gives learners, instructors and parents a structured way to understand progress and agree
+            clear next steps together.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <TrustBadge title="Created by an approved driving instructor" description="Instructor-led insight." />
+          <TrustBadge title="Built around practical test readiness" description="Real test-day themes." />
+          <TrustBadge title="Clear plain-English guidance" description="No jargon or hype." />
+          <TrustBadge title="Secure checkout and saved progress" description="Stripe billing · saved reports." />
+        </div>
+        <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-brand-500">
+          Test Ready Score is independent and not affiliated with DVSA.
+        </p>
+      </Section>
+
+      {/* FAQ */}
+      <Section id="faq" className="bg-white" eyebrow="FAQ" title="Questions before you start">
         <div className="mx-auto grid max-w-4xl gap-4">
           {faqItems.map((item) => (
             <FaqItem key={item.q} question={item.q} answer={item.a} />
@@ -386,27 +384,51 @@ export async function MarketingHomePage() {
         </div>
       </Section>
 
-      <Section
-        className="bg-white"
-        eyebrow="Start"
-        title="Ready to check your test readiness?"
-        subtitle="Complete the assessment in a few minutes and get a clear plan for what to improve next."
-      >
-        <div className="mx-auto flex max-w-md flex-col items-center gap-5 px-2 pt-1 text-center">
-          <Button href="/assessment" variant="conversion" className="w-full sm:w-auto sm:min-w-[14rem]">
-            Get My Test Ready Score
-          </Button>
-          {suppressAcquisitionPricing ? (
-            <p className="text-[11px] leading-relaxed text-brand-600 lg:text-xs">
-              Unlimited Premium checkpoints on this account · No pricing prompts as you practise
-            </p>
-          ) : (
-            <p className="text-[11px] leading-relaxed text-brand-500 lg:text-xs">
-              From £3.99 one-off · £9.99 lifetime progress access · Secure checkout
-            </p>
-          )}
+      {/* Final CTA */}
+      <section className="border-t border-brand-100 bg-gradient-to-br from-brand-950 via-brand-900 to-teal-950 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-300/90">Start today</p>
+          <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Ready to check your test readiness?
+          </h2>
+          <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-brand-200">
+            Complete the assessment in a few minutes and get a clear plan for what to improve next.
+          </p>
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <Button
+              href="/assessment"
+              variant="conversion"
+              className="w-full max-w-sm !border-white/20 !bg-white !text-brand-950 hover:!bg-brand-50"
+            >
+              {BRAND_CTA.getMyScore}
+            </Button>
+            <Button
+              href="/sample-report"
+              variant="secondary"
+              className="w-full max-w-sm !border-white/25 !bg-white/10 !text-white hover:!bg-white/20"
+            >
+              {BRAND_CTA.viewSampleReport}
+            </Button>
+            <div className="mt-2 space-y-1 text-xs leading-relaxed text-brand-300">
+              <p>{BRAND_CTA.takesFiveMinutes}</p>
+              <p>🔒 Secure account · 💾 Progress saved</p>
+            </div>
+            {!hideLearnerPricing ? (
+              <div className="mt-3 space-y-1 text-xs leading-relaxed text-brand-300">
+                <p>{PRICING.subscription.display}/month until you pass or cancel</p>
+                <p>Secure checkout · Cancel anytime</p>
+                <p className="text-teal-200/90">Record your pass and we&apos;ll automatically stop future billing.</p>
+              </div>
+            ) : (
+              <Link href="/dashboard" className="mt-3 text-sm font-semibold text-teal-200 underline-offset-4 hover:underline">
+                Go to your dashboard →
+              </Link>
+            )}
+          </div>
         </div>
-      </Section>
-    </>
+      </section>
+
+      <MarketingStickyCta hidden={hideLearnerPricing} />
+    </div>
   );
 }

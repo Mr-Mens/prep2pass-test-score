@@ -12,6 +12,8 @@ const LEARNER_ROOTS = [
   "/reports",
   "/mock-tests",
   "/upgrade",
+  "/subscribe",
+  "/graduate",
   "/lifetime",
 ] as const;
 

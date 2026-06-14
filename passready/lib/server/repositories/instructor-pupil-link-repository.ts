@@ -2,7 +2,11 @@ import "server-only";
 
 import { normalizeEmail } from "@/lib/normalize-email";
 import { resolveLearnerUserIdByEmail } from "@/lib/server/resolve-learner-user-id";
-import { createInstructorPupilInviteNotification } from "@/lib/server/repositories/app-notifications-repository";
+import { linkReferralToPupil, upsertReferralForPupilInvite } from "@/lib/server/repositories/referrals-repository";
+import {
+  createInstructorPupilInviteNotification,
+  listUnresolvedNotificationsForUser,
+} from "@/lib/server/repositories/app-notifications-repository";
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 
 import type { InstructorPupilInsights, PupilRow } from "@/lib/instructor/pupil-link-types";
@@ -12,7 +16,6 @@ import {
   listJourneySnapshotsByUserId,
   listScoreHistoryByUserId,
 } from "@/lib/server/repositories/reports-repository";
-import { listUnresolvedNotificationsForUser } from "@/lib/server/repositories/app-notifications-repository";
 
 export type { PupilRow } from "@/lib/instructor/pupil-link-types";
 
@@ -102,6 +105,14 @@ export async function createPupilInvite(input: {
     });
   }
 
+  await upsertReferralForPupilInvite({
+    instructorId: input.instructorUserId,
+    pupilLinkId: pupil.id,
+    pupilEmail: email,
+  }).catch(() => {
+    /* referral tables optional until migration 010 */
+  });
+
   return pupil;
 }
 
@@ -187,7 +198,52 @@ export async function respondToPupilInvite(input: {
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "Could not update invitation.");
-  return data as PupilRow;
+  const updated = data as PupilRow;
+  if (input.action === "accept") {
+    await linkReferralToPupil({
+      pupilLinkId: input.pupilLinkId,
+      pupilId: input.learnerUserId,
+      pupilEmail: email,
+    });
+  }
+  return updated;
+}
+
+export async function autoAcceptPupilInviteByToken(input: {
+  inviteToken: string;
+  learnerUserId: string;
+  learnerEmail: string;
+}): Promise<PupilRow | null> {
+  const supabase = getSupabaseServerClient();
+  const email = normalizeEmail(input.learnerEmail);
+
+  const { data: pupil, error } = await supabase
+    .from("instructor_pupils")
+    .select("*")
+    .eq("invite_token", input.inviteToken)
+    .maybeSingle();
+  if (error || !pupil) return null;
+
+  const row = pupil as PupilRow;
+  if (normalizeEmail(row.pupil_email) !== email) return null;
+  if (row.link_status === "accepted" && row.linked_learner_user_id === input.learnerUserId) return row;
+  if (row.link_status !== "pending") return null;
+
+  return respondToPupilInvite({
+    pupilLinkId: row.id,
+    learnerUserId: input.learnerUserId,
+    learnerEmail: email,
+    action: "accept",
+  });
+}
+
+export async function getPupilInviteSignupUrl(pupilLinkId: string, origin: string): Promise<string | null> {
+  const pupil = await getPupilLinkById(pupilLinkId);
+  if (!pupil) return null;
+  const token = (pupil as PupilRow & { invite_token?: string }).invite_token;
+  if (!token) return null;
+  const q = new URLSearchParams({ invite: token, next: "/dashboard" });
+  return `${origin}/signup?${q.toString()}`;
 }
 
 export async function getInstructorPupilInsights(

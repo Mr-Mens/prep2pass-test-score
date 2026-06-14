@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { InstructorEarningsPanel } from "@/components/instructor/InstructorEarningsPanel";
+import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
+import { isSupabaseConfigured } from "@/lib/server/supabase";
+
 function IconClipboard() {
   return (
     <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
@@ -99,7 +103,9 @@ function IconInsights() {
   );
 }
 
-export default function InstructorDashboardPage() {
+export default async function InstructorDashboardPage() {
+  const user = await requireInstructorSession();
+
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-4">
       <section className="relative overflow-hidden rounded-3xl border border-brand-200/60 bg-gradient-to-br from-white via-brand-50/80 to-teal-50/50 shadow-card ring-1 ring-brand-100/70">
@@ -135,6 +141,8 @@ export default function InstructorDashboardPage() {
           </div>
         </div>
       </section>
+
+      {isSupabaseConfigured() ? <InstructorEarningsPanel instructorUserId={user.id} /> : null}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <ActionTile

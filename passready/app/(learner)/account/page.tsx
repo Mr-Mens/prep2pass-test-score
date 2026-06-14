@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LearnerSignOutButton } from "@/components/learner/LearnerSignOutButton";
-import { LIFETIME_MEMBER_UI, PRICING, SITE } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, SITE } from "@/lib/constants";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -133,14 +133,15 @@ export default async function LearnerAccountPage() {
         aria-label="Shortcuts"
       >
         <MenuRow href="/dashboard" title="Home" hint="Your Test Ready Score dashboard" />
-        <MenuRow href="/assessment" title="Check test readiness" hint="Short assessment flow" />
+        <MenuRow href="/assessment" title={BRAND_CTA.updateMyScore} hint="Takes around 5 minutes" />
         {entitlements.hasLifetimeAccess ? (
           <MenuRow href="/progress" title="Progress timeline" hint="Score arc across Premium reports" />
         ) : null}
-        <MenuRow href="/my-reports" title="Saved reports" hint="Open past write-ups" />
+        <MenuRow href="/my-reports" title={BRAND_CTA.viewScoreHistory} hint="Open past write-ups" />
         {!entitlements.hasLifetimeAccess ? (
-          <MenuRow href="/upgrade" title="Upgrade to lifetime" hint={`One-time · ${PRICING.lifetime.display}`} />
+          <MenuRow href="/subscribe" title="Subscribe" hint={`${PRICING.subscription.display}/month · unlimited access`} />
         ) : null}
+        <MenuRow href="/graduate" title="Graduate Mode" hint="Record your pass · stop billing" />
         <MenuRow href="/terms" title="Terms & privacy" hint="Prep2Pass legal and policies" />
         <MenuRow href="mailto:hello@prep2pass.co.uk" title="Help & support" hint="hello@prep2pass.co.uk" />
       </nav>

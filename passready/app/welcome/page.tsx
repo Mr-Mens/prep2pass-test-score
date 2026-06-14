@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { WelcomeLanding } from "@/components/welcome/WelcomeLanding";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
@@ -11,6 +12,14 @@ export const metadata: Metadata = {
   description: "Choose your path: learner, instructor, or parent.",
 };
 
+function WelcomeLoading() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center px-4 text-sm text-brand-600">
+      Loading…
+    </div>
+  );
+}
+
 export default async function WelcomePage() {
   const user = await getServerAuthUser();
   if (user?.emailConfirmedAt) {
@@ -18,5 +27,9 @@ export default async function WelcomePage() {
     redirect(dashboardPathForAppRole(role));
   }
 
-  return <WelcomeLanding />;
+  return (
+    <Suspense fallback={<WelcomeLoading />}>
+      <WelcomeLanding />
+    </Suspense>
+  );
 }

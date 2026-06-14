@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BRAND_CTA } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 
 import type { SupervisorDashboardView, SupervisorTrend } from "@/lib/supervisor/types";
@@ -41,7 +42,7 @@ export function SupervisorDashboardSections({ view }: Props) {
             href="/supervisor/link-learner"
             className="mt-4 inline-flex min-h-[48px] items-center justify-center rounded-xl bg-teal-700 px-5 text-sm font-semibold text-white transition hover:bg-teal-800"
           >
-            Link learner
+            {BRAND_CTA.helpLearnerGetScore}
           </Link>
         </section>
       ) : linkedLearner.status === "pending" ? (
@@ -66,7 +67,7 @@ export function SupervisorDashboardSections({ view }: Props) {
                 <span className="text-2xl text-brand-400">/100</span>
               </p>
               <p className="mt-2 text-lg font-semibold text-teal-800">{latestScore.label}</p>
-              <p className="mt-1 text-sm text-brand-500">Last assessment · {formatIsoDateUk(latestScore.assessedAt)}</p>
+              <p className="mt-1 text-sm text-brand-500">Last score · {formatIsoDateUk(latestScore.assessedAt)}</p>
             </div>
             <Link
               href="/supervisor/reports"
@@ -77,8 +78,8 @@ export function SupervisorDashboardSections({ view }: Props) {
           </div>
         ) : (
           <p className="mt-4 text-sm text-brand-600">
-            No saved reports yet for {linkedLearner?.name ?? "your learner"}. Encourage them to complete a Premium
-            assessment on Prep2Pass.
+            No saved reports yet for {linkedLearner?.name ?? "your learner"}. {BRAND_CTA.helpLearnerGetScore} on
+            Prep2Pass.
           </p>
         )}
       </section>
@@ -135,7 +136,7 @@ export function SupervisorDashboardSections({ view }: Props) {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-heading text-lg font-semibold text-brand-950">Syllabus progress</h2>
-              <p className="mt-1 text-sm text-brand-600">Learning roadmap progress from their latest assessment.</p>
+              <p className="mt-1 text-sm text-brand-600">Learning roadmap progress from their latest Test Ready Score.</p>
             </div>
             <p className="font-heading text-2xl font-semibold text-teal-800">{syllabusProgress.completionPercent}% complete</p>
           </div>

@@ -11,7 +11,7 @@ import { Button } from "@/components/Button";
 import { PremiumReportSections } from "@/components/reports/PremiumReportSections";
 import { ProgressTrackingSection } from "@/components/ProgressTrackingSection";
 import { Section } from "@/components/Section";
-import { LIFETIME_MEMBER_UI, PRICING, SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, SITE, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { reportCopySalt } from "@/lib/deterministic-report-copy";
@@ -227,7 +227,7 @@ export function ResultsView() {
         contentClassName="max-w-xl text-center"
         eyebrow="Prep2Pass"
         title="No report saved on this device yet"
-        subtitle="Complete the TestReady Score assessment once. Your report appears here after checkout, and a copy stays in this browser until you clear site data."
+        subtitle="Complete the Test Ready Score once. Your report appears here after checkout, and a copy stays in this browser until you clear site data."
       >
         <div className="mt-8 flex flex-col items-center gap-4">
           <Button
@@ -235,7 +235,7 @@ export function ResultsView() {
             variant="conversion"
             className="w-full sm:w-auto sm:min-w-[12rem]"
           >
-            Start assessment
+            {BRAND_CTA.getMyScore}
           </Button>
           <Button href="/dashboard" variant="ghost" className="w-full min-h-[48px] sm:w-auto">
             Back to home
@@ -266,7 +266,7 @@ export function ResultsView() {
             Try again
           </Button>
           <Button href="/assessment" variant="secondary" className="w-full min-h-[48px] sm:w-auto">
-            Retake assessment
+            {BRAND_CTA.getUpdatedScore}
           </Button>
         </div>
       </Section>
@@ -434,11 +434,11 @@ export function ResultsView() {
           <p className="mt-2">
             {resultsLifetimeMemberUi
               ? "When lessons or test timing move, generate a fresh checkpoint. Your Prep2Pass account keeps the full timeline under the same lifetime access, with no checkout between runs."
-              : "Retake the assessment if your lessons shift materially, or use Find My Report if you checked out with an email and need this on another device."}
+              : "Get an updated Test Ready Score if your lessons shift materially, or use Find My Report if you checked out with an email and need this on another device."}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button href="/assessment" className="w-full sm:w-auto sm:min-w-[11rem]">
-              Retake assessment
+              {BRAND_CTA.updateMyScore}
             </Button>
             <Button href="/report-lookup" variant="secondary" className="w-full min-h-[48px] sm:w-auto sm:min-w-[11rem]">
               Find another report

@@ -39,6 +39,12 @@ export async function POST(request: Request) {
       return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Prep2Pass account.");
     }
 
+    const { canLearnerStartAssessment } = await import("@/lib/server/effective-lifetime-access");
+    const canStart = await canLearnerStartAssessment(auth.userId);
+    if (!canStart) {
+      return jsonError(403, "GRADUATED", "Congratulations — your account is in Graduate Mode. New assessments are disabled.");
+    }
+
     const { assessment, result } = await scoreAssessment(parsed.data, { useAiEnrichment: false });
 
     return NextResponse.json({

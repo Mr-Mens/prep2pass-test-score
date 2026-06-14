@@ -7,6 +7,12 @@ import {
   fromCheckoutSessionToPaymentInput,
   upsertPaymentFromCheckoutSession,
 } from "@/lib/server/repositories/payments-repository";
+import {
+  handleInvoicePaid,
+  handleSubscriptionCheckoutCompleted,
+  handleSubscriptionDeleted,
+  handleSubscriptionUpdated,
+} from "@/lib/server/subscription-webhook-handlers";
 import { verifyWebhookEvent } from "@/lib/server/stripe";
 
 export const runtime = "nodejs";
@@ -26,35 +32,53 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    try {
-      await upsertPaymentFromCheckoutSession(fromCheckoutSessionToPaymentInput(session));
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      try {
+        if (session.mode === "subscription") {
+          await handleSubscriptionCheckoutCompleted(session);
+        } else {
+          await upsertPaymentFromCheckoutSession(fromCheckoutSessionToPaymentInput(session));
 
-      console.log("stripe_webhook_checkout_completed", {
-        sessionId: session.id,
-        paymentStatus: session.payment_status,
-      });
+          const tier = session.metadata?.tier;
+          const userIdRaw = session.metadata?.supabase_user_id;
+          const userId = typeof userIdRaw === "string" && userIdRaw.trim().length ? userIdRaw.trim() : null;
 
-      const tier = session.metadata?.tier;
-      const userIdRaw = session.metadata?.supabase_user_id;
-      const userId = typeof userIdRaw === "string" && userIdRaw.trim().length ? userIdRaw.trim() : null;
-
-      if (session.payment_status === "paid" && tier === "lifetime" && userId) {
-        try {
-          await setLifetimeAccessByUserId(userId);
-        } catch (e) {
-          console.error("stripe_webhook_lifetime_entitlement_failed", {
-            sessionId: session.id,
-            message: e instanceof Error ? e.message : String(e),
-          });
+          if (session.payment_status === "paid" && tier === "lifetime" && userId) {
+            await setLifetimeAccessByUserId(userId);
+          }
         }
-      } else if (session.payment_status === "paid" && tier === "lifetime" && !userId) {
-        console.warn("stripe_webhook_lifetime_missing_supabase_user", { sessionId: session.id });
+
+        console.log("stripe_webhook_checkout_completed", {
+          sessionId: session.id,
+          mode: session.mode,
+          paymentStatus: session.payment_status,
+        });
+      } catch (e) {
+        console.error("stripe_webhook_checkout_failed", {
+          sessionId: session.id,
+          message: e instanceof Error ? e.message : String(e),
+        });
       }
-    } catch {
-      console.error("stripe_webhook_payment_upsert_failed", { sessionId: session.id });
     }
+
+    if (event.type === "invoice.paid") {
+      await handleInvoicePaid(event.data.object as Stripe.Invoice);
+    }
+
+    if (event.type === "customer.subscription.updated") {
+      await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+    }
+
+    if (event.type === "customer.subscription.deleted") {
+      await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+    }
+  } catch (e) {
+    console.error("stripe_webhook_handler_failed", {
+      type: event.type,
+      message: e instanceof Error ? e.message : String(e),
+    });
   }
 
   return NextResponse.json({ received: true });

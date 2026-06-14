@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
@@ -29,8 +28,13 @@ export async function GET() {
       "";
 
     let lifetimeAccess = false;
+    let isGraduated = false;
+    let subscriptionStatus: string | null = null;
     try {
-      lifetimeAccess = await getEffectiveLifetimeAccessByUserId(user.id);
+      const access = await import("@/lib/server/learner-access").then((m) => m.getLearnerAccessStatus(user.id));
+      lifetimeAccess = access.hasPremiumAccess;
+      isGraduated = access.isGraduated;
+      subscriptionStatus = access.subscriptionStatus;
     } catch {
       lifetimeAccess = false;
     }
@@ -45,6 +49,8 @@ export async function GET() {
           emailConfirmedAt: user.email_confirmed_at ?? null,
           firstName,
           lifetimeAccess,
+          isGraduated,
+          subscriptionStatus,
           role,
         },
       },

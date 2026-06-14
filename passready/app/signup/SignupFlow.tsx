@@ -21,6 +21,7 @@ export function SignupFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const postAuthPath = useMemo(() => safePostAuthPath(searchParams.get("next")), [searchParams]);
+  const inviteToken = useMemo(() => searchParams.get("invite")?.trim() ?? "", [searchParams]);
   const signupAppRole = useMemo(() => {
     const fromPath = appRoleFromDestination(postAuthPath) ?? "learner";
     return isSelfServiceAppRole(fromPath) ? fromPath : "learner";
@@ -83,6 +84,7 @@ export function SignupFlow() {
           data: {
             first_name: fn,
             app_role: signupAppRole,
+            ...(inviteToken ? { pending_invite_token: inviteToken } : {}),
             ...(appRoleFromDestination(postAuthPath) === "instructor"
               ? { signup_intent: "instructor" as const }
               : {}),
@@ -104,6 +106,11 @@ export function SignupFlow() {
     <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Create account</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Join Prep2Pass</h1>
+        {inviteToken ? (
+          <p className="mt-3 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
+            Your instructor invited you to Prep2Pass. After you verify your email, we&apos;ll link you automatically.
+          </p>
+        ) : null}
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
           Your Premium reports stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Prep2Pass never asks you to repeat your password via email.
         </p>

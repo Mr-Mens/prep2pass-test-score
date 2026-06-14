@@ -498,11 +498,11 @@ export const pendingAssessmentRecordSchema = z.object({
 });
 export type PendingAssessmentRecord = z.infer<typeof pendingAssessmentRecordSchema>;
 
-export const checkoutPriceTierSchema = z.enum(["single", "lifetime"]);
+export const checkoutPriceTierSchema = z.enum(["single", "lifetime", "subscription"]);
 
 export const createCheckoutSessionRequestSchema = z.object({
   assessment: assessmentDataSchema,
-  tier: checkoutPriceTierSchema,
+  tier: checkoutPriceTierSchema.default("subscription"),
 });
 export type CreateCheckoutSessionRequest = z.infer<typeof createCheckoutSessionRequestSchema>;
 export type CheckoutPriceTier = z.infer<typeof checkoutPriceTierSchema>;

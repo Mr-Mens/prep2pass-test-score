@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/Button";
 import { PremiumReportSections } from "@/components/reports/PremiumReportSections";
-import { LIFETIME_MEMBER_UI } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI } from "@/lib/constants";
 import { buildRecommendedHoursNarrative, reportNarrativeSalt } from "@/lib/estimated-lesson-hours";
 import { buildReportViewModel, type ReportViewModel } from "@/lib/report-view-model";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
@@ -109,7 +109,7 @@ export default async function ReportDetailPage({ params }: Props) {
                     href="/assessment"
                     className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-2xl border border-brand-200 bg-white px-5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50"
                   >
-                    Another checkpoint
+                    {BRAND_CTA.getUpdatedScore}
                   </Link>
                 </div>
               </section>
@@ -121,7 +121,7 @@ export default async function ReportDetailPage({ params }: Props) {
       <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-[58] px-4 md:bottom-8 md:left-[17.5rem] md:right-0 md:px-8">
         <div className="pointer-events-auto mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-brand-100 bg-white/95 p-3 shadow-2xl backdrop-blur-lg">
           <Button href="/assessment" variant="conversion" className="min-h-[50px] w-full text-[15px]">
-            Start new assessment
+            {BRAND_CTA.updateMyScore}
           </Button>
           <div className={`grid gap-2 ${reportLifetimeRoute ? "grid-cols-2" : "grid-cols-1"}`}>
             {reportLifetimeRoute ? (

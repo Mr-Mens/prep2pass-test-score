@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/Button";
-import { LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { listMockTestDeliveriesForLearner } from "@/lib/server/repositories/learner-mock-test-repository";
@@ -13,7 +13,7 @@ import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/se
 
 export const metadata: Metadata = {
   title: "Reports",
-  description: "Open your saved Prep2Pass Test Ready Score reports and start a new assessment.",
+  description: "Open your saved Test Ready Score reports and get another score when you're ready.",
 };
 
 function outcomeFromLabel(label: string): string {
@@ -96,7 +96,7 @@ export default async function MyReportsPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch">
         <Button href="/assessment" variant="conversion" className="min-h-[52px] flex-1 text-base shadow-[0_12px_40px_-14px_rgba(13,148,136,0.55)] sm:min-w-[200px]">
-          New assessment
+          {BRAND_CTA.getAnotherScore}
         </Button>
         <Link
           href="/dashboard"
@@ -167,11 +167,11 @@ export default async function MyReportsPage() {
           <div className="mt-8 overflow-hidden rounded-3xl border border-dashed border-brand-200 bg-gradient-to-b from-brand-50/50 to-white px-6 py-16 text-center shadow-inner">
             <p className="mx-auto max-w-sm text-[15px] font-semibold text-brand-900">No saved reports yet</p>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-brand-600">
-              Complete an assessment and checkout when prompted. Your Premium write-up lands here automatically, ready for
-              your next lesson conversation.
+              Get your Test Ready Score and checkout when prompted. Your Premium write-up lands here automatically,
+              ready for your next lesson conversation.
             </p>
             <Button href="/assessment" variant="conversion" className="mx-auto mt-8 min-h-[50px] min-w-[12rem]">
-              Start assessment
+              {BRAND_CTA.getMyScore}
             </Button>
           </div>
         ) : (

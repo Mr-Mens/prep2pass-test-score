@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getSupabaseServerClient } from "@/lib/server/supabase";
-import { getUserAppRole } from "@/lib/server/user-app-role";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 
 export type CustomerEntitlementRow = {
   user_id: string;
@@ -13,6 +13,9 @@ export type EntitlementLookupResult = {
   hasLifetimeAccess: boolean;
   hasPurchasedSingleReport: boolean;
   reportCount: number;
+  hasActiveSubscription: boolean;
+  isGraduated: boolean;
+  subscriptionStatus: string | null;
 };
 
 /** Lifetime unlock for Stripe / finalise flows keyed to the signed-in Supabase account. */
@@ -59,20 +62,14 @@ function paymentLooksLikeSinglePurchase(rawMetadata: Record<string, unknown> | n
 export async function getEntitlementLookupForUser(userId: string): Promise<EntitlementLookupResult> {
   const supabase = getSupabaseServerClient();
 
-  const [entRes, reportsCountRes, paymentsRes, appRole] = await Promise.all([
-    supabase.from("user_entitlements").select("lifetime_access").eq("user_id", userId).maybeSingle(),
+  const [access, reportsCountRes, paymentsRes] = await Promise.all([
+    getLearnerAccessStatus(userId),
     supabase.from("reports").select("id", { count: "exact", head: true }).eq("user_id", userId),
     supabase.from("payments").select("raw_metadata, payment_status").eq("user_id", userId),
-    getUserAppRole(userId),
   ]);
 
-  if (entRes.error) throw new Error("Failed to read entitlements");
   if (reportsCountRes.error) throw new Error("Failed to count reports");
   if (paymentsRes.error) throw new Error("Failed to read payments");
-
-  const storedLifetime =
-    (entRes.data as { lifetime_access: boolean } | null)?.lifetime_access === true;
-  const hasLifetimeAccess = storedLifetime || appRole === "instructor";
 
   const reportCount = reportsCountRes.count ?? 0;
 
@@ -86,5 +83,12 @@ export async function getEntitlementLookupForUser(userId: string): Promise<Entit
     }
   }
 
-  return { hasLifetimeAccess, hasPurchasedSingleReport, reportCount };
+  return {
+    hasLifetimeAccess: access.hasPremiumAccess,
+    hasPurchasedSingleReport,
+    reportCount,
+    hasActiveSubscription: access.accessSource === "subscription" && access.hasPremiumAccess,
+    isGraduated: access.isGraduated,
+    subscriptionStatus: access.subscriptionStatus,
+  };
 }

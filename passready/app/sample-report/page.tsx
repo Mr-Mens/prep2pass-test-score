@@ -4,7 +4,7 @@ import { Button } from "@/components/Button";
 import { PremiumReportSections } from "@/components/reports/PremiumReportSections";
 import { SampleLifetimeJourneyPreview } from "@/components/SampleLifetimeJourneyPreview";
 import { Section } from "@/components/Section";
-import { PRICING } from "@/lib/constants";
+import { BRAND_CTA, PRICING } from "@/lib/constants";
 import { buildRecommendedHoursNarrative, type EstimatedHoursInput } from "@/lib/estimated-lesson-hours";
 import { buildReportViewModel } from "@/lib/report-view-model";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
@@ -159,15 +159,14 @@ export default async function SampleReportPage() {
             variant="conversion"
             className="w-full sm:w-auto sm:min-w-[12rem]"
           >
-            Get My Test Ready Score
+            {BRAND_CTA.getMyScore}
           </Button>
           <Button href="/" variant="secondary" className="w-full min-h-[48px] sm:w-auto">
             Back to home
           </Button>
         </div>
         <p className="text-xs text-brand-500/90">
-          Premium Test Ready Score report · {PRICING.single.display} one-off · {PRICING.lifetime.display} lifetime
-          progress access · Secure checkout via Stripe
+          Premium Test Ready Score report · {PRICING.subscription.display}/month until you pass or cancel · Secure checkout via Stripe
         </p>
       </div>
     </Section>

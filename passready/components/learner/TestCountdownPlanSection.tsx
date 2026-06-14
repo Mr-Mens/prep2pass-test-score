@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BRAND_CTA } from "@/lib/constants";
 import { buildTestCountdownPlan, saltFromReportId } from "@/lib/test-countdown-plan";
 
 type Props = {
@@ -38,7 +39,7 @@ export function TestCountdownPlanSection({ testDate, reportId, mockTestTaken }: 
       <p className="mt-4 text-xs text-brand-500">
         From your latest saved report.{" "}
         <Link href="/assessment" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-          Run a new assessment
+          {BRAND_CTA.getUpdatedScore}
         </Link>{" "}
         if your test date changed.
       </p>

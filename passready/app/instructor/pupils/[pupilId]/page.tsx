@@ -46,7 +46,7 @@ export default async function InstructorPupilDetailPage({ params }: Props) {
                 </p>
                 <p className="mt-2 text-sm text-brand-600">
                   {learner?.reportsCompleted ?? 0} saved report{(learner?.reportsCompleted ?? 0) === 1 ? "" : "s"}
-                  {learner?.lastAssessedAt ? ` · Last assessment ${formatIsoDateUk(learner.lastAssessedAt)}` : ""}
+                  {learner?.lastAssessedAt ? ` · Last score ${formatIsoDateUk(learner.lastAssessedAt)}` : ""}
                 </p>
                 {delta !== null && delta !== 0 && prev ? (
                   <p className={`mt-3 text-sm font-semibold ${delta > 0 ? "text-emerald-700" : "text-amber-800"}`}>

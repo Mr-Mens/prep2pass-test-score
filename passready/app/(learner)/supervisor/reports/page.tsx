@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SupervisorDisclaimers } from "@/components/supervisor/SupervisorDisclaimers";
+import { BRAND_CTA } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { getReportSummaryByUserId } from "@/lib/server/repositories/reports-repository";
 import { buildSupervisorDashboardView } from "@/lib/supervisor/build-dashboard-view";
@@ -28,7 +29,7 @@ export default async function SupervisorReportsPage() {
           href="/supervisor/link-learner"
           className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-teal-700 px-5 text-sm font-semibold text-white"
         >
-          Link learner
+          {BRAND_CTA.helpLearnerGetScore}
         </Link>
       </div>
     );
@@ -57,7 +58,7 @@ export default async function SupervisorReportsPage() {
 
       {summaries.length === 0 ? (
         <p className="rounded-2xl border border-brand-100 bg-white p-6 text-sm text-brand-600">
-          No saved reports yet. Encourage your learner to complete a Premium assessment on Prep2Pass.
+          No saved reports yet. {BRAND_CTA.helpLearnerGetScore} on Prep2Pass.
         </p>
       ) : (
         <ul className="space-y-3">

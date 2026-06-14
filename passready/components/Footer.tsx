@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { BrandLogo } from "@/components/BrandLogo";
-import { SITE } from "@/lib/constants";
+import { BRAND_CTA, SITE } from "@/lib/constants";
 
 const year = new Date().getFullYear();
 
@@ -43,7 +43,7 @@ export function Footer() {
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               href="/assessment"
             >
-              Get My Test Ready Score
+              {BRAND_CTA.getMyScore}
             </Link>
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"

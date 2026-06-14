@@ -1,4 +1,4 @@
-/** DVSA-style structure labels only — independent prep tool, not affiliated with DVSA. */
+/** DVSA-style structure labels only, independent prep tool, not affiliated with DVSA. */
 
 import type { FaultMarks } from "@/lib/instructor/types";
 
@@ -167,7 +167,7 @@ export const ALL_FAULT_SECTIONS: FaultSectionDef[] = [
 ];
 
 /**
- * Reference sheet layout — column 1 | column 2 | column 3 (three vertical bands).
+ * Reference sheet layout, column 1 | column 2 | column 3 (three vertical bands).
  * Eyesight + manoeuvre type checkboxes render above column-1 fault cards in the UI.
  */
 export const FAULT_GRID_COLUMNS: [FaultSectionDef[], FaultSectionDef[], FaultSectionDef[]] = [

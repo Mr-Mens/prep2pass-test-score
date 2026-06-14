@@ -8,7 +8,7 @@ const items = [
   "Record your pass and we'll automatically stop future billing",
 ] as const;
 
-/** Prominent pricing trust badges — keep all three visible together. */
+/** Prominent pricing trust badges, keep all three visible together. */
 export function PricingTrustBadges({ className = "" }: Props) {
   return (
     <ul

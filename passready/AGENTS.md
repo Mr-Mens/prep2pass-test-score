@@ -1,4 +1,4 @@
-# PassReady — instructions for AI agents
+# PassReady, instructions for AI agents
 
 ## Purpose
 PassReady estimates whether a learner is ready to pass their driving test. It produces:
@@ -25,7 +25,7 @@ Keep the system simple and fast. Ship value quickly. Avoid unnecessary complexit
 ## AI output style
 - Reads like a professional driving instructor  
 - Simple, clear, actionable language  
-- No generic advice — tie guidance to specific inputs and likely failure modes  
+- No generic advice, tie guidance to specific inputs and likely failure modes  
 
 ## Performance
 - Aim for snappy APIs (order of ~2s where feasible for the AI step; optimise prompts and payloads)  

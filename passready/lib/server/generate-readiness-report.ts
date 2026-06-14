@@ -165,7 +165,7 @@ export async function generateReadinessReport({ assessment, deterministic }: Gen
 Assessment data (normalised):
 ${JSON.stringify(assessment)}
 ${manoeuvrePrompt}
-Weak-area follow-up context (KNOWN FACTS vs gaps — do not treat gaps as known facts):
+Weak-area follow-up context (KNOWN FACTS vs gaps, do not treat gaps as known facts):
 ${JSON.stringify(weakAreaContext)}
 Deterministic baseline (source of truth for score/label and grouped risk structure). Template summary omitted: write a fresh ADI debrief from this data.
 ${JSON.stringify(deterministicForPrompt)}

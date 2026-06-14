@@ -11,7 +11,7 @@ export const BRAND_LOGO = {
   height: 682,
 } as const;
 
-/** Branded call-to-action copy — prefer these over generic “assessment” wording. */
+/** Branded call-to-action copy, prefer these over generic “assessment” wording. */
 export const BRAND_CTA = {
   getMyScore: "Get My Test Ready Score",
   getYourScore: "Get Your Test Ready Score",
@@ -37,7 +37,7 @@ export const PREMIUM_MEMBER_UI = {
   journeyInsights: "Journey insights",
   progressRhythm:
     "Each saved report adds to your history. Look back to see how your score and weak areas change over time.",
-  graduateBadge: "Graduate — congratulations!",
+  graduateBadge: "Graduate, congratulations!",
   graduateNote: "Your account and reports stay available. New Test Ready Scores are disabled after you pass.",
 } as const;
 
@@ -52,7 +52,7 @@ export const PRICING = {
     hint: "Unlimited assessments, progress tracking, AI reports, and roadmap access.",
     interval: "month" as const,
   },
-  /** Legacy one-off tiers — retained for historical payment metadata only. */
+  /** Legacy one-off tiers, retained for historical payment metadata only. */
   single: { display: "£3.99", label: "One-off report", hint: "Legacy single report purchase" },
   lifetime: {
     display: "£9.99",

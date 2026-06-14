@@ -1,4 +1,4 @@
-/** Static marketing preview — concise list of report sections (not live data). */
+/** Static marketing preview, concise list of report sections (not live data). */
 export function HomeReportPreview() {
   const sections = [
     { title: "Readiness score", detail: "Clear score out of 100 with a readiness band." },

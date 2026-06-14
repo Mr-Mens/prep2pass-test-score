@@ -18,7 +18,7 @@ Without this, builds run at the repo root (no `app/`, no `next.config.mjs`) and 
 |--------|--------|
 | Framework Preset | Next.js |
 | Build Command | `npm run build` (default) |
-| Output Directory | *(leave default — do not set `.next` manually)* |
+| Output Directory | *(leave default, do not set `.next` manually)* |
 | Install Command | `npm install` (default) |
 
 ## Environment variables

@@ -34,7 +34,7 @@
 
 @layer components {
   /**
-   * Instructor mock test sheet — single type scale (Inter body + Inter Tight headings).
+   * Instructor mock test sheet, single type scale (Inter body + Inter Tight headings).
    */
   .mock-sheet {
     @apply text-sm text-brand-900;

@@ -1,4 +1,4 @@
-# PassReady — Cursor / agent rules
+# PassReady, Cursor / agent rules
 
 ## Tech stack
 - Frontend: Next.js (App Router, TypeScript)
@@ -29,7 +29,7 @@
 ## Product (MVP)
 - Flow: homepage → assessment form → pay £4.99 → AI report
 - Outputs: pass probability, top risks, personalised improvement plan
-- AI tone: professional instructor — specific, actionable, not generic
+- AI tone: professional instructor, specific, actionable, not generic
 
 ## Build approach
 - MVP first; simple and fast; validate with users; iterate from feedback

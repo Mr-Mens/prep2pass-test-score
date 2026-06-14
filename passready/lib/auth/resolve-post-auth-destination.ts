@@ -18,7 +18,7 @@ function blockedContinue(path: string): boolean {
 }
 
 /**
- * Post-login routing is driven only by the persisted DB role — never by URL alone.
+ * Post-login routing is driven only by the persisted DB role, never by URL alone.
  * Optional `continue` is honoured only when it matches that role.
  */
 export function resolvePostAuthDestination(role: UserAppRole, continueRaw: string | null): string {

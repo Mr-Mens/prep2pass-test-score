@@ -1,4 +1,4 @@
-/** Public marketing pages — logged-in users are redirected to their workspace. */
+/** Public marketing pages, logged-in users are redirected to their workspace. */
 export const MARKETING_ROUTES = ["/", "/pricing", "/faq", "/about", "/sample-report", "/explore"] as const;
 
 export function isMarketingRoute(pathname: string): boolean {

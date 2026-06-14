@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "£6.99/month for unlimited assessments, AI reports, and progress tracking.",
 };
 
-/** Legacy /upgrade path — redirects to subscription flow. */
+/** Legacy /upgrade path, redirects to subscription flow. */
 export default async function UpgradePage() {
   const user = (await getServerAuthUser())!;
   const access = await getLearnerAccessStatus(user.id);

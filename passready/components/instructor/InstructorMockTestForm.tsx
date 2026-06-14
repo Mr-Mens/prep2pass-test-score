@@ -303,7 +303,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
         ) : null}
       </section>
 
-      {/* Top band — candidate · test · declaration · vehicle (reference sheet order) */}
+      {/* Top band, candidate · test · declaration · vehicle (reference sheet order) */}
       <section className="rounded-2xl border border-brand-200 bg-white shadow-sm">
         <div className="border-b border-brand-100 bg-brand-50/80 px-4 py-3">
           <h2 className="mock-sheet-h2">Candidate &amp; test</h2>
@@ -571,7 +571,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
         </div>
       </section>
 
-      {/* Fault recording — three columns matching reference bands */}
+      {/* Fault recording, three columns matching reference bands */}
       <section className="overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-sm">
         <div className="border-b border-brand-100 bg-brand-50/80 px-4 py-3">
           <h2 className="mock-sheet-h2">Fault recording</h2>

@@ -24,7 +24,7 @@ export function getStripeServerClient(): Stripe {
   return cachedStripe;
 }
 
-/** @deprecated legacy one-off tiers — subscription is the primary model */
+/** @deprecated legacy one-off tiers, subscription is the primary model */
 export type CheckoutPriceTier = "single" | "lifetime" | "subscription";
 
 export function getStripeConfig() {
@@ -90,16 +90,14 @@ export async function createSubscriptionCheckoutSession(params: {
     },
     metadata: {
       tier: "subscription",
-      supabase_user_id: params.userId,
-      ...(params.assessmentId ? { assessmentId: params.assessmentId } : {}),
-      ...(params.weakAreaCount != null ? { weakAreaCount: String(params.weakAreaCount) } : {}),
+      supabase_user_id: params.userId...(params.assessmentId ? { assessmentId: params.assessmentId } : {})...(params.weakAreaCount != null ? { weakAreaCount: String(params.weakAreaCount) } : {}),
     },
   });
 
   return session;
 }
 
-/** Legacy one-off checkout — retained for grandfathered payment flows. */
+/** Legacy one-off checkout, retained for grandfathered payment flows. */
 export async function createCheckoutSession(params: {
   assessmentId: string;
   email?: string;
@@ -139,8 +137,7 @@ export async function createCheckoutSession(params: {
       assessmentId: params.assessmentId,
       weakAreaCount: String(params.weakAreaCount),
       tier: params.tier,
-      upgradeOnly: flowMode === "upgrade" ? "true" : "false",
-      ...(params.userId ? { supabase_user_id: params.userId } : {}),
+      upgradeOnly: flowMode === "upgrade" ? "true" : "false"...(params.userId ? { supabase_user_id: params.userId } : {}),
     },
   });
 

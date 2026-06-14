@@ -6,7 +6,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 
 export const metadata: Metadata = {
   title: "About · Test Ready Score",
-  description: `About ${SITE.name} and Test Ready Score — UK learner test readiness.`,
+  description: `About ${SITE.name} and Test Ready Score, UK learner test readiness.`,
 };
 
 export default async function AboutPage() {
@@ -22,7 +22,7 @@ export default async function AboutPage() {
         <div className="mt-8 space-y-5 text-base leading-relaxed text-brand-700">
           <p>
             {SITE.name} helps UK learner drivers understand test readiness with a structured assessment, Premium report,
-            and practical next steps — written in calm, instructor-style language.
+            and practical next steps, written in calm, instructor-style language.
           </p>
           <p>
             Test Ready Score is created by a DVSA-approved driving instructor. It is not an official DVSA product or

@@ -18,7 +18,7 @@ export async function InstructorEarningsPanel({ instructorUserId }: Props) {
     { label: "Passed pupils", value: String(summary.passedPupils) },
     {
       label: "Average readiness score",
-      value: summary.averageReadinessScore != null ? `${summary.averageReadinessScore}/100` : "—",
+      value: summary.averageReadinessScore != null ? `${summary.averageReadinessScore}/100` : "-",
     },
     { label: "Monthly earnings", value: formatPenceGbp(summary.monthlyEarningsPence) },
     { label: "Lifetime earnings", value: formatPenceGbp(summary.lifetimeEarningsPence) },
@@ -56,7 +56,7 @@ export async function InstructorEarningsPanel({ instructorUserId }: Props) {
       </div>
 
       <p className="mt-5 text-xs leading-relaxed text-brand-500">
-        Earnings are tracked automatically. Bank payouts are not live yet — all entries are marked{" "}
+        Earnings are tracked automatically. Bank payouts are not live yet, all entries are marked{" "}
         {COMMERCIAL.referral.payoutStatusLabel} until payout processing ships.
       </p>
     </section>

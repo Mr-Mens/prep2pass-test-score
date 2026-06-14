@@ -20,7 +20,7 @@ const tmp = `${input}.tmp.png`;
 
   const { data } = await pipeline.raw().toBuffer({ resolveWithObject: true }).then((x) => x);
 
-  /** Euclidean distance from #000 — keeps saturated dark blues (e.g. #002d54). */
+  /** Euclidean distance from #000, keeps saturated dark blues (e.g. #002d54). */
   const distBlack = (r, g, b) => Math.hypot(r, g, b);
   const threshold = 38;
   let n = 0;

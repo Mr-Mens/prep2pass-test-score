@@ -1,4 +1,4 @@
-/** Typical DVSA-style weather list (numbered 1–11) — independent mock sheet, not an official form. */
+/** Typical DVSA-style weather list (numbered 1–11), independent mock sheet, not an official form. */
 export const WEATHER_SHEET_OPTIONS: readonly { code: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11; label: string }[] = [
   { code: 1, label: "Bright / dry roads" },
   { code: 2, label: "Bright / wet roads" },

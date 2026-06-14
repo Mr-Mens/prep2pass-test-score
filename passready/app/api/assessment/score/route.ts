@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const { canLearnerStartAssessment } = await import("@/lib/server/effective-lifetime-access");
     const canStart = await canLearnerStartAssessment(auth.userId);
     if (!canStart) {
-      return jsonError(403, "GRADUATED", "Congratulations — your account is in Graduate Mode. New assessments are disabled.");
+      return jsonError(403, "GRADUATED", "Congratulations, your account is in Graduate Mode. New assessments are disabled.");
     }
 
     const { assessment, result } = await scoreAssessment(parsed.data, { useAiEnrichment: false });

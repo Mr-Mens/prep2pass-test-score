@@ -8,7 +8,7 @@ import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: `${SITE.name}: your Test Ready Score home — score, progress, and next steps.`,
+  description: `${SITE.name}: your Test Ready Score home, score, progress, and next steps.`,
 };
 
 export default async function LearnerDashboardPage() {

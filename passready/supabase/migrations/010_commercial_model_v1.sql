@@ -22,7 +22,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS user_subscriptions_stripe_sub_idx
   ON public.user_subscriptions (stripe_subscription_id)
   WHERE stripe_subscription_id IS NOT NULL;
 
--- Graduate mode: learner passed practical test — retain account, stop billing, no new assessments.
+-- Graduate mode: learner passed practical test, retain account, stop billing, no new assessments.
 CREATE TABLE IF NOT EXISTS public.learner_graduations (
   user_id uuid PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
   pass_date date NOT NULL,

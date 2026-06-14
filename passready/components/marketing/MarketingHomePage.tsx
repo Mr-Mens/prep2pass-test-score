@@ -102,7 +102,7 @@ const faqItems = [
   },
   {
     q: "Can I use this with my instructor?",
-    a: "Yes. Test Ready Score is built to support—not replace—your instructor's professional judgement. Bring your report to agree clear next steps together.",
+    a: "Yes. Test Ready Score is built to support your instructor's professional judgement, not replace it. Bring your report to agree clear next steps together.",
   },
   {
     q: "Can parents use this for private practice?",
@@ -252,7 +252,7 @@ export async function MarketingHomePage() {
       >
         <PremiumReportFeatures />
         <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-brand-100 bg-brand-50/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-700">
-          Built to support—not replace—your instructor&apos;s professional judgement. Test Ready Score gives learners,
+          Built to support your instructor&apos;s professional judgement, not replace it. Test Ready Score gives learners,
           instructors and parents a structured way to understand progress and agree clear next steps together.
         </div>
         <p className="mt-6 text-center">
@@ -308,7 +308,7 @@ export async function MarketingHomePage() {
         </div>
       </Section>
 
-      {/* Social proof — preserved with existing metric badges */}
+      {/* Social proof, preserved with existing metric badges */}
       <Section
         eyebrow="Experience"
         title="Built from real-world driving instruction experience"
@@ -357,7 +357,7 @@ export async function MarketingHomePage() {
       >
         <div className="mx-auto mb-6 max-w-3xl rounded-2xl border border-teal-200/70 bg-teal-50/50 p-6 text-center shadow-sm ring-1 ring-teal-100/80">
           <h3 className="font-heading text-base font-semibold text-brand-950 sm:text-lg">
-            Built to support—not replace—your instructor&apos;s professional judgement.
+            Built to support your instructor&apos;s professional judgement, not replace it.
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-brand-700">
             Test Ready Score gives learners, instructors and parents a structured way to understand progress and agree

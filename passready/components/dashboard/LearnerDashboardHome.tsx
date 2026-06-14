@@ -46,7 +46,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         <p className="mt-2 text-sm leading-relaxed text-brand-600">Here&apos;s where you currently stand.</p>
       </header>
 
-      {/* Section 1 — Latest score */}
+      {/* Section 1, Latest score */}
       <DashboardCard>
         <SectionLabel>Test Ready Score</SectionLabel>
         {view.latest ? (
@@ -89,7 +89,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         )}
       </DashboardCard>
 
-      {/* Section 2 — Progress trend */}
+      {/* Section 2, Progress trend */}
       {view.trend.currentScore != null ? (
         <DashboardCard>
           <SectionLabel>Progress trend</SectionLabel>
@@ -122,7 +122,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Section 3 — Upcoming test */}
+      {/* Section 3, Upcoming test */}
       {view.testBooking ? (
         <DashboardCard className="border-teal-200/70 bg-teal-50/30">
           <SectionLabel>Your test date</SectionLabel>
@@ -139,7 +139,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Section 4 — Next priority */}
+      {/* Section 4, Next priority */}
       {view.nextPriority ? (
         <DashboardCard className="border-amber-200/70 bg-amber-50/25">
           <SectionLabel>Next priority</SectionLabel>
@@ -156,7 +156,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Section 5 — Roadmap progress */}
+      {/* Section 5, Roadmap progress */}
       {view.roadmap ? (
         <DashboardCard>
           <SectionLabel>Roadmap progress</SectionLabel>
@@ -208,7 +208,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Section 6 — Recent reports */}
+      {/* Section 6, Recent reports */}
       {view.recentReports.length > 0 ? (
         <DashboardCard>
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -241,7 +241,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </DashboardCard>
       ) : null}
 
-      {/* Section 7 — Update score */}
+      {/* Section 7, Update score */}
       <DashboardCard className="border-teal-200/80 bg-gradient-to-br from-teal-50/80 to-white">
         <h2 className="font-heading text-xl font-semibold text-brand-950">Ready for another checkpoint?</h2>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
@@ -257,7 +257,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
         </div>
       </DashboardCard>
 
-      {/* Section 8 — Journey insights */}
+      {/* Section 8, Journey insights */}
       {view.journeyInsights.length > 0 ? (
         <DashboardCard className="bg-brand-50/30">
           <SectionLabel>Journey insights</SectionLabel>

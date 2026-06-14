@@ -5,7 +5,7 @@ import { autoAcceptPupilInviteByToken } from "@/lib/server/repositories/instruct
 import { ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-/** First email confirmation after signup — assign self-service role from signup metadata only. */
+/** First email confirmation after signup, assign self-service role from signup metadata only. */
 async function assignInitialRoleFromSignupMetadata(
   userId: string,
   metadata: Record<string, unknown> | undefined,

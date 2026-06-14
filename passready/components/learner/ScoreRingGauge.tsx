@@ -1,5 +1,5 @@
 /**
- * Readiness score ring — visual accent only (scoring unchanged).
+ * Readiness score ring, visual accent only (scoring unchanged).
  */
 
 type Props = {

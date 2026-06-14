@@ -346,7 +346,7 @@ export function applyReadinessBandCeilings(
 
 export function categoryRoadmapGapLabel(key: string, covered: number, total: number): string | null {
   if (covered === 0 && total > 0) return "Major gap before test readiness";
-  if (total > 0 && covered <= Math.ceil(total * 0.4)) return "Partially covered — needs more practice";
+  if (total > 0 && covered <= Math.ceil(total * 0.4)) return "Partially covered, needs more practice";
   return null;
 }
 
@@ -399,8 +399,7 @@ export function mockReflectionRiskItems(assessment: AssessmentPayload): Array<
     seen.add(detailId);
     const option = MOCK_REFLECTION_SUB_OPTIONS.find((o) => o.id === detailId);
     items.push({
-      id: `mock_${detailId}`,
-      ...copy,
+      id: `mock_${detailId}`...copy,
       source: "mock_evidence",
       severity: "high",
     });

@@ -88,7 +88,7 @@ function buildJourneyInsights(
     if (totalDelta > 0) {
       insights.push(`You've improved ${totalDelta} points since your first assessment.`);
     } else if (totalDelta === 0) {
-      insights.push("Your score has held steady across assessments — consistency is building.");
+      insights.push("Your score has held steady across assessments, consistency is building.");
     }
   }
   if (roadmap && roadmap.completionPercent > 0) {
@@ -171,8 +171,7 @@ export async function buildLearnerDashboardView(userId: string): Promise<Learner
       roadmap = {
         topicsCovered: model.syllabus.topicsCoveredCount,
         totalTopics: model.syllabus.totalTopics,
-        completionPercent: model.syllabus.completionPercent,
-        ...gaps,
+        completionPercent: model.syllabus.completionPercent...gaps,
       };
     }
 

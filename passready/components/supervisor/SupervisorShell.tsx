@@ -13,7 +13,7 @@ const sidebarNav = [
   { href: "/supervisor/reports", label: "Reports", match: "prefix" },
   { href: "/supervisor/progress", label: "Progress", match: "prefix" },
   { href: "/supervisor/link-learner", label: "Link learner", match: "prefix" },
-  { href: "/account", label: "Account", match: "prefix" },
+  { href: "/supervisor/account", label: "Account", match: "prefix" },
 ] as const;
 
 const dockNav = [
@@ -21,7 +21,7 @@ const dockNav = [
   { href: "/supervisor/practice-log", label: "Practice", icon: "✎" },
   { href: "/supervisor/reports", label: "Reports", icon: "☰" },
   { href: "/supervisor/progress", label: "Progress", icon: "↗" },
-  { href: "/account", label: "Account", icon: "⚙" },
+  { href: "/supervisor/account", label: "Account", icon: "⚙" },
 ] as const;
 
 type Props = {

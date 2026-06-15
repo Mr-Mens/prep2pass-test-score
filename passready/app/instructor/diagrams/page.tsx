@@ -1,36 +1,68 @@
-const items = [
-  { title: "Left turns", description: "Approach lines and cut-in points (coming soon)." },
-  { title: "Right turns", description: "Positioning and priority (coming soon)." },
-  { title: "Roundabouts", description: "Lanes and exits (coming soon)." },
-  { title: "Meeting traffic", description: "Passing places (coming soon)." },
-  { title: "Crossroads", description: "Emerging and priority (coming soon)." },
-  { title: "Bay parking", description: "Reference points (coming soon)." },
-  { title: "Parallel parking", description: "Set piece (coming soon)." },
-  { title: "Dual carriageways", description: "Slip roads and lanes (coming soon)." },
-] as const;
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import { DiagramLibraryBrowser } from "@/components/instructor/diagrams/DiagramLibraryBrowser";
+import { DIAGRAM_CATEGORIES } from "@/lib/instructor/diagrams/categories";
+import { getAllTeachingDiagrams } from "@/lib/instructor/diagrams/get-diagram";
+import { SITE } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: "Teaching diagrams",
+  description: `UK Highway Code teaching diagrams for ${SITE.name} instructors.`,
+};
 
 export default function InstructorDiagramsPage() {
-  return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">Teaching diagrams</h1>
-        <p className="mt-2 max-w-2xl text-sm text-brand-600">
-          Placeholder cards for future diagram content. Independent prep tool, not affiliated with DVSA.
-        </p>
-      </div>
+  const diagrams = getAllTeachingDiagrams();
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
-          <div
-            key={item.title}
-            className="flex min-h-[140px] flex-col rounded-2xl border border-brand-100 bg-white p-5 shadow-sm"
-          >
-            <p className="font-semibold text-brand-950">{item.title}</p>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-600">{item.description}</p>
-            <p className="mt-4 text-xs font-medium uppercase tracking-wide text-brand-400">Placeholder</p>
-          </div>
-        ))}
-      </div>
+  return (
+    <div className="mx-auto max-w-6xl space-y-8 pb-4">
+      <section className="relative overflow-hidden rounded-3xl border border-brand-200/60 bg-gradient-to-br from-white via-brand-50/80 to-teal-50/50 shadow-card ring-1 ring-brand-100/70">
+        <div
+          className="pointer-events-none absolute -right-20 top-0 h-56 w-56 rounded-full bg-teal-400/15 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative px-8 py-10 sm:px-10">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-teal-800/90">Instructor toolkit</p>
+          <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-brand-950 sm:text-4xl">
+            Teaching diagrams
+          </h1>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-brand-700 sm:text-base">
+            Instructor whiteboard diagrams from your uploaded assets in{" "}
+            <code className="rounded bg-brand-100 px-1.5 py-0.5 text-xs">public/diagrams</code>. Search, filter,
+            and open any diagram fullscreen during a lesson.
+          </p>
+          <p className="mt-4 max-w-3xl border-l-4 border-teal-500/60 pl-4 text-xs leading-relaxed text-brand-600 sm:text-sm">
+            Independent teaching aid aligned with the Highway Code. Not affiliated with DVSA.
+          </p>
+        </div>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {DIAGRAM_CATEGORIES.map((category) => {
+          const count = diagrams.filter((diagram) => diagram.category === category.slug).length;
+          return (
+            <div
+              key={category.slug}
+              className="rounded-2xl border border-brand-100 bg-white p-4 shadow-sm"
+            >
+              <p className="font-heading text-sm font-semibold text-brand-950">{category.name}</p>
+              <p className="mt-1 text-xs leading-relaxed text-brand-600">{category.description}</p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700">
+                {count} diagram{count === 1 ? "" : "s"}
+              </p>
+            </div>
+          );
+        })}
+      </section>
+
+      <DiagramLibraryBrowser diagrams={diagrams} />
+
+      <p className="text-center text-xs text-brand-500">
+        Need a diagram on the move?{" "}
+        <Link href="/instructor/diagrams/left-emerge" className="font-semibold text-teal-700 hover:underline">
+          Open a sample
+        </Link>
+      </p>
     </div>
   );
 }

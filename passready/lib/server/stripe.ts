@@ -90,7 +90,9 @@ export async function createSubscriptionCheckoutSession(params: {
     },
     metadata: {
       tier: "subscription",
-      supabase_user_id: params.userId...(params.assessmentId ? { assessmentId: params.assessmentId } : {})...(params.weakAreaCount != null ? { weakAreaCount: String(params.weakAreaCount) } : {}),
+      supabase_user_id: params.userId,
+      ...(params.assessmentId ? { assessmentId: params.assessmentId } : {}),
+      ...(params.weakAreaCount != null ? { weakAreaCount: String(params.weakAreaCount) } : {}),
     },
   });
 
@@ -137,7 +139,8 @@ export async function createCheckoutSession(params: {
       assessmentId: params.assessmentId,
       weakAreaCount: String(params.weakAreaCount),
       tier: params.tier,
-      upgradeOnly: flowMode === "upgrade" ? "true" : "false"...(params.userId ? { supabase_user_id: params.userId } : {}),
+      upgradeOnly: flowMode === "upgrade" ? "true" : "false",
+      ...(params.userId ? { supabase_user_id: params.userId } : {}),
     },
   });
 

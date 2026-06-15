@@ -11,6 +11,17 @@ export const BRAND_LOGO = {
   height: 682,
 } as const;
 
+/** Open Graph / Twitter / link-preview banner (`public/social-banner/`). */
+export const SOCIAL_BANNER = {
+  src: "/social-banner/og.jpg",
+  width: 1200,
+  height: 800,
+  alt: "Test Ready Score by Prep2Pass — UK learner driving assessment",
+} as const;
+
+export const SITE_DEFAULT_DESCRIPTION =
+  "Test Ready Score by Prep2Pass: a clear UK learner assessment, practical risks, and focused next steps before your practical test. Created by a DVSA-approved driving instructor." as const;
+
 /** Branded call-to-action copy, prefer these over generic “assessment” wording. */
 export const BRAND_CTA = {
   getMyScore: "Get My Test Ready Score",

@@ -176,8 +176,8 @@ export default async function InstructorDashboardPage() {
           href="/instructor/diagrams"
           kicker="Diagrams"
           title="Teaching diagrams"
-          body="Starter library for the cab: placeholders today, more structured diagrams on the roadmap."
-          cta="Browse"
+          body="UK Highway Code whiteboard diagrams with teaching points, common mistakes, search, and fullscreen cab mode."
+          cta="Open library"
           icon={<IconPhotos />}
           tint="from-teal-700 to-cyan-900"
         />

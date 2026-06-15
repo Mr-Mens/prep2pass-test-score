@@ -1,0 +1,58 @@
+{
+  "left-emerge": {
+    "width": 1086,
+    "height": 1448
+  },
+  "right-emerge": {
+    "width": 1086,
+    "height": 1448
+  },
+  "left-turn": {
+    "width": 1086,
+    "height": 1448
+  },
+  "right-turn": {
+    "width": 1086,
+    "height": 1448
+  },
+  "crossroad": {
+    "width": 1086,
+    "height": 1448
+  },
+  "crossroads-scenarios": {
+    "width": 1086,
+    "height": 1448
+  },
+  "staggered-junction": {
+    "width": 1036,
+    "height": 583
+  },
+  "staggered-junction-1": {
+    "width": 525,
+    "height": 525
+  },
+  "meeting-traffic": {
+    "width": 1024,
+    "height": 1536
+  },
+  "roundabout": {
+    "width": 1037,
+    "height": 1448
+  },
+  "independent-driving-signs-1": {
+    "width": 368,
+    "height": 397
+  },
+  "independent-driving-signs-2": {
+    "width": 370,
+    "height": 537
+  },
+  "independent-driving-signs-3": {
+    "width": 547,
+    "height": 365
+  },
+  "independent-driving-signs-4": {
+    "width": 370,
+    "height": 459
+  }
+}

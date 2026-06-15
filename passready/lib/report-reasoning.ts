@@ -399,7 +399,8 @@ export function mockReflectionRiskItems(assessment: AssessmentPayload): Array<
     seen.add(detailId);
     const option = MOCK_REFLECTION_SUB_OPTIONS.find((o) => o.id === detailId);
     items.push({
-      id: `mock_${detailId}`...copy,
+      id: `mock_${detailId}`,
+      ...copy,
       source: "mock_evidence",
       severity: "high",
     });

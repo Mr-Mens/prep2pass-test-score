@@ -171,7 +171,8 @@ export async function buildLearnerDashboardView(userId: string): Promise<Learner
       roadmap = {
         topicsCovered: model.syllabus.topicsCoveredCount,
         totalTopics: model.syllabus.totalTopics,
-        completionPercent: model.syllabus.completionPercent...gaps,
+        completionPercent: model.syllabus.completionPercent,
+        ...gaps,
       };
     }
 

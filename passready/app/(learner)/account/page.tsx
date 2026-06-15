@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { LearnerSignOutButton } from "@/components/learner/LearnerSignOutButton";
 import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, SITE } from "@/lib/constants";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
+import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -49,6 +50,10 @@ export default async function LearnerAccountPage() {
   const user = await getServerAuthUser();
   if (!user) redirect("/login?next=%2Faccount");
   if (!user.emailConfirmedAt) redirect(`/verify-email?next=${encodeURIComponent("/account")}`);
+
+  const role = await getUserAppRole(user.id);
+  if (role === "parent") redirect("/supervisor/account");
+  if (role === "instructor") redirect("/instructor/settings");
 
   const entitlements = await getEntitlementLookupForUser(user.id);
 

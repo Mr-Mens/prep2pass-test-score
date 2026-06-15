@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 
 import { AppShell } from "@/components/AppShell";
-import { SITE } from "@/lib/constants";
+import { SITE, SITE_DEFAULT_DESCRIPTION, SOCIAL_BANNER } from "@/lib/constants";
 
 import "./globals.css";
 
@@ -24,15 +24,27 @@ export const metadata: Metadata = {
     default: `Test Ready Score by ${SITE.name}`,
     template: `%s · ${SITE.name}`,
   },
-  description:
-    "Test Ready Score by Prep2Pass: a clear UK learner assessment, practical risks, and focused next steps before your practical test. Created by a DVSA-approved driving instructor.",
+  description: SITE_DEFAULT_DESCRIPTION,
   openGraph: {
     title: `Test Ready Score by ${SITE.name}`,
-    description:
-      "Test Ready Score by Prep2Pass: a clear UK learner assessment, practical risks, and focused next steps before your practical test. Created by a DVSA-approved driving instructor.",
+    description: SITE_DEFAULT_DESCRIPTION,
     type: "website",
     locale: "en_GB",
     siteName: SITE.name,
+    images: [
+      {
+        url: SOCIAL_BANNER.src,
+        width: SOCIAL_BANNER.width,
+        height: SOCIAL_BANNER.height,
+        alt: SOCIAL_BANNER.alt,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Test Ready Score by ${SITE.name}`,
+    description: SITE_DEFAULT_DESCRIPTION,
+    images: [SOCIAL_BANNER.src],
   },
   robots: {
     index: true,

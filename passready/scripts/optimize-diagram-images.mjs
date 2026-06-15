@@ -28,6 +28,12 @@ const SOURCE_FILES = [
   { slug: "independent-driving-signs-2", file: "independent driving signs 2.JPG" },
   { slug: "independent-driving-signs-3", file: "independent driving signs 3.PNG" },
   { slug: "independent-driving-signs-4", file: "independent driving signs 4.JPG" },
+  { slug: "dual-carriageway", file: "dual carraige ways.PNG" },
+  { slug: "dual-carriageway-slip-roads", file: "dual carriage ways - slip roads.PNG" },
+  { slug: "dual-carriageway-scenarios", file: "dual carriage ways - scenarios.PNG" },
+  { slug: "roundabout-scenarios", file: "roundabout scenarios.PNG" },
+  { slug: "pedestrian-crossing-controlled", file: "pedestrian crossing - controlled.PNG" },
+  { slug: "pedestrian-crossing-uncontrolled", file: "pedestrian crossing - uncontrolled.PNG" },
 ];
 
 async function main() {

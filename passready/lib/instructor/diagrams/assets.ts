@@ -14,6 +14,12 @@ export const DIAGRAM_IMAGE_SLUGS = [
   "independent-driving-signs-2",
   "independent-driving-signs-3",
   "independent-driving-signs-4",
+  "dual-carriageway",
+  "dual-carriageway-slip-roads",
+  "dual-carriageway-scenarios",
+  "roundabout-scenarios",
+  "pedestrian-crossing-controlled",
+  "pedestrian-crossing-uncontrolled",
 ] as const;
 
 export type DiagramImageSlug = (typeof DIAGRAM_IMAGE_SLUGS)[number];
@@ -34,4 +40,10 @@ export const DIAGRAM_SOURCE_FILES: Record<DiagramImageSlug, string> = {
   "independent-driving-signs-2": "independent driving signs 2.JPG",
   "independent-driving-signs-3": "independent driving signs 3.PNG",
   "independent-driving-signs-4": "independent driving signs 4.JPG",
+  "dual-carriageway": "dual carraige ways.PNG",
+  "dual-carriageway-slip-roads": "dual carriage ways - slip roads.PNG",
+  "dual-carriageway-scenarios": "dual carriage ways - scenarios.PNG",
+  "roundabout-scenarios": "roundabout scenarios.PNG",
+  "pedestrian-crossing-controlled": "pedestrian crossing - controlled.PNG",
+  "pedestrian-crossing-uncontrolled": "pedestrian crossing - uncontrolled.PNG",
 };

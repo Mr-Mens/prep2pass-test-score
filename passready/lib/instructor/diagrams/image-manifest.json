@@ -54,5 +54,29 @@
   "independent-driving-signs-4": {
     "width": 370,
     "height": 459
+  },
+  "dual-carriageway": {
+    "width": 1086,
+    "height": 1448
+  },
+  "dual-carriageway-slip-roads": {
+    "width": 1086,
+    "height": 1448
+  },
+  "dual-carriageway-scenarios": {
+    "width": 1145,
+    "height": 1374
+  },
+  "roundabout-scenarios": {
+    "width": 1086,
+    "height": 1448
+  },
+  "pedestrian-crossing-controlled": {
+    "width": 1024,
+    "height": 1536
+  },
+  "pedestrian-crossing-uncontrolled": {
+    "width": 1024,
+    "height": 1536
   }
 }

@@ -1,6 +1,6 @@
 import Image, { type ImageProps } from "next/image";
 
-import { BRAND_LOGO, SITE } from "@/lib/constants";
+import { BRAND_LOGO, PRODUCT } from "@/lib/constants";
 
 export type BrandLogoVariant = "navbar" | "footer" | "welcome" | "auth" | "learnerRail" | "learnerMobile";
 
@@ -55,7 +55,7 @@ type BrandLogoProps = {
 
 export function BrandLogo({ variant, className = "", ...rest }: BrandLogoProps) {
   const v = VARIANT[variant];
-  const alt = `Test Ready Score, ${SITE.name}`;
+  const alt = PRODUCT.name;
   return (
     <Image
       src={BRAND_LOGO.src}

@@ -87,8 +87,7 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
       >
         <div className="flex h-full flex-col px-4 py-6">
           <div className="border-b border-slate-700/90 pb-5">
-            <p className="font-heading text-xs font-semibold uppercase tracking-wide text-white">Test ready score</p>
-            <p className="mt-1 text-xs text-slate-400">Powered by Prep2Pass</p>
+            <p className="font-heading text-xs font-semibold uppercase tracking-wide text-white">Pass Pilot</p>
             <p className="mt-3 text-xs font-normal leading-relaxed text-slate-400">
               DVSA-style mock test tool · Not affiliated with DVSA
             </p>

@@ -7,7 +7,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 const FAQ = [
   {
     q: "Is this official DVSA guidance?",
-    a: "No. Prep2Pass is independent and not affiliated with DVSA. Test Ready Score is produced by a DVSA-approved driving instructor to complement lessons.",
+    a: "No. Prep2Pass is independent and not affiliated with DVSA. Pass Pilot is produced by a DVSA-approved driving instructor to complement lessons.",
   },
   {
     q: "Does this guarantee I will pass?",
@@ -28,8 +28,8 @@ const FAQ = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "FAQ · Test Ready Score",
-  description: "Frequently asked questions about Test Ready Score and Prep2Pass.",
+  title: "FAQ · Pass Pilot",
+  description: "Frequently asked questions about Pass Pilot and Prep2Pass.",
 };
 
 export default async function FaqPage() {

@@ -22,7 +22,7 @@ export default function InstructorHelpPage() {
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Pupil linking</h2>
         <p className="mt-4 text-sm leading-relaxed text-brand-700">
-          When you save a pupil email that matches an existing Test Ready Score report email, we store a link so their
+          When you save a pupil email that matches an existing Test Ready Score Report email, we store a link so their
           account can be associated with your pupil record. Full pupil-facing views of mock summaries can be enabled in a
           future update.
         </p>

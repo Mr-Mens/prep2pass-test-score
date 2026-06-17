@@ -25,7 +25,7 @@ export async function createInstructorPupilInviteNotification(input: {
 }): Promise<AppNotificationRow | null> {
   const supabase = getSupabaseServerClient();
   const title = "Instructor link request";
-  const body = `${input.instructorName.trim() || "Your driving instructor"} would like to link your Test Ready Score account as their pupil (${input.pupilName.trim() || "learner"}). Accept to share progress with them.`;
+  const body = `${input.instructorName.trim() || "Your driving instructor"} would like to link your Pass Pilot account as their pupil (${input.pupilName.trim() || "learner"}). Accept to share progress with them.`;
 
   const { data, error } = await supabase
     .from("app_notifications")

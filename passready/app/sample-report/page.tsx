@@ -13,7 +13,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 export const metadata: Metadata = {
   title: "Sample Premium Test Ready Score Report",
   description:
-    "Preview a realistic Premium Test Ready Score report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
+    "Preview a realistic Premium Test Ready Score Report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
 };
 
 const sampleRiskAreas: GroupedRiskArea[] = [
@@ -136,7 +136,7 @@ export default async function SampleReportPage() {
       className="bg-brand-50 print:bg-white"
       contentClassName="max-w-3xl"
       eyebrow="Preview"
-      title="Sample Premium Test Ready Score report"
+      title="Sample Premium Test Ready Score Report"
       subtitle="Illustrative example. Your paid report uses the same layout: readiness snapshot, debrief, roadmap, test risks, priorities, and lesson-hour estimate."
     >
       <div className="space-y-8 print:space-y-4">
@@ -166,7 +166,7 @@ export default async function SampleReportPage() {
           </Button>
         </div>
         <p className="text-xs text-brand-500/90">
-          Premium Test Ready Score report · {PRICING.subscription.display}/month until you pass or cancel · Secure checkout via Stripe
+          Premium Test Ready Score Report · {PRICING.subscription.display}/month until you pass or cancel · Secure checkout via Stripe
         </p>
       </div>
     </Section>

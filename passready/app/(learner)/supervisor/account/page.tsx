@@ -82,7 +82,7 @@ export default async function SupervisorAccountPage() {
         <div className="mt-6 rounded-xl border border-brand-100 bg-brand-50/50 px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Workspace</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-700">
-            You are signed in as a parent or supervisor. Link a learner to view their Test Ready Score reports,
+            You are signed in as a parent or supervisor. Link a learner to view their Test Ready Score Reports,
             progress, and practice notes.
           </p>
         </div>

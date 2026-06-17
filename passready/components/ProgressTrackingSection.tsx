@@ -118,7 +118,7 @@ export function ProgressTrackingSection(props: Props) {
         Track progress over time with lifetime access
       </p>
       <p className="relative mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-        Lifetime unlock keeps a private timeline of your Test Ready scores so you can see improvement between lessons.
+        Lifetime unlock keeps a private timeline of your Pass Pilot scores so you can see improvement between lessons.
       </p>
       <Button
         href="/upgrade"

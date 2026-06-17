@@ -67,7 +67,7 @@ export function PremiumReportSections({
       {showDetailedRisks ? (
         <details className="group rounded-2xl border border-brand-100 bg-white shadow-sm open:shadow-sm">
           <summary className="cursor-pointer list-none p-6 sm:p-8 [&::-webkit-details-marker]:hidden">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Detailed breakdown</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Detailed Breakdown</p>
             <h2 className="mt-2 text-lg font-semibold text-brand-950">Skill area breakdown</h2>
             <p className="mt-2 text-sm text-brand-600 group-open:hidden">Tap to see grouped risk areas and skill detail.</p>
           </summary>

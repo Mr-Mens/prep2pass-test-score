@@ -395,7 +395,7 @@ export function AssessmentForm({
           {lockedAccountEmail && (hasLifetimeAccess || lifetimeVerifiedFromSession) ? (
             <>
               <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
-                Save your full Test Ready Score report
+                Save your full Test Ready Score Report
               </h2>
               <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
                 Your active subscription includes unlimited full Premium reports. We attach this assessment to your
@@ -424,7 +424,7 @@ export function AssessmentForm({
           ) : (
             <>
               <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
-                Unlock your full Test Ready Score report
+                Unlock your full Test Ready Score Report
               </h2>
               <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
                 See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic
@@ -876,7 +876,7 @@ export function AssessmentForm({
           For information only, not a substitute for professional instruction.
           {showLifetimeAssessmentChrome
             ? " Your Premium report attaches to Prep2Pass as part of lifetime access."
-            : " Your answers generate your Test Ready Score report after payment."}
+            : " Your answers generate your Test Ready Score Report after payment."}
         </p>
       </div>
 

@@ -5,7 +5,7 @@ import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Graduate Mode · Test Ready Score",
+  title: "Graduate Mode · Pass Pilot",
   description: "Record your practical test pass to stop billing and keep your reports.",
 };
 

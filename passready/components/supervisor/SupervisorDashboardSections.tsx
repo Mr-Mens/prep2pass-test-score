@@ -35,7 +35,7 @@ export function SupervisorDashboardSections({ view }: Props) {
         <section className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 shadow-sm">
           <h2 className="font-heading text-lg font-semibold text-brand-950">Link your learner to get started</h2>
           <p className="mt-2 text-sm leading-relaxed text-brand-700">
-            Connect your learner&apos;s Prep2Pass account to see their Test Ready Score, progress, and personalised
+            Connect your learner&apos;s Prep2Pass account to see their Pass Pilot, progress, and personalised
             practice guidance here.
           </p>
           <Link

@@ -137,7 +137,7 @@ export default async function LearnerAccountPage() {
         className="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
         aria-label="Shortcuts"
       >
-        <MenuRow href="/dashboard" title="Home" hint="Your Test Ready Score dashboard" />
+        <MenuRow href="/dashboard" title="Home" hint="Your Pass Pilot dashboard" />
         <MenuRow href="/assessment" title={BRAND_CTA.updateMyScore} hint="Takes around 5 minutes" />
         {entitlements.hasLifetimeAccess ? (
           <MenuRow href="/progress" title="Progress timeline" hint="Score arc across Premium reports" />

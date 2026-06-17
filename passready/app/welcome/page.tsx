@@ -8,7 +8,7 @@ import { getUserAppRole } from "@/lib/server/user-app-role";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Sign in · Test Ready Score",
+  title: "Sign in · Pass Pilot",
   description: "Choose your path: learner, instructor, or parent.",
 };
 

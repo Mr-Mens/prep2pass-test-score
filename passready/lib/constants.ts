@@ -1,7 +1,19 @@
 export const SITE = {
   name: "Prep2Pass",
-  tagline: "Test Ready Score for learner drivers.",
+  tagline: "Pass Pilot for learner drivers.",
   locale: "en-GB",
+} as const;
+
+/** App brand (Pass Pilot). Score/report naming uses Test Ready Score. */
+export const PRODUCT = {
+  name: "Pass Pilot",
+  score: "Test Ready Score",
+  report: "Test Ready Score Report",
+  history: "Test Ready Score History",
+  snapshot: "Test Ready Score Snapshot",
+  tagline: "Know. Improve. Pass.",
+  altTagline: "Know where you stand. Know what to improve next.",
+  eyebrow: "Pass Pilot",
 } as const;
 
 /** Full-wordmark asset (gauge + lettering); served from `/public`. */
@@ -16,11 +28,13 @@ export const SOCIAL_BANNER = {
   src: "/social-banner/og.jpg",
   width: 1200,
   height: 800,
-  alt: "Test Ready Score by Prep2Pass — UK learner driving assessment",
+  alt: "Pass Pilot — UK learner driving assessment",
 } as const;
 
 export const SITE_DEFAULT_DESCRIPTION =
-  "Test Ready Score by Prep2Pass: a clear UK learner assessment, practical risks, and focused next steps before your practical test. Created by a DVSA-approved driving instructor." as const;
+  "Pass Pilot helps learner drivers understand their readiness, identify risks and focus lessons on what matters most before test day." as const;
+
+export const SITE_META_TITLE = `${PRODUCT.name} | ${PRODUCT.altTagline}` as const;
 
 /** Branded call-to-action copy, prefer these over generic “assessment” wording. */
 export const BRAND_CTA = {
@@ -30,9 +44,10 @@ export const BRAND_CTA = {
   getUpdatedScore: "Get an Updated Score",
   getAnotherScore: "Get Another Test Ready Score",
   viewScoreHistory: "View My Test Ready Score History",
+  viewMyScore: "View My Test Ready Score",
   viewSampleReport: "View Sample Report",
   invitePupil: "Invite Pupil to Get Their Test Ready Score",
-  sendScoreInvite: "Send Test Ready Score Invite",
+  sendScoreInvite: "Test Ready Score Invite",
   helpLearnerGetScore: "Help Your Learner Get Their Test Ready Score",
   takesFiveMinutes: "⏱ Takes around 5 minutes",
   entrySubtext:
@@ -45,7 +60,7 @@ export const PREMIUM_MEMBER_UI = {
   unlimited: "Unlimited assessments unlocked",
   journey: "Your driving journey",
   reportsHistory: "View My Test Ready Score History",
-  journeyInsights: "Journey insights",
+  journeyInsights: "Journey Insights",
   progressRhythm:
     "Each saved report adds to your history. Look back to see how your score and weak areas change over time.",
   graduateBadge: "Graduate, congratulations!",

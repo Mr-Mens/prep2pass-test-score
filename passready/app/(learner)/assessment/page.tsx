@@ -12,7 +12,7 @@ import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/se
 export const metadata: Metadata = {
   title: "Get Your Test Ready Score",
   description:
-    "Answer a few questions and receive your personalised Test Ready Score, risks and action plan. Created by a DVSA-approved driving instructor.",
+    "Answer a few questions and receive your personalised Pass Pilot, risks and action plan. Created by a DVSA-approved driving instructor.",
 };
 
 const VALUE_BULLETS = [

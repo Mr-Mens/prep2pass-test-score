@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 
 import { AppShell } from "@/components/AppShell";
-import { SITE, SITE_DEFAULT_DESCRIPTION, SOCIAL_BANNER } from "@/lib/constants";
+import { PRODUCT, SITE, SITE_DEFAULT_DESCRIPTION, SITE_META_TITLE, SOCIAL_BANNER } from "@/lib/constants";
 
 import "./globals.css";
 
@@ -21,16 +21,22 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   metadataBase: new URL("https://passready.app"),
   title: {
-    default: `Test Ready Score by ${SITE.name}`,
-    template: `%s · ${SITE.name}`,
+    default: SITE_META_TITLE,
+    template: `%s · ${PRODUCT.name}`,
   },
   description: SITE_DEFAULT_DESCRIPTION,
+  applicationName: PRODUCT.name,
+  appleWebApp: {
+    capable: true,
+    title: PRODUCT.name,
+    statusBarStyle: "default",
+  },
   openGraph: {
-    title: `Test Ready Score by ${SITE.name}`,
+    title: SITE_META_TITLE,
     description: SITE_DEFAULT_DESCRIPTION,
     type: "website",
     locale: "en_GB",
-    siteName: SITE.name,
+    siteName: PRODUCT.name,
     images: [
       {
         url: SOCIAL_BANNER.src,
@@ -42,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `Test Ready Score by ${SITE.name}`,
+    title: SITE_META_TITLE,
     description: SITE_DEFAULT_DESCRIPTION,
     images: [SOCIAL_BANNER.src],
   },

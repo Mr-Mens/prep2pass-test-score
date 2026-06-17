@@ -10,7 +10,7 @@ import { requireLinkedLearnerUserId, requireParentSession } from "@/lib/server/s
 
 export const metadata: Metadata = {
   title: "Reports · Parent supervisor",
-  description: "Read-only view of your learner's Test Ready Score reports.",
+  description: "Read-only view of your learner's Test Ready Score Reports.",
 };
 
 export default async function SupervisorReportsPage() {
@@ -42,7 +42,7 @@ export default async function SupervisorReportsPage() {
       <header>
         <h1 className="font-heading text-2xl font-semibold text-brand-950">Reports</h1>
         <p className="mt-2 text-sm text-brand-600">
-          Read-only access to {view.linkedLearner?.name ?? "your learner"}&apos;s saved Test Ready Score reports.
+          Read-only access to {view.linkedLearner?.name ?? "your learner"}&apos;s saved Test Ready Score Reports.
         </p>
       </header>
 

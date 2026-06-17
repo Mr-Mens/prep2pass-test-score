@@ -49,7 +49,7 @@ export const SUPERVISOR_SAFETY_GUIDANCE: readonly SafetyGuidanceCard[] = [
 
 export const SUPERVISOR_DISCLAIMERS = {
   support:
-    "Test Ready Score supports private practice but does not replace professional driving instruction.",
+    "Pass Pilot supports private practice but does not replace professional driving instruction.",
   legal:
     "Supervisors must ensure they meet legal requirements and that appropriate learner-driver insurance is in place.",
 } as const;

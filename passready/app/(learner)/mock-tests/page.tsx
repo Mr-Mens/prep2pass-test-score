@@ -36,7 +36,7 @@ export default async function LearnerMockTestsPage() {
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">Mock tests</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          DVSA-style mock test reports your instructor shares with you. These are separate from your Test Ready Score assessments.
+          DVSA-style mock test reports your instructor shares with you. These are separate from your Pass Pilot assessments.
         </p>
       </div>
 

@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import { BrandLogo } from "@/components/BrandLogo";
+import { BrandMark } from "@/components/BrandMark";
 import { isMarketingRoute } from "@/lib/marketing-routes";
-import { BRAND_CTA, SITE } from "@/lib/constants";
+import { BRAND_CTA, PRODUCT, SITE } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { Button } from "./Button";
@@ -174,9 +174,9 @@ export function Navbar() {
           href="/"
           className="flex min-h-[48px] min-w-0 shrink-0 items-center rounded-xl py-1 pr-2"
           onClick={() => setOpen(false)}
-          aria-label={`Test Ready Score by ${SITE.name}, home`}
+          aria-label={`${PRODUCT.name}, home`}
         >
-          <BrandLogo variant="navbar" />
+          <BrandMark variant="compact" />
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex" aria-label="Primary">

@@ -94,7 +94,7 @@ const faqItems = [
   },
   {
     q: "Is this official DVSA guidance?",
-    a: "No. Prep2Pass is independent and not affiliated with DVSA. Test Ready Score is produced by a DVSA-approved driving instructor to complement lessons.",
+    a: "No. Prep2Pass is independent and not affiliated with DVSA. Pass Pilot is produced by a DVSA-approved driving instructor to complement lessons.",
   },
   {
     q: "Does this guarantee I will pass?",
@@ -102,7 +102,7 @@ const faqItems = [
   },
   {
     q: "Can I use this with my instructor?",
-    a: "Yes. Test Ready Score is built to support your instructor's professional judgement, not replace it. Bring your report to agree clear next steps together.",
+    a: "Yes. Pass Pilot is built to support your instructor's professional judgement, not replace it. Bring your report to agree clear next steps together.",
   },
   {
     q: "Can parents use this for private practice?",
@@ -154,7 +154,7 @@ export async function MarketingHomePage() {
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-16">
             <div className="text-center lg:text-left">
               <p className="inline-flex items-center rounded-full border border-teal-200/70 bg-white/80 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                Prep2Pass · Test Ready Score
+                Pass Pilot
               </p>
               <p className="mt-3 text-xs font-medium text-brand-600">
                 Created by a DVSA-approved driving instructor
@@ -239,7 +239,7 @@ export async function MarketingHomePage() {
           ))}
         </div>
         <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-brand-700">
-          Test Ready Score helps you make more informed decisions about when to book and what to improve before test
+          Pass Pilot helps you make more informed decisions about when to book and what to improve before test
           day.
         </p>
       </Section>
@@ -252,7 +252,7 @@ export async function MarketingHomePage() {
       >
         <PremiumReportFeatures />
         <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-brand-100 bg-brand-50/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-700">
-          Built to support your instructor&apos;s professional judgement, not replace it. Test Ready Score gives learners,
+          Built to support your instructor&apos;s professional judgement, not replace it. Pass Pilot gives learners,
           instructors and parents a structured way to understand progress and agree clear next steps together.
         </div>
         <p className="mt-6 text-center">
@@ -267,8 +267,8 @@ export async function MarketingHomePage() {
         <TestCountdownPreview />
       </Section>
 
-      {/* Why learners use Test Ready Score */}
-      <Section eyebrow="Value" title="Why learners use Test Ready Score">
+      {/* Why learners use Pass Pilot */}
+      <Section eyebrow="Value" title="Why learners use Pass Pilot">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {valueCards.map((item) => (
             <div
@@ -352,15 +352,15 @@ export async function MarketingHomePage() {
       {/* Trust */}
       <Section
         eyebrow="Trust"
-        title="Built to give honest, practical guidance"
-        subtitle="Created by a DVSA-approved driving instructor to provide structured insight learners can use alongside real lessons."
+        title="Pass Pilot gives honest, practical guidance"
+        subtitle="Pass Pilot gives learners, parents and instructors a structured way to understand progress and focus on what matters most before test day."
       >
         <div className="mx-auto mb-6 max-w-3xl rounded-2xl border border-teal-200/70 bg-teal-50/50 p-6 text-center shadow-sm ring-1 ring-teal-100/80">
           <h3 className="font-heading text-base font-semibold text-brand-950 sm:text-lg">
             Built to support your instructor&apos;s professional judgement, not replace it.
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-brand-700">
-            Test Ready Score gives learners, instructors and parents a structured way to understand progress and agree
+            Pass Pilot gives learners, instructors and parents a structured way to understand progress and agree
             clear next steps together.
           </p>
         </div>
@@ -371,7 +371,7 @@ export async function MarketingHomePage() {
           <TrustBadge title="Secure checkout and saved progress" description="Stripe billing · saved reports." />
         </div>
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-brand-500">
-          Test Ready Score is independent and not affiliated with DVSA.
+          Pass Pilot is independent and not affiliated with DVSA.
         </p>
       </Section>
 

@@ -12,7 +12,7 @@ import { requireParentSession } from "@/lib/server/supervisor-page-auth";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Parent & Supervisor Dashboard · Test Ready Score",
+  title: "Parent & Supervisor Dashboard · Pass Pilot",
   description: `${SITE.name}: support your learner during private practice with scores, guidance, and practice logs.`,
 };
 

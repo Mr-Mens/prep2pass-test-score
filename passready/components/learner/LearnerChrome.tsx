@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { BrandLogo } from "@/components/BrandLogo";
-import { BRAND_CTA, PRICING, SITE } from "@/lib/constants";
+import { BrandMark } from "@/components/BrandMark";
+import { BRAND_CTA, PRICING, PRODUCT, SITE } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type NavMatch = "home" | "reports" | "progress" | "assessment" | "account";
@@ -254,11 +254,9 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh bg-[#f0f2f5] md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
-          <Link href="/dashboard" className="block" aria-label={`${SITE.name}, dashboard`}>
-            <BrandLogo variant="learnerRail" />
+          <Link href="/dashboard" className="block" aria-label={`${PRODUCT.name} dashboard`}>
+            <BrandMark variant="dark" />
           </Link>
-          <p className="mt-3 font-heading text-xs font-semibold uppercase tracking-wide text-white">Test Ready Score</p>
-          <p className="mt-1 text-xs text-slate-400">Powered by {SITE.name}</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -307,13 +305,13 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
             <Link
               href="/dashboard"
               className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-3 py-2 shadow-sm"
-              aria-label={`${SITE.name}, dashboard`}
+              aria-label={`${PRODUCT.name} dashboard`}
             >
-              <BrandLogo variant="learnerMobile" />
+              <BrandMark variant="compact" />
             </Link>
             <div className="min-w-0 flex-1">
               <p className="font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>
-              <p className="truncate text-[11px] font-medium leading-tight text-teal-800">Test Ready Score dashboard</p>
+              <p className="truncate text-[11px] font-medium leading-tight text-teal-800">{PRODUCT.name} dashboard</p>
             </div>
           </div>
         </header>

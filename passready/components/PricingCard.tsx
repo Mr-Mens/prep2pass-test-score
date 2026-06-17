@@ -1,4 +1,5 @@
 import { Button } from "@/components/Button";
+import { BRAND_CTA, PRODUCT } from "@/lib/constants";
 
 const DEFAULT_BULLETS = [
   "Your readiness score, explained in plain English",
@@ -28,10 +29,10 @@ export function PricingCard({
   primarySub = "One-off report",
   secondaryPrice,
   secondarySub = "Lifetime unlimited",
-  productTitle = "Test Ready Score",
+  productTitle = PRODUCT.name,
   bullets = DEFAULT_BULLETS,
   ctaHref = "/assessment",
-  ctaLabel = "Get My Test Ready Score",
+  ctaLabel = BRAND_CTA.getMyScore,
 }: PricingCardProps) {
   const oneOff = primaryPrice ?? price ?? "";
   const showDual = Boolean(secondaryPrice);

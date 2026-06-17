@@ -13,7 +13,7 @@ import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/se
 
 export const metadata: Metadata = {
   title: "Reports",
-  description: "Open your saved Test Ready Score reports and get another score when you're ready.",
+  description: "Open your saved Test Ready Score Reports and get another score when you're ready.",
 };
 
 function outcomeFromLabel(label: string): string {
@@ -81,7 +81,7 @@ export default async function MyReportsPage() {
               </>
             ) : (
               <>
-                Saved Test Ready Score write-ups for this account. Open any card for the full coach note and action plan.
+                Saved Test Ready Score Report write-ups for this account. Open any card for the full coach note and action plan.
               </>
             )}
           </p>

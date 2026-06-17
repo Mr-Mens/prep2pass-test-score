@@ -260,7 +260,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
       {/* Section 8, Journey insights */}
       {view.journeyInsights.length > 0 ? (
         <DashboardCard className="bg-brand-50/30">
-          <SectionLabel>Journey insights</SectionLabel>
+          <SectionLabel>{PREMIUM_MEMBER_UI.journeyInsights}</SectionLabel>
           <ul className="mt-4 space-y-2">
             {view.journeyInsights.map((line) => (
               <li key={line} className="flex gap-2 text-sm leading-relaxed text-brand-800">

@@ -233,7 +233,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
       <section className="sticky top-0 z-20 space-y-3 border-b border-brand-200/80 bg-[#f0f2f5]/98 pb-3 pt-1 backdrop-blur md:rounded-2xl md:border md:border-brand-100 md:bg-white md:p-4 md:shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="mock-sheet-eyebrow">Test ready score · Instructor</p>
+            <p className="mock-sheet-eyebrow">Pass Pilot · Instructor</p>
             <h1 className="mt-1 mock-sheet-hero-title">Mock test sheet</h1>
             <p className="mt-1 mock-sheet-hero-sub">DVSA-style mock test report · Not affiliated with DVSA</p>
           </div>

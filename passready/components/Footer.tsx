@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BrandLogo } from "@/components/BrandLogo";
-import { BRAND_CTA, SITE } from "@/lib/constants";
+import { BrandMark } from "@/components/BrandMark";
+import { BRAND_CTA, PRODUCT, SITE } from "@/lib/constants";
 
 const year = new Date().getFullYear();
 
@@ -21,14 +21,14 @@ export function Footer() {
           <Link
             href="/"
             className="inline-flex max-w-full"
-            aria-label={`Test Ready Score by ${SITE.name}, home`}
+            aria-label={`${PRODUCT.name}, home`}
           >
-            <BrandLogo variant="footer" />
+            <BrandMark />
           </Link>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">{SITE.name}</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">{PRODUCT.tagline}</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
-            Built by a DVSA-approved driving instructor for learner drivers in the UK: clear signals, honest guidance,
-            and a calm path to test day. Prep2Pass is independent and not affiliated with DVSA.
+            {PRODUCT.name} helps learner drivers understand readiness, identify risks and focus lessons on what
+            matters most before test day. {PRODUCT.name} is independent and not affiliated with DVSA.
           </p>
         </div>
         <div className="flex flex-col gap-4 text-sm text-brand-700 sm:items-end">

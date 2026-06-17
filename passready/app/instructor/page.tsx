@@ -185,7 +185,7 @@ export default async function InstructorDashboardPage() {
           href="/instructor/pupils"
           kicker="Insights"
           title="Instructor insights"
-          body="Open a pupil profile to review Test Ready Score trends, weak areas, and mock outcomes in one place."
+          body="Open a pupil profile to review Pass Pilot trends, weak areas, and mock outcomes in one place."
           cta="View pupils"
           icon={<IconInsights />}
           tint="from-emerald-600 to-teal-900"

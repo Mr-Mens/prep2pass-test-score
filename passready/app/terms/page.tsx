@@ -7,7 +7,7 @@ export default function TermsPage() {
     <Section eyebrow="Legal" title="Prep2Pass terms of use" contentClassName="max-w-3xl text-left">
       <div className="prose prose-sm max-w-none text-brand-700">
         <p>
-          Test Ready Score is coaching-style guidance only: it is not official DVSA material, not a substitute for live
+          Pass Pilot is coaching-style guidance only: it is not official DVSA material, not a substitute for live
           instruction, and Prep2Pass stays independent from DVSA. When you continue using Prep2Pass you accept scores and coaching
           plans cannot guarantee passing the practical driving test.
         </p>

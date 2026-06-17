@@ -28,7 +28,7 @@ export function TestCountdownPreview() {
         </ul>
       </div>
       <p className="mt-6 text-xs leading-relaxed text-brand-500">
-        Test Ready Score helps you focus on the right things before test day.
+        Pass Pilot helps you focus on the right things before test day.
       </p>
     </div>
   );

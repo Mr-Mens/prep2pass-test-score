@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Subscription active · Test Ready Score",
+  title: "Subscription active · Pass Pilot",
 };
 
 export default function SubscribeSuccessPage() {

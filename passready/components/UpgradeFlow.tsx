@@ -76,7 +76,7 @@ export function UpgradeFlow() {
 
       <ul className="mt-5 space-y-2 text-sm leading-relaxed text-brand-800">
         {[
-          "Unlimited Premium Test Ready Score reports",
+          "Unlimited Premium Test Ready Score Reports",
           "Score history with date-stamped progress",
           "No subscription, no extra charges",
         ].map((line) => (

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { BrandLogo } from "@/components/BrandLogo";
+import { BrandMark } from "@/components/BrandMark";
+import { PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const sidebarNav = [
@@ -61,7 +62,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
     <div className="flex min-h-dvh flex-col bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
       <aside className="hidden w-[17rem] shrink-0 flex-col border-r border-brand-100 bg-white md:flex">
         <div className="flex h-full flex-col px-4 py-6">
-          <BrandLogo variant="learnerRail" className="h-8 w-auto" />
+          <BrandMark variant="compact" />
           <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700">Parent &amp; supervisor</p>
           <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Supervisor">
             {sidebarNav.map((item) => {
@@ -106,7 +107,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <div>
             <p className="font-heading text-sm font-semibold text-brand-950">Parent workspace</p>
-            <p className="text-xs text-brand-500">Test Ready Score</p>
+            <p className="text-xs text-brand-500">Pass Pilot</p>
           </div>
           <button
             type="button"

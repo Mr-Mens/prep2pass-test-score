@@ -5,8 +5,8 @@ import { SITE } from "@/lib/constants";
 import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
 export const metadata: Metadata = {
-  title: "About · Test Ready Score",
-  description: `About ${SITE.name} and Test Ready Score, UK learner test readiness.`,
+  title: "About · Pass Pilot",
+  description: `About ${SITE.name} and Pass Pilot, UK learner test readiness.`,
 };
 
 export default async function AboutPage() {
@@ -25,7 +25,7 @@ export default async function AboutPage() {
             and practical next steps, written in calm, instructor-style language.
           </p>
           <p>
-            Test Ready Score is created by a DVSA-approved driving instructor. It is not an official DVSA product or
+            Pass Pilot is created by a DVSA-approved driving instructor. It is not an official DVSA product or
             score, and it should always be reviewed alongside your instructor and on-road performance.
           </p>
           <p>

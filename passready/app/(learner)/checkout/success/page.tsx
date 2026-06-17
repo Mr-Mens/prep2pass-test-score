@@ -14,7 +14,7 @@ export default function CheckoutSuccessPage() {
       <header>
         <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Payment</p>
         <h1 className="mt-2 font-heading text-2xl font-semibold tracking-tight text-brand-950">
-          Preparing your Premium Test Ready Score report
+          Preparing your Premium Test Ready Score Report
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
           Confirming payment securely, usually in a few seconds.

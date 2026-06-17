@@ -39,7 +39,7 @@ export default async function InstructorPupilsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">My pupils</h1>
         <p className="mt-2 text-sm text-brand-600">
-          Add a pupil by email. If they use Test Ready Score, they receive an in-app invitation to accept before you can
+          Add a pupil by email. If they use Pass Pilot, they receive an in-app invitation to accept before you can
           view their progress and parent activity.
         </p>
       </div>

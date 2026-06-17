@@ -7,7 +7,7 @@ export function HeroScoreCard() {
     <div
       className="relative overflow-hidden rounded-[1.5rem] border border-white/80 bg-gradient-to-br from-white via-white to-teal-50/40 p-6 shadow-[0_32px_64px_-24px_rgba(15,40,54,0.35),inset_0_1px_0_0_rgba(255,255,255,0.9)] ring-1 ring-brand-950/[0.04] sm:p-8"
       role="group"
-      aria-label="Example Test Ready Score report preview"
+      aria-label="Example Test Ready Score Report preview"
     >
       <div
         className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-teal-200/30 blur-3xl"

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { BrandLogo } from "@/components/BrandLogo";
-import { SITE } from "@/lib/constants";
+import { BrandMark } from "@/components/BrandMark";
+import { PRODUCT } from "@/lib/constants";
 
 type RoleKey = "learner" | "instructor" | "parent";
 
@@ -102,12 +102,11 @@ export function WelcomeLanding() {
       <div className="relative z-10 mx-auto flex w-full max-w-lg flex-col px-4 sm:max-w-xl sm:px-6 lg:max-w-5xl">
         <header className="flex flex-col items-center pt-4 text-center sm:pt-6">
           <div className="flex w-full max-w-md justify-center rounded-3xl border border-white/90 bg-white/95 px-6 py-6 shadow-lg shadow-brand-950/8 ring-1 ring-brand-100/90 backdrop-blur-md sm:max-w-lg sm:px-8 sm:py-8">
-            <BrandLogo variant="welcome" />
+            <BrandMark className="text-center" />
           </div>
-          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-600">Test Ready Score</p>
-          <p className="mt-1 text-xs font-medium text-brand-500">Powered by {SITE.name}</p>
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-600">{PRODUCT.tagline}</p>
           <h1 className="mt-8 font-heading text-[1.65rem] font-semibold leading-snug tracking-tight text-brand-950 sm:text-3xl lg:text-[2.1rem]">
-            Welcome to Test Ready Score
+            Welcome to {PRODUCT.name}
           </h1>
           <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-brand-700 sm:text-base">
             Your journey to test readiness starts here.

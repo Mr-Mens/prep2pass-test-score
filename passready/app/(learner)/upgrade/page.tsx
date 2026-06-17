@@ -6,7 +6,7 @@ import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Subscribe · Test Ready Score",
+  title: "Subscribe · Pass Pilot",
   description: "£6.99/month for unlimited assessments, AI reports, and progress tracking.",
 };
 

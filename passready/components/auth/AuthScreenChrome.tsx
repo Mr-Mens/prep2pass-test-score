@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { BrandMark } from "@/components/BrandMark";
+import { BrandLogo } from "@/components/BrandLogo";
 import { PRODUCT } from "@/lib/constants";
 
 export function AuthScreenChrome({ children }: { children: ReactNode }) {
@@ -15,7 +15,7 @@ export function AuthScreenChrome({ children }: { children: ReactNode }) {
           className="mb-10 block rounded-xl outline-none ring-teal-600 ring-offset-2 focus-visible:ring-2"
           aria-label={`${PRODUCT.name} welcome`}
         >
-          <BrandMark />
+          <BrandLogo variant="auth" />
         </Link>
         {children}
       </div>

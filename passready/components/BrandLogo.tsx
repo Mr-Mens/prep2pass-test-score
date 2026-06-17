@@ -2,7 +2,14 @@ import Image, { type ImageProps } from "next/image";
 
 import { BRAND_LOGO, PRODUCT } from "@/lib/constants";
 
-export type BrandLogoVariant = "navbar" | "footer" | "welcome" | "auth" | "learnerRail" | "learnerMobile";
+export type BrandLogoVariant =
+  | "navbar"
+  | "footer"
+  | "welcome"
+  | "auth"
+  | "learnerRail"
+  | "learnerMobile"
+  | "compact";
 
 const VARIANT: Record<
   BrandLogoVariant,
@@ -10,41 +17,44 @@ const VARIANT: Record<
 > = {
   navbar: {
     imgClass:
-      "h-16 w-auto max-w-[min(600px,calc(100vw-5.5rem))] object-contain object-left sm:h-[4.75rem] md:h-[5.75rem] lg:h-[6.5rem]",
-    sizes: "(max-width: 768px) 94vw, (max-width: 1280px) 520px, 640px",
-    quality: 95,
+      "h-14 w-auto max-h-16 min-w-[3.25rem] object-contain object-left sm:h-16 sm:min-w-[3.75rem] md:h-[4.75rem] md:min-w-[4.25rem] lg:h-[5.25rem] lg:min-w-[4.75rem]",
+    sizes: "(max-width: 768px) 64px, (max-width: 1280px) 76px, 84px",
+    quality: 100,
     priority: true,
+  },
+  compact: {
+    imgClass: "h-11 w-auto min-w-[2.75rem] object-contain object-left sm:h-12 sm:min-w-[3rem]",
+    sizes: "48px",
+    quality: 100,
   },
   footer: {
     imgClass:
-      "h-32 w-auto max-w-[min(600px,100%)] object-contain object-left sm:h-36 md:h-[10.5rem]",
-    sizes: "(max-width: 768px) min(94vw,560px), 640px",
-    quality: 95,
+      "h-32 w-auto min-w-[7rem] object-contain object-left sm:h-36 sm:min-w-[8rem] md:h-40 md:min-w-[9rem]",
+    sizes: "(max-width: 768px) 128px, 160px",
+    quality: 100,
   },
   welcome: {
     imgClass:
-      "mx-auto h-32 w-auto max-w-[min(92vw,34rem)] object-contain object-center sm:h-[8.5rem] md:h-40",
-    sizes: "(max-width: 768px) 94vw, (max-width: 1024px) 520px, 640px",
-    quality: 96,
+      "mx-auto h-36 w-auto min-w-[9rem] object-contain object-center sm:h-40 sm:min-w-[10rem] md:h-44 md:min-w-[11rem] lg:h-48 lg:min-w-[12rem]",
+    sizes: "(max-width: 768px) 144px, (max-width: 1024px) 176px, 192px",
+    quality: 100,
     priority: true,
   },
   auth: {
-    imgClass:
-      "mx-auto h-[5.25rem] w-auto max-w-[min(92vw,18rem)] object-contain object-center sm:h-[6rem]",
-    sizes: "(max-width: 640px) 92vw, 320px",
-    quality: 95,
+    imgClass: "mx-auto h-24 w-auto min-w-[6rem] object-contain object-center sm:h-28 sm:min-w-[7rem]",
+    sizes: "112px",
+    quality: 100,
     priority: true,
   },
   learnerRail: {
-    imgClass:
-      "h-14 w-auto max-w-[min(100%,16.25rem)] object-contain object-left brightness-0 invert opacity-[0.97]",
-    sizes: "288px",
-    quality: 94,
+    imgClass: "h-14 w-auto min-w-[3.25rem] object-contain object-left",
+    sizes: "56px",
+    quality: 100,
   },
   learnerMobile: {
-    imgClass: "h-[3.125rem] w-auto max-w-[min(240px,58vw)] object-contain object-left sm:h-[3.5rem]",
-    sizes: "(max-width: 640px) 240px, 280px",
-    quality: 94,
+    imgClass: "h-11 w-auto min-w-[2.75rem] object-contain object-left sm:h-12 sm:min-w-[3rem]",
+    sizes: "48px",
+    quality: 100,
   },
 };
 

@@ -1,6 +1,6 @@
-import { formatFaultRowCompositeId } from "@/lib/instructor/mock-test-labels";
-import type { MockTestFormPayload } from "@/lib/instructor/mock-test-schemas";
-import type { MockTestSummary } from "@/lib/instructor/types";
+import { mergeMockTestPayload } from "@/lib/instructor/mock-test-defaults";
+import { resolveMockTestSummary } from "@/lib/instructor/mock-test-scoring";
+import type { MockTestSummary, MockTestTopRiskAreas } from "@/lib/instructor/types";
 import type { MockTestRow } from "@/lib/server/repositories/instructor-mock-repository";
 
 type Props = {
@@ -10,8 +10,34 @@ type Props = {
   showCandidate?: boolean;
 };
 
+function RiskAreaList({
+  title,
+  items,
+  emptyLabel,
+}: {
+  title: string;
+  items: MockTestTopRiskAreas[keyof MockTestTopRiskAreas];
+  emptyLabel: string;
+}) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-600">{title}</h3>
+      <ul className="mt-3 list-inside list-disc space-y-2 text-sm text-brand-800">
+        {items.map((item) => (
+          <li key={item.compositeId}>{item.displayLabel}</li>
+        ))}
+        {items.length === 0 ? <li className="list-none text-brand-500">{emptyLabel}</li> : null}
+      </ul>
+    </div>
+  );
+}
+
 export function MockTestSummarySections({ row, summary, failReason, showCandidate = true }: Props) {
-  const formPayload = row.form_payload as MockTestFormPayload;
+  const formPayload = mergeMockTestPayload(row.form_payload);
+  const resolvedSummary = resolveMockTestSummary(formPayload, row.minor_fault_threshold, summary);
+  const { topRiskAreas } = resolvedSummary;
+  const hasAnyRisk =
+    topRiskAreas.dangerous.length + topRiskAreas.serious.length + topRiskAreas.driving.length > 0;
 
   return (
     <>
@@ -57,44 +83,44 @@ export function MockTestSummarySections({ row, summary, failReason, showCandidat
         </dl>
       </section>
 
-      {summary ? (
-        <>
-          <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Top risk areas</h2>
-            <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-brand-800">
-              {summary.weakRowIds.slice(0, 8).map((id) => (
-                <li key={id}>{formatFaultRowCompositeId(id)}</li>
-              ))}
-              {summary.weakRowIds.length === 0 ? <li className="list-none text-brand-500">No faults recorded.</li> : null}
-            </ul>
-          </section>
+      <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Top risk areas</h2>
+        <div className="mt-6 space-y-6">
+          <RiskAreaList title="Dangerous faults" items={topRiskAreas.dangerous} emptyLabel="None recorded" />
+          <RiskAreaList title="Serious faults" items={topRiskAreas.serious} emptyLabel="None recorded" />
+          <RiskAreaList title="Driving faults" items={topRiskAreas.driving} emptyLabel="None recorded" />
+        </div>
+        {!hasAnyRisk ? <p className="mt-4 text-sm text-brand-500">No faults recorded.</p> : null}
+      </section>
 
-          <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Weak categories</h2>
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {summary.weakCategories.map((c) => (
-                <li
-                  key={c}
-                  className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-900 ring-1 ring-brand-200"
-                >
-                  {c}
-                </li>
-              ))}
-              {summary.weakCategories.length === 0 ? <li className="text-sm text-brand-500">None recorded</li> : null}
-            </ul>
-          </section>
+      <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Weak categories</h2>
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {resolvedSummary.weakCategories.map((c) => (
+            <li
+              key={c}
+              className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-900 ring-1 ring-brand-200"
+            >
+              {c}
+            </li>
+          ))}
+          {resolvedSummary.weakCategories.length === 0 ? (
+            <li className="text-sm text-brand-500">None recorded</li>
+          ) : null}
+        </ul>
+      </section>
 
-          <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Suggested improvement priorities</h2>
-            <ul className="mt-4 list-inside list-decimal space-y-2 text-sm text-brand-800">
-              {summary.suggestedFocus.map((line, i) => (
-                <li key={i}>{line}</li>
-              ))}
-              {summary.suggestedFocus.length === 0 ? <li className="list-none text-brand-500">None recorded</li> : null}
-            </ul>
-          </section>
-        </>
-      ) : null}
+      <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Suggested improvement priorities</h2>
+        <ul className="mt-4 list-inside list-decimal space-y-2 text-sm text-brand-800">
+          {resolvedSummary.suggestedFocus.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
+          {resolvedSummary.suggestedFocus.length === 0 ? (
+            <li className="list-none text-brand-500">None recorded</li>
+          ) : null}
+        </ul>
+      </section>
 
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Fault descriptions</h2>

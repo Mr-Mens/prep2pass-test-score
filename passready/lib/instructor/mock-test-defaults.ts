@@ -3,21 +3,7 @@ import type { MockTestFormPayload } from "@/lib/instructor/mock-test-schemas";
 import { mockTestFormPayloadSchema } from "@/lib/instructor/mock-test-schemas";
 
 export function buildDefaultMockTestForm(): MockTestFormPayload {
-  const faultSeed = {} as Pick<
-    MockTestFormPayload,
-    | "manoeuvres"
-    | "showMeTellMe"
-    | "controlledStop"
-    | "control"
-    | "moveOff"
-    | "mirrors"
-    | "signals"
-    | "junctions"
-    | "judgement"
-    | "positioningCore"
-    | "progress"
-    | "responseSigns"
-  >;
+  const faultSeed: Record<string, ReturnType<typeof emptyFaultMap>> = {};
   for (const sec of ALL_FAULT_SECTIONS) {
     faultSeed[sec.key] = emptyFaultMap(sec.rows);
   }
@@ -112,7 +98,7 @@ export function buildDefaultMockTestForm(): MockTestFormPayload {
     },
     instructorNotes: "",
     ...faultSeed,
-  };
+  } as MockTestFormPayload;
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {

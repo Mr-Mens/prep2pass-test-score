@@ -48,7 +48,7 @@ export function SendMockTestButton({ mockTestId, alreadySent }: Props) {
     <section className="rounded-2xl border border-teal-200/80 bg-teal-50/40 p-6 shadow-sm">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-900">Send to pupil</h2>
       <p className="mt-2 text-sm leading-relaxed text-brand-700">
-        Email the report and add it to the pupil&apos;s Prep2Pass app when they have a linked learner account.
+        Email the report and add it to the pupil&apos;s Pass Pilot account when they have a linked learner account.
       </p>
       {sent ? (
         <p className="mt-4 text-sm font-medium text-teal-900">

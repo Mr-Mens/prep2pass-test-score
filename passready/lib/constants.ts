@@ -16,18 +16,25 @@ export const PRODUCT = {
   eyebrow: "Pass Pilot",
 } as const;
 
-/** Full-wordmark asset (gauge + lettering); served from `/public`. */
+/** Pass Pilot logo and icon assets (`/public/brand/`). */
 export const BRAND_LOGO = {
-  src: "/brand/test-ready-score-logo.png",
-  width: 1024,
-  height: 682,
+  src: "/brand/pass-pilot-logo.png",
+  width: 677,
+  height: 589,
 } as const;
 
-/** Open Graph / Twitter / link-preview banner (`public/social-banner/`). */
+export const BRAND_ICONS = {
+  favicon32: "/brand/pass-pilot-favicon-32.png",
+  icon192: "/brand/pass-pilot-icon-192.png",
+  icon512: "/brand/pass-pilot-icon-512.png",
+  apple180: "/brand/pass-pilot-icon-180.png",
+} as const;
+
+/** Open Graph / Twitter / link-preview image (`public/social-banner/`). */
 export const SOCIAL_BANNER = {
-  src: "/social-banner/og.jpg",
+  src: "/social-banner/og.png",
   width: 1200,
-  height: 800,
+  height: 630,
   alt: "Pass Pilot — UK learner driving assessment",
 } as const;
 

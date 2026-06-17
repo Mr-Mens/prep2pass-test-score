@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 
 import { AppShell } from "@/components/AppShell";
-import { PRODUCT, SITE, SITE_DEFAULT_DESCRIPTION, SITE_META_TITLE, SOCIAL_BANNER } from "@/lib/constants";
+import { PRODUCT, SITE_DEFAULT_DESCRIPTION, SITE_META_TITLE, SOCIAL_BANNER, BRAND_ICONS } from "@/lib/constants";
 
 import "./globals.css";
 
@@ -26,6 +26,14 @@ export const metadata: Metadata = {
   },
   description: SITE_DEFAULT_DESCRIPTION,
   applicationName: PRODUCT.name,
+  icons: {
+    icon: [
+      { url: BRAND_ICONS.favicon32, sizes: "32x32", type: "image/png" },
+      { url: BRAND_ICONS.icon192, sizes: "192x192", type: "image/png" },
+      { url: BRAND_ICONS.icon512, sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: BRAND_ICONS.apple180, sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     title: PRODUCT.name,

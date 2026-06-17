@@ -3,6 +3,7 @@ import "server-only";
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 
 import type { MockTestFormPayload } from "@/lib/instructor/mock-test-schemas";
+import { mergeMockTestPayload } from "@/lib/instructor/mock-test-defaults";
 import {
   aggregateFaultCounts,
   buildMockTestSummary,
@@ -32,9 +33,10 @@ export type MockTestRow = {
 };
 
 function recomputeFromPayload(payload: MockTestFormPayload, threshold: number) {
-  const counts = aggregateFaultCounts(payload);
-  const summary = buildMockTestSummary(payload, threshold);
-  const { outcome, failReason } = computeMockOutcome(payload, threshold);
+  const normalized = mergeMockTestPayload(payload);
+  const counts = aggregateFaultCounts(normalized);
+  const summary = buildMockTestSummary(normalized, threshold);
+  const { outcome, failReason } = computeMockOutcome(normalized, threshold);
   return {
     driving_fault_count: counts.drivingFaultCount,
     minor_fault_count: counts.minorFaultCount,
@@ -42,6 +44,7 @@ function recomputeFromPayload(payload: MockTestFormPayload, threshold: number) {
     dangerous_fault_count: counts.dangerousFaultCount,
     outcome,
     fail_reason: failReason,
+    form_payload: normalized as unknown as Record<string, unknown>,
     summary_json: {
       summary,
       outcome,
@@ -101,9 +104,15 @@ export async function upsertMockTest(input: {
     pupil_name_snapshot: input.pupilNameSnapshot.trim(),
     status: input.status,
     minor_fault_threshold: input.minorFaultThreshold,
-    form_payload: input.payload as unknown as Record<string, unknown>,
+    form_payload: computed.form_payload,
     updated_at: now,
-    ...computed,
+    driving_fault_count: computed.driving_fault_count,
+    minor_fault_count: computed.minor_fault_count,
+    serious_fault_count: computed.serious_fault_count,
+    dangerous_fault_count: computed.dangerous_fault_count,
+    outcome: computed.outcome,
+    fail_reason: computed.fail_reason,
+    summary_json: computed.summary_json,
   };
 
   if (input.id) {

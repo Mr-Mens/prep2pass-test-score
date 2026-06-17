@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { BrandMark } from "@/components/BrandMark";
-import { PRODUCT } from "@/lib/constants";
+import { BrandLogo } from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const sidebarNav = [
@@ -62,7 +61,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
     <div className="flex min-h-dvh flex-col bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
       <aside className="hidden w-[17rem] shrink-0 flex-col border-r border-brand-100 bg-white md:flex">
         <div className="flex h-full flex-col px-4 py-6">
-          <BrandMark variant="compact" />
+          <BrandLogo variant="compact" />
           <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700">Parent &amp; supervisor</p>
           <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Supervisor">
             {sidebarNav.map((item) => {

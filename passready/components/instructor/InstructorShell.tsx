@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BrandLogo } from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const navItems = [
@@ -87,7 +88,7 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
       >
         <div className="flex h-full flex-col px-4 py-6">
           <div className="border-b border-slate-700/90 pb-5">
-            <p className="font-heading text-xs font-semibold uppercase tracking-wide text-white">Pass Pilot</p>
+            <BrandLogo variant="learnerRail" />
             <p className="mt-3 text-xs font-normal leading-relaxed text-slate-400">
               DVSA-style mock test tool · Not affiliated with DVSA
             </p>

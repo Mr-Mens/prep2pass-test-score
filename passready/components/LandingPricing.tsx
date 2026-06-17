@@ -4,7 +4,7 @@ import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
 
 const learnerIncludes = [
   "Unlimited assessments",
-  "Premium reports",
+  "Test Ready Score reports",
   "Progress tracking",
   "Learning roadmap",
   "AI-powered debriefs",
@@ -37,7 +37,7 @@ export function LandingPricing({ hideLearnerCard = false }: Props) {
         <div className="relative flex h-full flex-col rounded-2xl border-2 border-teal-400/70 bg-gradient-to-b from-teal-50/50 to-white p-6 shadow-[0_8px_40px_rgba(15,118,110,0.12)] ring-1 ring-teal-900/[0.06] sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3 gap-y-2">
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-semibold tracking-tight text-brand-950">Learner Premium</h3>
+              <h3 className="text-lg font-semibold tracking-tight text-brand-950">Pass Pilot for learners</h3>
               <p className="mt-1 text-sm leading-relaxed text-brand-600">Until you pass or cancel</p>
             </div>
             <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white shadow-sm">

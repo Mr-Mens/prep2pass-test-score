@@ -16,6 +16,12 @@ export type FaultSectionKey =
   | "junctions"
   | "judgement"
   | "positioningCore"
+  | "pedestrianCrossings"
+  | "positionNormalStop"
+  | "awarenessPlanning"
+  | "clearance"
+  | "followingDistance"
+  | "useOfSpeed"
   | "progress"
   | "responseSigns";
 
@@ -111,13 +117,65 @@ const POSITIONING_CORE: FaultSectionDef = {
   rows: [
     { id: "normalDriving", label: "Normal driving" },
     { id: "laneDiscipline", label: "Lane discipline" },
-    { id: "pedCrossings", label: "Pedestrian crossings" },
-    { id: "normalStop", label: "Position / normal stop" },
-    { id: "awarenessPlanning", label: "Awareness / planning" },
-    { id: "clearance", label: "Clearance" },
-    { id: "followingDistance", label: "Following distance" },
-    { id: "useOfSpeed", label: "Use of speed" },
   ],
+};
+
+const PEDESTRIAN_CROSSINGS: FaultSectionDef = {
+  key: "pedestrianCrossings",
+  title: "Pedestrian crossings",
+  rows: [{ id: "pedCrossings", label: "Pedestrian crossings" }],
+};
+
+const POSITION_NORMAL_STOP: FaultSectionDef = {
+  key: "positionNormalStop",
+  title: "Position / normal stop",
+  rows: [{ id: "normalStop", label: "Position / normal stop" }],
+};
+
+const AWARENESS_PLANNING: FaultSectionDef = {
+  key: "awarenessPlanning",
+  title: "Awareness / planning",
+  rows: [{ id: "awarenessPlanning", label: "Awareness / planning" }],
+};
+
+const CLEARANCE: FaultSectionDef = {
+  key: "clearance",
+  title: "Clearance",
+  rows: [{ id: "clearance", label: "Clearance" }],
+};
+
+const FOLLOWING_DISTANCE: FaultSectionDef = {
+  key: "followingDistance",
+  title: "Following distance",
+  rows: [{ id: "followingDistance", label: "Following distance" }],
+};
+
+const USE_OF_SPEED: FaultSectionDef = {
+  key: "useOfSpeed",
+  title: "Use of speed",
+  rows: [{ id: "useOfSpeed", label: "Use of speed" }],
+};
+
+/** Row ids that lived under positioningCore before the DL25-accurate split. */
+export const LEGACY_POSITIONING_ROW_IDS = [
+  "pedCrossings",
+  "normalStop",
+  "awarenessPlanning",
+  "clearance",
+  "followingDistance",
+  "useOfSpeed",
+] as const;
+
+export const LEGACY_POSITIONING_ROW_TO_SECTION: Record<
+  (typeof LEGACY_POSITIONING_ROW_IDS)[number],
+  FaultSectionKey
+> = {
+  pedCrossings: "pedestrianCrossings",
+  normalStop: "positionNormalStop",
+  awarenessPlanning: "awarenessPlanning",
+  clearance: "clearance",
+  followingDistance: "followingDistance",
+  useOfSpeed: "useOfSpeed",
 };
 
 const PROGRESS: FaultSectionDef = {
@@ -162,6 +220,12 @@ export const ALL_FAULT_SECTIONS: FaultSectionDef[] = [
   JUNCTIONS,
   JUDGEMENT,
   POSITIONING_CORE,
+  PEDESTRIAN_CROSSINGS,
+  POSITION_NORMAL_STOP,
+  AWARENESS_PLANNING,
+  CLEARANCE,
+  FOLLOWING_DISTANCE,
+  USE_OF_SPEED,
   PROGRESS,
   RESPONSE_SIGNS,
 ];
@@ -173,7 +237,17 @@ export const ALL_FAULT_SECTIONS: FaultSectionDef[] = [
 export const FAULT_GRID_COLUMNS: [FaultSectionDef[], FaultSectionDef[], FaultSectionDef[]] = [
   [SHOW_ME, CONTROLLED_STOP, CONTROL],
   [MOVE_OFF, MIRRORS, SIGNALS, JUNCTIONS, JUDGEMENT],
-  [POSITIONING_CORE, PROGRESS, RESPONSE_SIGNS],
+  [
+    POSITIONING_CORE,
+    PEDESTRIAN_CROSSINGS,
+    POSITION_NORMAL_STOP,
+    AWARENESS_PLANNING,
+    CLEARANCE,
+    FOLLOWING_DISTANCE,
+    USE_OF_SPEED,
+    PROGRESS,
+    RESPONSE_SIGNS,
+  ],
 ];
 
 const emptyMark = (): FaultMarks => ({ minorCount: 0, serious: false, dangerous: false });

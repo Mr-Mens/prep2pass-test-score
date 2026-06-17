@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { PRODUCT, SITE_DEFAULT_DESCRIPTION } from "@/lib/constants";
+import { BRAND_ICONS, PRODUCT, SITE_DEFAULT_DESCRIPTION } from "@/lib/constants";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -14,8 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en-GB",
     icons: [
       {
-        src: "/brand/test-ready-score-logo.png",
-        sizes: "1024x682",
+        src: BRAND_ICONS.icon192,
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        src: BRAND_ICONS.icon512,
+        sizes: "512x512",
         type: "image/png",
       },
     ],

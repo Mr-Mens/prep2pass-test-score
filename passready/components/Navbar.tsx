@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import { BrandMark } from "@/components/BrandMark";
+import { BrandLogo } from "@/components/BrandLogo";
 import { isMarketingRoute } from "@/lib/marketing-routes";
-import { BRAND_CTA, PRODUCT, SITE } from "@/lib/constants";
+import { BRAND_CTA, PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { Button } from "./Button";
@@ -176,7 +176,7 @@ export function Navbar() {
           onClick={() => setOpen(false)}
           aria-label={`${PRODUCT.name}, home`}
         >
-          <BrandMark variant="compact" />
+          <BrandLogo variant="navbar" />
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex" aria-label="Primary">

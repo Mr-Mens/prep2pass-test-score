@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BrandMark } from "@/components/BrandMark";
-import { BRAND_CTA, PRODUCT, SITE } from "@/lib/constants";
+import { BrandLogo } from "@/components/BrandLogo";
+import { BRAND_CTA, PRODUCT } from "@/lib/constants";
 
 const year = new Date().getFullYear();
 
@@ -23,7 +23,7 @@ export function Footer() {
             className="inline-flex max-w-full"
             aria-label={`${PRODUCT.name}, home`}
           >
-            <BrandMark />
+            <BrandLogo variant="footer" />
           </Link>
           <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">{PRODUCT.tagline}</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
@@ -59,7 +59,7 @@ export function Footer() {
             </Link>
           </nav>
           <p className="text-xs text-brand-500">
-            © {year} {SITE.name}. All rights reserved.
+            © {year} {PRODUCT.name}. All rights reserved.
           </p>
         </div>
       </div>

@@ -10,7 +10,7 @@ import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
 import { TestCountdownPreview } from "@/components/marketing/TestCountdownPreview";
 import { Section } from "@/components/Section";
 import { TrustBadge } from "@/components/TrustBadge";
-import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA } from "@/lib/constants";
+import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA, PRODUCT } from "@/lib/constants";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { getServerAuthUser } from "@/lib/supabase/server";
@@ -48,19 +48,43 @@ const socialProof = [
 
 const failedTestCards = [
   {
-    emoji: "💷",
     title: "Money",
     body: "A failed test can mean another test fee, additional lessons and months of waiting.",
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.375M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+        />
+      </svg>
+    ),
   },
   {
-    emoji: "⏰",
     title: "Time",
     body: "Many learners wait weeks or months for another practical test appointment.",
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+        />
+      </svg>
+    ),
   },
   {
-    emoji: "😟",
     title: "Confidence",
     body: "A failed test can knock confidence and make the next attempt feel more stressful.",
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
+        />
+      </svg>
+    ),
   },
 ] as const;
 
@@ -90,7 +114,7 @@ const valueCards = [
 const faqItems = [
   {
     q: "How much does it cost?",
-    a: `Learner Premium is ${PRICING.subscription.display}/month until you pass or cancel. Instructor and parent accounts are free.`,
+    a: `Pass Pilot for learners is ${PRICING.subscription.display}/month until you pass or cancel. Instructor and parent accounts are free.`,
   },
   {
     q: "Is this official DVSA guidance?",
@@ -228,12 +252,15 @@ export async function MarketingHomePage() {
           {failedTestCards.map((card) => (
             <div
               key={card.title}
-              className="rounded-2xl border border-brand-100 bg-brand-50/30 p-6 shadow-sm transition hover:border-amber-200/60 hover:shadow-md"
+              className="group rounded-2xl border border-brand-100/90 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200/70 hover:shadow-md"
             >
-              <p className="text-2xl" aria-hidden>
-                {card.emoji}
-              </p>
-              <h3 className="mt-3 font-heading text-base font-semibold text-brand-950">{card.title}</h3>
+              <span
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 text-amber-800 ring-1 ring-amber-200/70 shadow-sm transition group-hover:from-amber-100 group-hover:to-orange-100"
+                aria-hidden
+              >
+                {card.icon}
+              </span>
+              <h3 className="mt-4 font-heading text-base font-semibold text-brand-950">{card.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-brand-600">{card.body}</p>
             </div>
           ))}
@@ -244,10 +271,10 @@ export async function MarketingHomePage() {
         </p>
       </Section>
 
-      {/* Premium report */}
+      {/* Report features */}
       <Section
-        eyebrow="Premium report"
-        title="What's included in your Premium Report"
+        eyebrow="Your report"
+        title={`What's included in your ${PRODUCT.report}`}
         subtitle="Designed to help you and your instructor focus on what matters most before test day."
       >
         <PremiumReportFeatures />

@@ -10,7 +10,8 @@
     "test:scoring": "npx --yes tsx scripts/test-scoring.ts",
     "test:reasoning": "npx --yes tsx scripts/test-report-reasoning.ts",
     "knockout-brand-logo-bg": "node scripts/knockout-brand-logo-background.cjs",
-    "optimize:diagrams": "node scripts/optimize-diagram-images.mjs"
+    "optimize:diagrams": "node scripts/optimize-diagram-images.mjs",
+    "optimize:brand": "node scripts/optimize-brand-assets.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

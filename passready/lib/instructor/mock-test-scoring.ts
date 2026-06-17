@@ -1,25 +1,18 @@
 import { ALL_FAULT_SECTIONS } from "@/lib/instructor/mock-test-rows";
 import type { MockTestFormPayload } from "@/lib/instructor/mock-test-schemas";
 import { normalizeFaultCell } from "@/lib/instructor/mock-test-schemas";
-import type { FaultMarks, MockTestOutcome, MockTestSummary } from "@/lib/instructor/types";
+import type {
+  FaultMarks,
+  MockTestOutcome,
+  MockTestRiskAreaEntry,
+  MockTestSummary,
+  MockTestTopRiskAreas,
+} from "@/lib/instructor/types";
 
 /** More than this many minors on one row counts as a serious (same category). */
 export const MINOR_TALLY_CAP = 3;
 
-const FAULT_KEYS = [
-  "manoeuvres",
-  "showMeTellMe",
-  "controlledStop",
-  "control",
-  "moveOff",
-  "mirrors",
-  "signals",
-  "junctions",
-  "judgement",
-  "positioningCore",
-  "progress",
-  "responseSigns",
-] as const;
+const FAULT_KEYS = ALL_FAULT_SECTIONS.map((sec) => sec.key);
 
 function getCell(rec: Record<string, unknown>, id: string): FaultMarks {
   return normalizeFaultCell(rec[id]);
@@ -103,6 +96,69 @@ function rowScore(m: FaultMarks): number {
   return m.minorCount;
 }
 
+function formatRiskDisplayLabel(sectionTitle: string, rowLabel: string, minorCount: number, bucket: keyof MockTestTopRiskAreas) {
+  const base =
+    sectionTitle.trim().toLowerCase() === rowLabel.trim().toLowerCase()
+      ? rowLabel
+      : `${sectionTitle}: ${rowLabel}`;
+
+  if (bucket === "driving" && minorCount > 0) {
+    return `${base} (${minorCount})`;
+  }
+  return base;
+}
+
+function classifyRowSeverity(m: FaultMarks): keyof MockTestTopRiskAreas | null {
+  if (m.dangerous) return "dangerous";
+  if (m.serious || m.minorCount > MINOR_TALLY_CAP) return "serious";
+  if (m.minorCount > 0) return "driving";
+  return null;
+}
+
+function buildTopRiskAreas(payload: MockTestFormPayload): MockTestTopRiskAreas {
+  const topRiskAreas: MockTestTopRiskAreas = {
+    dangerous: [],
+    serious: [],
+    driving: [],
+  };
+
+  for (const sec of ALL_FAULT_SECTIONS) {
+    const block = payload[sec.key] as Record<string, unknown> | undefined;
+    if (!block) continue;
+    for (const row of sec.rows) {
+      const marks = getCell(block, row.id);
+      const bucket = classifyRowSeverity(marks);
+      if (!bucket) continue;
+
+      const entry: MockTestRiskAreaEntry = {
+        compositeId: `${sec.key}:${row.id}`,
+        sectionTitle: sec.title,
+        rowLabel: row.label,
+        displayLabel: formatRiskDisplayLabel(sec.title, row.label, marks.minorCount, bucket),
+        minorCount: marks.minorCount,
+      };
+      topRiskAreas[bucket].push(entry);
+    }
+  }
+
+  const severityRank = (bucket: keyof MockTestTopRiskAreas, entry: MockTestRiskAreaEntry) =>
+    bucket === "driving" ? entry.minorCount : rowScore(getCellFromPayload(payload, entry.compositeId));
+
+  for (const bucket of ["dangerous", "serious", "driving"] as const) {
+    topRiskAreas[bucket].sort((a, b) => severityRank(bucket, b) - severityRank(bucket, a));
+  }
+
+  return topRiskAreas;
+}
+
+function getCellFromPayload(payload: MockTestFormPayload, compositeId: string): FaultMarks {
+  const [sectionKey, rowId] = compositeId.split(":");
+  if (!sectionKey || !rowId) return { minorCount: 0, serious: false, dangerous: false };
+  const block = payload[sectionKey as keyof MockTestFormPayload];
+  if (!block || typeof block !== "object") return { minorCount: 0, serious: false, dangerous: false };
+  return getCell(block as Record<string, unknown>, rowId);
+}
+
 export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshold: number): MockTestSummary {
   const agg = aggregateFaultCounts(payload);
   const scoredRows: { id: string; sectionTitle: string; score: number; marks: FaultMarks }[] = [];
@@ -136,11 +192,21 @@ export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshol
     .slice(0, 4)
     .map(([k]) => k);
 
+  const topRiskAreas = buildTopRiskAreas(payload);
+
   const suggestedFocus: string[] = [];
-  if (weakCategories.length) suggestedFocus.push(`Stabilise ${weakCategories[0]} routines first.`);
-  if (agg.seriousFaultCount + agg.dangerousFaultCount > 0) {
-    suggestedFocus.unshift("Address serious or dangerous items before next mock.");
-  } else if (agg.minorFaultCount > Math.floor(minorThreshold * 0.7)) {
+  if (topRiskAreas.dangerous.length) {
+    suggestedFocus.push("Address dangerous faults before the next mock.");
+  }
+  if (topRiskAreas.serious.length) {
+    suggestedFocus.push("Review serious faults with your pupil on the next lesson.");
+  }
+  if (topRiskAreas.driving.length) {
+    suggestedFocus.push(`Reduce repeat driving faults in ${topRiskAreas.driving[0]?.sectionTitle ?? "weak areas"}.`);
+  } else if (weakCategories.length) {
+    suggestedFocus.push(`Stabilise ${weakCategories[0]} routines first.`);
+  }
+  if (agg.minorFaultCount > Math.floor(minorThreshold * 0.7) && agg.seriousFaultCount + agg.dangerousFaultCount === 0) {
     suggestedFocus.push("Fault count is approaching typical threshold. Tighten consistency.");
   }
   if (payload.instructorNotes.trim()) suggestedFocus.push("Use instructor notes below for lesson themes.");
@@ -154,5 +220,16 @@ export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshol
     weakRowIds,
     weakCategories,
     suggestedFocus,
+    topRiskAreas,
   };
+}
+
+/** Recompute summary when stored JSON predates topRiskAreas grouping. */
+export function resolveMockTestSummary(
+  payload: MockTestFormPayload,
+  minorThreshold: number,
+  stored?: MockTestSummary | null,
+): MockTestSummary {
+  if (stored?.topRiskAreas) return stored;
+  return buildMockTestSummary(payload, minorThreshold);
 }

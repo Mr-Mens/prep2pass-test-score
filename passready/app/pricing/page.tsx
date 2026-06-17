@@ -6,7 +6,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 
 export const metadata: Metadata = {
   title: "Pricing · Pass Pilot",
-  description: "Learner Premium is £6.99/month until you pass or cancel. Instructors and parents are free.",
+  description: "Pass Pilot for learners is £6.99/month until you pass or cancel. Instructors and parents are free.",
 };
 
 export default async function PricingPage() {

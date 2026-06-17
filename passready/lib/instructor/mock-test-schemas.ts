@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  LEGACY_POSITIONING_ROW_IDS,
+  LEGACY_POSITIONING_ROW_TO_SECTION,
+} from "@/lib/instructor/mock-test-rows";
+
 /** Legacy cells stored `"minor"` | `"serious"` | `"dangerous"` or new tallies object. */
 export function normalizeFaultCell(raw: unknown): { minorCount: number; serious: boolean; dangerous: boolean } {
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
@@ -31,6 +36,26 @@ const faultCellSchema = z.preprocess(
 
 const faultMapSchema = z.record(z.string(), faultCellSchema);
 
+function migratePositioningRows(o: Record<string, unknown>) {
+  const pc = o.positioningCore;
+  if (!pc || typeof pc !== "object" || Array.isArray(pc)) return;
+
+  const core = { ...(pc as Record<string, unknown>) };
+  for (const rowId of LEGACY_POSITIONING_ROW_IDS) {
+    if (!(rowId in core)) continue;
+    const targetSection = LEGACY_POSITIONING_ROW_TO_SECTION[rowId];
+    const existing = o[targetSection];
+    const target =
+      existing && typeof existing === "object" && !Array.isArray(existing)
+        ? { ...(existing as Record<string, unknown>) }
+        : {};
+    target[rowId] = core[rowId];
+    o[targetSection] = target;
+    delete core[rowId];
+  }
+  o.positioningCore = core;
+}
+
 function prepPayload(raw: unknown): unknown {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const o = { ...(raw as Record<string, unknown>) };
@@ -44,6 +69,8 @@ function prepPayload(raw: unknown): unknown {
     };
     delete o.positioningRest;
   }
+
+  migratePositioningRows(o);
 
   if (typeof o.faultDescriptions === "string" && (!o.postTest || typeof o.postTest !== "object")) {
     o.postTest = {
@@ -141,6 +168,12 @@ export const mockTestFormPayloadSchema = z.preprocess(
     junctions: faultMapSchema,
     judgement: faultMapSchema,
     positioningCore: faultMapSchema,
+    pedestrianCrossings: faultMapSchema,
+    positionNormalStop: faultMapSchema,
+    awarenessPlanning: faultMapSchema,
+    clearance: faultMapSchema,
+    followingDistance: faultMapSchema,
+    useOfSpeed: faultMapSchema,
     progress: faultMapSchema,
     responseSigns: faultMapSchema,
     sheetChecks: z.object({

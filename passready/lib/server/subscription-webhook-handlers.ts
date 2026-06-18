@@ -7,6 +7,10 @@ import {
   processReferralSubscriptionPayment,
 } from "@/lib/server/repositories/referrals-repository";
 import {
+  incrementAdminPromoRedemption,
+  markAdminPremiumInviteRedeemed,
+} from "@/lib/server/repositories/admin-promo-repository";
+import {
   mapStripeSubscriptionStatus,
   subscriptionPeriodDates,
 } from "@/lib/server/stripe";
@@ -51,6 +55,11 @@ export async function handleSubscriptionCheckoutCompleted(session: Stripe.Checko
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   await syncSubscriptionFromStripe(subscription);
   await activateReferralOnSubscription(userId);
+
+  const promoCodeId = session.metadata?.admin_promo_code_id;
+  const inviteId = session.metadata?.admin_premium_invite_id;
+  if (promoCodeId) await incrementAdminPromoRedemption(promoCodeId);
+  if (inviteId) await markAdminPremiumInviteRedeemed(inviteId, userId);
 }
 
 export async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {

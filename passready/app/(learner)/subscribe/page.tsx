@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { SubscribeFlow } from "@/components/SubscribeFlow";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
@@ -10,6 +11,14 @@ export const metadata: Metadata = {
   description: "£6.99/month for unlimited assessments, AI reports, and progress tracking.",
 };
 
+function SubscribeLoading() {
+  return (
+    <div className="mx-auto max-w-lg rounded-2xl border border-brand-200 bg-white p-8 text-center text-sm text-brand-600 shadow-card">
+      Loading…
+    </div>
+  );
+}
+
 export default async function SubscribePage() {
   const user = (await getServerAuthUser())!;
   const access = await getLearnerAccessStatus(user.id);
@@ -18,7 +27,9 @@ export default async function SubscribePage() {
 
   return (
     <div className="pb-4">
-      <SubscribeFlow />
+      <Suspense fallback={<SubscribeLoading />}>
+        <SubscribeFlow />
+      </Suspense>
     </div>
   );
 }

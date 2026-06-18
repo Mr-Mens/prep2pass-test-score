@@ -71,18 +71,28 @@ export async function createSubscriptionCheckoutSession(params: {
   assessmentId?: string;
   weakAreaCount?: number;
   returnPath?: string;
+  cancelPath?: string;
+  stripePromotionCodeId?: string;
+  promoMetadata?: {
+    adminPromoCodeId?: string;
+    adminPremiumInviteId?: string;
+  };
 }) {
   const stripe = getStripeServerClient();
   const config = getStripeConfig();
   const priceId = subscriptionPriceId();
   const returnPath = params.returnPath ?? "/checkout/success";
+  const cancelPath = params.cancelPath ?? "/assessment";
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${config.appUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}&mode=subscription`,
-    cancel_url: `${config.appUrl}/assessment`,
+    cancel_url: `${config.appUrl}${cancelPath}`,
     customer_email: params.email,
+    ...(params.stripePromotionCodeId
+      ? { discounts: [{ promotion_code: params.stripePromotionCodeId }] }
+      : {}),
     subscription_data: {
       metadata: {
         supabase_user_id: params.userId,
@@ -93,6 +103,12 @@ export async function createSubscriptionCheckoutSession(params: {
       supabase_user_id: params.userId,
       ...(params.assessmentId ? { assessmentId: params.assessmentId } : {}),
       ...(params.weakAreaCount != null ? { weakAreaCount: String(params.weakAreaCount) } : {}),
+      ...(params.promoMetadata?.adminPromoCodeId
+        ? { admin_promo_code_id: params.promoMetadata.adminPromoCodeId }
+        : {}),
+      ...(params.promoMetadata?.adminPremiumInviteId
+        ? { admin_premium_invite_id: params.promoMetadata.adminPremiumInviteId }
+        : {}),
     },
   });
 
@@ -115,6 +131,7 @@ export async function createCheckoutSession(params: {
       userId: params.userId,
       assessmentId: params.assessmentId,
       weakAreaCount: params.weakAreaCount,
+      cancelPath: params.flowMode === "upgrade" ? "/results" : "/assessment",
     });
   }
 

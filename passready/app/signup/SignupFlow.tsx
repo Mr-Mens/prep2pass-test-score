@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
@@ -22,6 +22,9 @@ export function SignupFlow() {
   const searchParams = useSearchParams();
   const postAuthPath = useMemo(() => safePostAuthPath(searchParams.get("next")), [searchParams]);
   const inviteToken = useMemo(() => searchParams.get("invite")?.trim() ?? "", [searchParams]);
+  const premiumInviteToken = useMemo(() => searchParams.get("premiumInvite")?.trim() ?? "", [searchParams]);
+  const prefilledEmail = useMemo(() => searchParams.get("email")?.trim().toLowerCase() ?? "", [searchParams]);
+  const lockEmail = Boolean(prefilledEmail && premiumInviteToken);
   const signupAppRole = useMemo(() => {
     const fromPath = appRoleFromDestination(postAuthPath) ?? "learner";
     return isSelfServiceAppRole(fromPath) ? fromPath : "learner";
@@ -43,6 +46,10 @@ export function SignupFlow() {
   const [terms, setTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (prefilledEmail) setEmail(prefilledEmail);
+  }, [prefilledEmail]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -85,6 +92,7 @@ export function SignupFlow() {
             first_name: fn,
             app_role: signupAppRole,
             ...(inviteToken ? { pending_invite_token: inviteToken } : {}),
+            ...(premiumInviteToken ? { pending_premium_invite_token: premiumInviteToken } : {}),
             ...(appRoleFromDestination(postAuthPath) === "instructor"
               ? { signup_intent: "instructor" as const }
               : {}),
@@ -106,9 +114,14 @@ export function SignupFlow() {
     <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Create account</p>
         <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Join Prep2Pass</h1>
-        {inviteToken ? (
+        {premiumInviteToken ? (
           <p className="mt-3 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
-            Your instructor invited you to Prep2Pass. After you verify your email, we&apos;ll link you automatically.
+            You&apos;ve been invited to Pass Pilot Premium. Use the invited email address below, then subscribe with your
+            discount applied.
+          </p>
+        ) : inviteToken ? (
+          <p className="mt-3 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
+            Your instructor invited you to Pass Pilot. After you verify your email, we&apos;ll link you automatically.
           </p>
         ) : null}
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
@@ -138,7 +151,8 @@ export function SignupFlow() {
               type="email"
               inputMode="email"
               autoComplete="email"
-              className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 text-sm"
+              readOnly={lockEmail}
+              className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 text-sm read-only:bg-brand-50 read-only:text-brand-700"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

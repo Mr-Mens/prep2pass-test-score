@@ -70,6 +70,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch
                   className={`rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                     active
                       ? "bg-teal-700 text-white shadow-sm"
@@ -133,6 +134,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    prefetch
                     className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition ${
                       active ? "bg-teal-50 text-teal-800" : "text-brand-600 hover:bg-brand-50"
                     }`}

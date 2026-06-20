@@ -61,6 +61,7 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
             <Link
               key={item.href}
               href={item.href}
+              prefetch
               onClick={() => onNavigate?.()}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                 active

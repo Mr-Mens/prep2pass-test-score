@@ -4,7 +4,7 @@ import { LearnerDashboardHome } from "@/components/dashboard/LearnerDashboardHom
 import { LearnerNotificationsPanel } from "@/components/learner/LearnerNotificationsPanel";
 import { SITE } from "@/lib/constants";
 import { buildLearnerDashboardView } from "@/lib/server/build-learner-dashboard-view";
-import { getServerAuthUser } from "@/lib/supabase/server";
+import { getCachedServerAuthUser } from "@/lib/server/cached-user-data";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default async function LearnerDashboardPage() {
-  const user = (await getServerAuthUser())!;
-  const view = await buildLearnerDashboardView(user.id);
+  const user = (await getCachedServerAuthUser())!;
+  const view = await buildLearnerDashboardView(user.id, user.firstName);
 
   return (
     <>

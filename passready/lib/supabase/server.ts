@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { getSupabaseAnonKey, getSupabaseUrl } from "./url";
 
@@ -32,9 +33,18 @@ export type ServerAuthUser = {
   email: string;
   /** ISO timestamp when email was confirmed */
   emailConfirmedAt: string | null;
+  firstName: string;
 };
 
-export async function getServerAuthUser(): Promise<ServerAuthUser | null> {
+function firstNameFromMetadata(meta: Record<string, unknown> | undefined): string {
+  return (
+    (typeof meta?.first_name === "string" && meta.first_name.trim()) ||
+    (typeof meta?.firstName === "string" && meta.firstName.trim()) ||
+    ""
+  );
+}
+
+export const getServerAuthUser = cache(async (): Promise<ServerAuthUser | null> => {
   const supabase = createSupabaseServerClient();
   const {
     data: { user },
@@ -44,5 +54,6 @@ export async function getServerAuthUser(): Promise<ServerAuthUser | null> {
     id: user.id,
     email: user.email.trim().toLowerCase(),
     emailConfirmedAt: user.email_confirmed_at ?? null,
+    firstName: firstNameFromMetadata(user.user_metadata as Record<string, unknown> | undefined),
   };
-}
+});

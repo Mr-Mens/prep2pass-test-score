@@ -71,9 +71,9 @@ export function Button(props: ButtonProps) {
 
   if ("href" in props && props.href) {
     /** Omit props we consume so `className` from callers is not spread after `className={styles}` and wipe variant styles. */
-    const { href, variant: _v, className: _c, children: _ch, ...forward } = props as ButtonAsLink;
+    const { href, variant: _v, className: _c, children: _ch, prefetch = true, ...forward } = props as ButtonAsLink;
     return (
-      <Link href={href} className={styles} {...forward}>
+      <Link href={href} prefetch={prefetch} className={styles} {...forward}>
         {children}
       </Link>
     );

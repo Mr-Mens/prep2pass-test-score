@@ -2,19 +2,16 @@ import "server-only";
 
 import { deriveDeltaVsPrior, deriveStrongestPhrase } from "@/lib/dashboard/journey-insights";
 import type { JourneySnapshot } from "@/lib/dashboard/journey-types";
-import { formatIsoDateUk } from "@/lib/formatting";
 import { buildReportViewModel } from "@/lib/report-view-model";
-import { buildTopPriorities } from "@/lib/report-insights";
-import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import {
-  getLatestReportTestBooking,
-  getReportsByUserId,
-  listJourneySnapshotsByUserId,
-} from "@/lib/server/repositories/reports-repository";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+  getCachedRecentReportSummaries,
+  getDashboardEntitlements,
+  getDashboardJourneySnapshots,
+  getDashboardTestBooking,
+  getLatestReportSummary,
+} from "@/lib/server/cached-user-data";
 import type { AssessmentPayload, ReadinessLabel, ReportSummaryItem, SyllabusProgressSnapshot } from "@/lib/validation";
 import type { ReadinessBandDisplay, ConfidenceDisplay } from "@/lib/readiness-calibration";
-import { confidenceDisplayLabel, readinessBandDisplayLabel } from "@/lib/readiness-calibration";
 
 export type LearnerDashboardView = {
   firstName: string;
@@ -105,30 +102,14 @@ function buildJourneyInsights(
   return insights.slice(0, 3);
 }
 
-export async function buildLearnerDashboardView(userId: string): Promise<LearnerDashboardView> {
-  let firstName = "";
-  try {
-    const sb = createSupabaseServerClient();
-    const {
-      data: { user: full },
-    } = await sb.auth.getUser();
-    const md = full?.user_metadata as Record<string, unknown> | undefined;
-    firstName =
-      (typeof md?.first_name === "string" && md.first_name.trim()) ||
-      (typeof md?.firstName === "string" && md.firstName.trim()) ||
-      "";
-  } catch {
-    /* ignore */
-  }
-
-  const [snaps, entitlements, reports, testBooking] = await Promise.all([
-    listJourneySnapshotsByUserId(userId),
-    getEntitlementLookupForUser(userId),
-    getReportsByUserId(userId),
-    getLatestReportTestBooking(userId),
+export async function buildLearnerDashboardView(userId: string, firstName = ""): Promise<LearnerDashboardView> {
+  const [snaps, entitlements, latestReport, recentReports, testBooking] = await Promise.all([
+    getDashboardJourneySnapshots(userId),
+    getDashboardEntitlements(userId),
+    getLatestReportSummary(userId),
+    getCachedRecentReportSummaries(userId, 3),
+    getDashboardTestBooking(userId),
   ]);
-
-  const latestReport = reports[0] ?? null;
   const delta = deriveDeltaVsPrior(snaps);
   const prevSnap = snaps.length >= 2 ? snaps[snaps.length - 2]! : null;
   const latestSnap = snaps.length ? snaps[snaps.length - 1]! : null;
@@ -185,14 +166,6 @@ export async function buildLearnerDashboardView(userId: string): Promise<Learner
       };
     }
   }
-
-  const recentReports = reports.slice(0, 3).map((r) => ({
-    id: r.id,
-    created_at: r.created_at,
-    readiness_score: r.readiness_score,
-    readiness_label: r.readiness_label,
-    report_source: r.report_source,
-  }));
 
   const testBlock =
     testBooking?.testBooked && testBooking.testDate

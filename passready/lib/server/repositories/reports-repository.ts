@@ -293,15 +293,38 @@ export async function getLatestReportTestBooking(userId: string): Promise<{
   };
 }
 
-export async function getReportSummaryByUserId(userId: string): Promise<ReportSummaryItem[]> {
+export async function getReportSummaryByUserId(userId: string, limit = 20): Promise<ReportSummaryItem[]> {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("reports")
     .select("id,created_at,readiness_score,readiness_label,report_source")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(limit);
 
   if (error) throw new Error("Failed to fetch report summary for user");
   return (data as ReportSummaryItem[]) ?? [];
+}
+
+const DASHBOARD_REPORT_COLUMNS =
+  "id,created_at,readiness_score,readiness_label,summary,next_steps,risk_areas,weak_areas,lessons_taken,mock_test_taken,mock_test_result,serious_faults,driving_faults,confidence_level,test_booked,test_date,raw_metadata,weak_area_details,report_source";
+
+/** Latest report with dashboard fields only (avoids loading full report history). */
+export async function getLatestReportForDashboard(userId: string): Promise<ReportDbRecord | null> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select(DASHBOARD_REPORT_COLUMNS)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error("Failed to fetch latest report for dashboard");
+  if (!data) return null;
+  return withMigratedWeakAreas(data as ReportDbRecord);
+}
+
+export async function getRecentReportSummaries(userId: string, limit = 3): Promise<ReportSummaryItem[]> {
+  return getReportSummaryByUserId(userId, limit);
 }

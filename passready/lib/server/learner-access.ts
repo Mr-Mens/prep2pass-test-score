@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
 import { getGraduationByUserId } from "@/lib/server/repositories/graduations-repository";
 import {
@@ -83,3 +85,6 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
     lifetimeAccess: hasPremiumAccess,
   };
 }
+
+/** Per-request dedupe when layouts and pages both read access. */
+export const getCachedLearnerAccessStatus = cache(getLearnerAccessStatus);

@@ -26,9 +26,8 @@ export default function InstructorDiagramsPage() {
             Teaching diagrams
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-brand-700 sm:text-base">
-            Instructor whiteboard diagrams from your uploaded assets in{" "}
-            <code className="rounded bg-brand-100 px-1.5 py-0.5 text-xs">public/diagrams</code>. Search, filter,
-            and open any diagram fullscreen during a lesson.
+            UK Highway Code whiteboard diagrams with teaching points, common mistakes, and lesson-ready layouts. Search
+            by topic, filter by category, and open any diagram fullscreen during a lesson.
           </p>
           <p className="mt-4 max-w-3xl border-l-4 border-teal-500/60 pl-4 text-xs leading-relaxed text-brand-600 sm:text-sm">
             Independent teaching aid aligned with the Highway Code. Not affiliated with DVSA.

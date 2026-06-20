@@ -142,9 +142,48 @@ const faqItems = [
   },
 ] as const;
 
+const microIconClass = "h-3.5 w-3.5 shrink-0";
+
+function MicroClockIcon({ className = microIconClass }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      />
+    </svg>
+  );
+}
+
+function MicroLockIcon({ className = microIconClass }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+      />
+    </svg>
+  );
+}
+
+function MicroBookmarkIcon({ className = microIconClass }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+      />
+    </svg>
+  );
+}
+
 function CtaMicrocopy({ className = "text-brand-600" }: { className?: string }) {
   return (
-    <p className={`mt-3 text-xs leading-relaxed ${className}`}>
+    <p className={`mt-3 inline-flex items-center justify-center gap-1.5 text-xs leading-relaxed ${className}`}>
+      <MicroClockIcon className="opacity-90" />
       <span className="opacity-90">{BRAND_CTA.takesFiveMinutes}</span>
     </p>
   );
@@ -436,9 +475,20 @@ export async function MarketingHomePage() {
             >
               {BRAND_CTA.viewSampleReport}
             </Button>
-            <div className="mt-2 space-y-1 text-xs leading-relaxed text-brand-300">
-              <p>{BRAND_CTA.takesFiveMinutes}</p>
-              <p>🔒 Secure account · 💾 Progress saved</p>
+            <div className="mt-2 flex flex-col items-center gap-1 text-xs leading-relaxed text-brand-300">
+              <p className="inline-flex items-center gap-1.5">
+                <MicroClockIcon />
+                <span>{BRAND_CTA.takesFiveMinutes}</span>
+              </p>
+              <p className="inline-flex items-center gap-1.5">
+                <MicroLockIcon />
+                <span>Secure account</span>
+                <span className="text-brand-400/80" aria-hidden>
+                  ·
+                </span>
+                <MicroBookmarkIcon />
+                <span>Progress saved</span>
+              </p>
             </div>
             {!hideLearnerPricing ? (
               <div className="mt-3 space-y-1 text-xs leading-relaxed text-brand-300">

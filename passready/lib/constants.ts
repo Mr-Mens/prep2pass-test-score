@@ -56,7 +56,7 @@ export const BRAND_CTA = {
   invitePupil: "Invite Pupil to Get Their Test Ready Score",
   sendScoreInvite: "Test Ready Score Invite",
   helpLearnerGetScore: "Help Your Learner Get Their Test Ready Score",
-  takesFiveMinutes: "⏱ Takes around 5 minutes",
+  takesFiveMinutes: "Takes around 5 minutes",
   entrySubtext:
     "Answer a few questions and receive your personalised Test Ready Score, risks and action plan.",
 } as const;

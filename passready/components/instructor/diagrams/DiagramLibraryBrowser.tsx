@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { DiagramMedia } from "@/components/instructor/diagrams/DiagramMedia";
 import { DIAGRAM_CATEGORIES } from "@/lib/instructor/diagrams/categories";
@@ -12,6 +12,45 @@ import type { DiagramCategorySlug, TeachingDiagram } from "@/lib/instructor/diag
 type Props = {
   diagrams: TeachingDiagram[];
 };
+
+function CategoryOverviewCards({
+  diagrams,
+  activeCategory,
+  onSelect,
+}: {
+  diagrams: TeachingDiagram[];
+  activeCategory: DiagramCategorySlug | "all";
+  onSelect: (category: DiagramCategorySlug) => void;
+}) {
+  return (
+    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {DIAGRAM_CATEGORIES.map((category) => {
+        const count = diagrams.filter((diagram) => diagram.category === category.slug).length;
+        const isActive = activeCategory === category.slug;
+
+        return (
+          <button
+            key={category.slug}
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => onSelect(category.slug)}
+            className={`rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 ${
+              isActive
+                ? "border-teal-300 bg-teal-50/60 ring-2 ring-teal-200"
+                : "border-brand-100 bg-white"
+            }`}
+          >
+            <p className="font-heading text-sm font-semibold text-brand-950">{category.name}</p>
+            <p className="mt-1 text-xs leading-relaxed text-brand-600">{category.description}</p>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700">
+              {count} diagram{count === 1 ? "" : "s"}
+            </p>
+          </button>
+        );
+      })}
+    </section>
+  );
+}
 
 function DiagramCard({ diagram }: { diagram: TeachingDiagram }) {
   return (
@@ -54,14 +93,27 @@ function DiagramCard({ diagram }: { diagram: TeachingDiagram }) {
 export function DiagramLibraryBrowser({ diagrams }: Props) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<DiagramCategorySlug | "all">("all");
+  const libraryRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
     const byCategory = filterDiagramsByCategory(diagrams, category);
     return filterDiagramsByQuery(byCategory, query);
   }, [category, diagrams, query]);
 
+  function selectCategory(next: DiagramCategorySlug | "all") {
+    setCategory(next);
+    libraryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <CategoryOverviewCards
+        diagrams={diagrams}
+        activeCategory={category}
+        onSelect={(slug) => selectCategory(slug)}
+      />
+
+      <div ref={libraryRef} className="space-y-6 scroll-mt-24">
       <div className="rounded-2xl border border-brand-100 bg-white p-4 shadow-sm sm:p-5">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-500">Search diagrams</span>
@@ -79,7 +131,7 @@ export function DiagramLibraryBrowser({ diagrams }: Props) {
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setCategory("all")}
+              onClick={() => selectCategory("all")}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                 category === "all"
                   ? "bg-teal-700 text-white shadow-sm"
@@ -92,7 +144,7 @@ export function DiagramLibraryBrowser({ diagrams }: Props) {
               <button
                 key={item.slug}
                 type="button"
-                onClick={() => setCategory(item.slug)}
+                onClick={() => selectCategory(item.slug)}
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                   category === item.slug
                     ? "bg-teal-700 text-white shadow-sm"
@@ -122,6 +174,7 @@ export function DiagramLibraryBrowser({ diagrams }: Props) {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

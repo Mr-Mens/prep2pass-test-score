@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DiagramLibraryBrowser } from "@/components/instructor/diagrams/DiagramLibraryBrowser";
-import { DIAGRAM_CATEGORIES } from "@/lib/instructor/diagrams/categories";
 import { getAllTeachingDiagrams } from "@/lib/instructor/diagrams/get-diagram";
 import { SITE } from "@/lib/constants";
 
@@ -35,24 +34,6 @@ export default function InstructorDiagramsPage() {
             Independent teaching aid aligned with the Highway Code. Not affiliated with DVSA.
           </p>
         </div>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {DIAGRAM_CATEGORIES.map((category) => {
-          const count = diagrams.filter((diagram) => diagram.category === category.slug).length;
-          return (
-            <div
-              key={category.slug}
-              className="rounded-2xl border border-brand-100 bg-white p-4 shadow-sm"
-            >
-              <p className="font-heading text-sm font-semibold text-brand-950">{category.name}</p>
-              <p className="mt-1 text-xs leading-relaxed text-brand-600">{category.description}</p>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-teal-700">
-                {count} diagram{count === 1 ? "" : "s"}
-              </p>
-            </div>
-          );
-        })}
       </section>
 
       <DiagramLibraryBrowser diagrams={diagrams} />

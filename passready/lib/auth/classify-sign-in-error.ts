@@ -29,6 +29,21 @@ export function classifySignInError(error: unknown): ClassifiedSignInError {
     return { kind: "requires_verification" };
   }
 
+  if (
+    lower.includes("failed to fetch") ||
+    lower.includes("fetch failed") ||
+    lower.includes("network") ||
+    lower.includes("networkerror") ||
+    code === "ECONNREFUSED" ||
+    code === "ENOTFOUND"
+  ) {
+    return {
+      kind: "other",
+      detail:
+        "We could not reach the sign-in service. Check your internet connection, confirm your Supabase project is active (not paused), and verify NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local — then restart the dev server.",
+    };
+  }
+
   if (message) return { kind: "other", detail: message };
 
   return { kind: "other", detail: "Something went wrong. Please try again." };

@@ -56,16 +56,21 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
       const invJson = (await invRes.json()) as {
         success?: boolean;
         invites?: Invite[];
+        migrationRequired?: boolean;
+        hint?: string;
         error?: { message?: string };
       };
-       const promoJson = (await promoRes.json()) as {
+      const promoJson = (await promoRes.json()) as {
         success?: boolean;
         promos?: Array<{ id: string; code: string; discountPercent: number; active: boolean }>;
+        migrationRequired?: boolean;
+        hint?: string;
         error?: { message?: string };
       };
       if (!invRes.ok || !invJson.success) throw new Error(invJson.error?.message ?? "Could not load invites");
       if (!promoRes.ok || !promoJson.success) throw new Error(promoJson.error?.message ?? "Could not load promo codes");
       setInvites(invJson.invites ?? []);
+      if (invJson.migrationRequired && invJson.hint) setMessage(invJson.hint);
       setPromos(
         (promoJson.promos ?? [])
           .filter((p) => p.active)

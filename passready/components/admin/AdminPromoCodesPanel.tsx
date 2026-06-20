@@ -41,9 +41,16 @@ export function AdminPromoCodesPanel({ adminKey }: Props) {
       const res = await fetch("/api/admin/promo-codes", {
         headers: { "x-admin-access-key": adminKey },
       });
-      const json = (await res.json()) as { success?: boolean; promos?: Promo[]; error?: { message?: string } };
+      const json = (await res.json()) as {
+        success?: boolean;
+        promos?: Promo[];
+        migrationRequired?: boolean;
+        hint?: string;
+        error?: { message?: string };
+      };
       if (!res.ok || !json.success) throw new Error(json.error?.message ?? "Could not load promo codes");
       setPromos(json.promos ?? []);
+      if (json.migrationRequired && json.hint) setMessage(json.hint);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load promo codes");
       setPromos([]);

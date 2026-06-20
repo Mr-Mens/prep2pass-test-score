@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createStripePromoForDiscount } from "@/lib/server/admin-promo-stripe";
+import { handleAdminPromoRouteError, jsonAdminError } from "@/lib/server/admin-promo-route-errors";
 import { assertAdminAccess, getAdminKeyFromRequest } from "@/lib/server/admin-gate";
+import { isPromoModuleReady, PROMO_MIGRATION_HINT } from "@/lib/server/commercial-schema";
 import { getStripeConfig } from "@/lib/server/stripe";
+import { isSupabaseConfigured } from "@/lib/server/supabase";
 import {
   generateAutoPromoCode,
   generatePremiumInviteToken,
@@ -16,10 +19,6 @@ import {
 import { normalizeEmail } from "@/lib/normalize-email";
 
 export const runtime = "nodejs";
-
-function jsonError(status: number, code: string, message: string) {
-  return NextResponse.json({ success: false as const, error: { code, message } }, { status });
-}
 
 const createInviteSchema = z.object({
   pupilEmail: z.string().email(),
@@ -42,13 +41,23 @@ const createInviteSchema = z.object({
 
 export async function GET(request: Request) {
   const gate = assertAdminAccess(getAdminKeyFromRequest(request));
-  if (!gate.ok) return jsonError(401, "UNAUTHORIZED", gate.message);
+  if (!gate.ok) return jsonAdminError(401, "UNAUTHORIZED", gate.message);
+  if (!isSupabaseConfigured()) {
+    return jsonAdminError(
+      503,
+      "SUPABASE_NOT_CONFIGURED",
+      "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.",
+    );
+  }
 
   try {
+    const migrationRequired = !(await isPromoModuleReady());
     const invites = await listAdminPremiumInvites();
     const appUrl = getStripeConfig().appUrl;
     return NextResponse.json({
       success: true as const,
+      migrationRequired,
+      hint: migrationRequired ? PROMO_MIGRATION_HINT : undefined,
       invites: invites.map((i) => ({
         id: i.id,
         token: i.token,
@@ -64,25 +73,31 @@ export async function GET(request: Request) {
       })),
     });
   } catch (e) {
-    console.error("[admin:premium-invites:GET]", e);
-    return jsonError(500, "LIST_FAILED", "Could not load premium invites.");
+    return handleAdminPromoRouteError(e, "Could not load premium invites.");
   }
 }
 
 export async function POST(request: Request) {
   const gate = assertAdminAccess(getAdminKeyFromRequest(request));
-  if (!gate.ok) return jsonError(401, "UNAUTHORIZED", gate.message);
+  if (!gate.ok) return jsonAdminError(401, "UNAUTHORIZED", gate.message);
+  if (!isSupabaseConfigured()) {
+    return jsonAdminError(
+      503,
+      "SUPABASE_NOT_CONFIGURED",
+      "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.",
+    );
+  }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return jsonError(400, "INVALID_JSON", "Request body must be valid JSON");
+    return jsonAdminError(400, "INVALID_JSON", "Request body must be valid JSON");
   }
 
   const parsed = createInviteSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(400, "VALIDATION_ERROR", parsed.error.errors[0]?.message ?? "Invalid payload");
+    return jsonAdminError(400, "VALIDATION_ERROR", parsed.error.errors[0]?.message ?? "Invalid payload");
   }
 
   const pupilEmail = normalizeEmail(parsed.data.pupilEmail);
@@ -96,10 +111,10 @@ export async function POST(request: Request) {
     if (promoCodeId) {
       const existing = await getAdminPromoCodeById(promoCodeId);
       if (!existing || !isPromoCodeUsable(existing)) {
-        return jsonError(400, "INVALID_PROMO", "Selected promo code is not available.");
+        return jsonAdminError(400, "INVALID_PROMO", "Selected promo code is not available.");
       }
       if (existing.discount_percent !== parsed.data.discountPercent) {
-        return jsonError(400, "DISCOUNT_MISMATCH", "Selected promo code discount does not match.");
+        return jsonAdminError(400, "DISCOUNT_MISMATCH", "Selected promo code discount does not match.");
       }
     } else {
       const inviteCode = generateAutoPromoCode(parsed.data.discountPercent, "GIFT");
@@ -146,7 +161,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (e) {
-    console.error("[admin:premium-invites:POST]", e);
-    return jsonError(500, "CREATE_FAILED", "Could not create premium invite.");
+    return handleAdminPromoRouteError(e, "Could not create premium invite.");
   }
 }

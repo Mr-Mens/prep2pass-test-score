@@ -3,6 +3,7 @@ import "server-only";
 import { randomBytes } from "crypto";
 
 import type { AdminPromoDiscountPercent } from "@/lib/admin/promo-discounts";
+import { isMissingCommercialTableError, isSupabaseNetworkError } from "@/lib/server/commercial-schema";
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 
 export type AdminPromoCodeRow = {
@@ -39,8 +40,41 @@ export type AdminPremiumInviteWithPromo = AdminPremiumInviteRow & {
   promo_code: string | null;
 };
 
-function isMissingPromoTableError(message: string): boolean {
-  return message.includes("admin_promo_codes") || message.includes("admin_premium_invites");
+function classifyPromoDbError(error: { code?: string; message?: string } | null): "missing_table" | "network" | "other" {
+  if (!error) return "other";
+  if (isMissingCommercialTableError(error)) return "missing_table";
+  const msg = (error.message ?? "").toLowerCase();
+  if (
+    msg.includes("admin_promo_codes") ||
+    msg.includes("admin_premium_invites") ||
+    msg.includes("could not find") ||
+    msg.includes("schema cache")
+  ) {
+    if (msg.includes("does not exist") || msg.includes("could not find") || msg.includes("schema cache")) {
+      return "missing_table";
+    }
+  }
+  if (isSupabaseNetworkError(error)) return "network";
+  return "other";
+}
+
+function throwForPromoDbError(error: { code?: string; message?: string }, action: string): never {
+  const kind = classifyPromoDbError(error);
+  if (kind === "missing_table") throw new Error("PROMO_MIGRATION_REQUIRED");
+  if (kind === "network") throw new Error("SUPABASE_UNREACHABLE");
+  console.error(`[admin-promo] ${action} failed`, error.message);
+  throw new Error(`Failed to ${action}`);
+}
+
+async function loadPromoCodeMap(ids: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  if (ids.length === 0) return map;
+
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase.from("admin_promo_codes").select("id, code").in("id", ids);
+  if (error) throwForPromoDbError(error, "load promo codes");
+  for (const row of data ?? []) map.set(row.id, row.code);
+  return map;
 }
 
 export function generatePremiumInviteToken(): string {
@@ -77,8 +111,8 @@ export async function insertAdminPromoCode(input: {
     .single();
 
   if (error) {
-    console.error("[admin-promo] insertAdminPromoCode failed", error.message);
-    throw new Error(error.message.includes("unique") ? "Promo code already exists" : "Failed to create promo code");
+    if (error.message.includes("unique")) throw new Error("Promo code already exists");
+    throwForPromoDbError(error, "create promo code");
   }
   return data as AdminPromoCodeRow;
 }
@@ -92,9 +126,9 @@ export async function listAdminPromoCodes(): Promise<AdminPromoCodeRow[]> {
     .limit(200);
 
   if (error) {
-    if (isMissingPromoTableError(error.message)) return [];
-    console.error("[admin-promo] listAdminPromoCodes failed", error.message);
-    throw new Error("Failed to list promo codes");
+    const kind = classifyPromoDbError(error);
+    if (kind === "missing_table") return [];
+    throwForPromoDbError(error, "list promo codes");
   }
   return (data ?? []) as AdminPromoCodeRow[];
 }
@@ -103,8 +137,9 @@ export async function getAdminPromoCodeById(id: string): Promise<AdminPromoCodeR
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.from("admin_promo_codes").select("*").eq("id", id).maybeSingle();
   if (error) {
-    if (isMissingPromoTableError(error.message)) return null;
-    throw new Error("Failed to read promo code");
+    const kind = classifyPromoDbError(error);
+    if (kind === "missing_table") return null;
+    throwForPromoDbError(error, "read promo code");
   }
   return data as AdminPromoCodeRow | null;
 }
@@ -114,8 +149,9 @@ export async function getAdminPromoCodeByCode(code: string): Promise<AdminPromoC
   const normalized = code.trim().toUpperCase();
   const { data, error } = await supabase.from("admin_promo_codes").select("*").eq("code", normalized).maybeSingle();
   if (error) {
-    if (isMissingPromoTableError(error.message)) return null;
-    throw new Error("Failed to read promo code");
+    const kind = classifyPromoDbError(error);
+    if (kind === "missing_table") return null;
+    throwForPromoDbError(error, "read promo code");
   }
   return data as AdminPromoCodeRow | null;
 }
@@ -129,7 +165,7 @@ export async function deactivateAdminPromoCode(id: string): Promise<AdminPromoCo
     .select("*")
     .maybeSingle();
 
-  if (error) throw new Error("Failed to deactivate promo code");
+  if (error) throwForPromoDbError(error, "deactivate promo code");
   return data as AdminPromoCodeRow | null;
 }
 
@@ -178,70 +214,55 @@ export async function insertAdminPremiumInvite(input: {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("[admin-promo] insertAdminPremiumInvite failed", error.message);
-    throw new Error("Failed to create premium invite");
-  }
+  if (error) throwForPromoDbError(error, "create premium invite");
   return data as AdminPremiumInviteRow;
 }
 
 export async function listAdminPremiumInvites(): Promise<AdminPremiumInviteWithPromo[]> {
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase
+  const { data: invites, error } = await supabase
     .from("admin_premium_invites")
-    .select("*, admin_promo_codes(code)")
+    .select("*")
     .order("created_at", { ascending: false })
     .limit(200);
 
   if (error) {
-    if (isMissingPromoTableError(error.message)) return [];
-    console.error("[admin-promo] listAdminPremiumInvites failed", error.message);
-    throw new Error("Failed to list premium invites");
+    const kind = classifyPromoDbError(error);
+    if (kind === "missing_table") return [];
+    throwForPromoDbError(error, "list premium invites");
   }
 
-  return (data ?? []).map((row) => {
-    const promo = row.admin_promo_codes as { code: string } | null;
-    const { admin_promo_codes: _omit, ...invite } = row as AdminPremiumInviteRow & {
-      admin_promo_codes: { code: string } | null;
-    };
-    return {
-      ...(invite as AdminPremiumInviteRow),
-      promo_code: promo?.code ?? null,
-    };
-  });
+  const rows = (invites ?? []) as AdminPremiumInviteRow[];
+  const promoIds = Array.from(new Set(rows.map((row) => row.promo_code_id).filter((id): id is string => Boolean(id))));
+  const promoMap = await loadPromoCodeMap(promoIds);
+
+  return rows.map((invite) => ({
+    ...invite,
+    promo_code: invite.promo_code_id ? (promoMap.get(invite.promo_code_id) ?? null) : null,
+  }));
 }
 
 export async function getAdminPremiumInviteByToken(token: string): Promise<AdminPremiumInviteWithPromo | null> {
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("admin_premium_invites")
-    .select("*, admin_promo_codes(code, stripe_promotion_code_id, active, max_redemptions, times_redeemed, expires_at)")
-    .eq("token", token)
-    .maybeSingle();
+  const { data, error } = await supabase.from("admin_premium_invites").select("*").eq("token", token).maybeSingle();
 
   if (error) {
-    if (isMissingPromoTableError(error.message)) return null;
-    throw new Error("Failed to read premium invite");
+    const kind = classifyPromoDbError(error);
+    if (kind === "missing_table") return null;
+    throwForPromoDbError(error, "read premium invite");
   }
   if (!data) return null;
 
-  const promo = data.admin_promo_codes as
-    | {
-        code: string;
-        stripe_promotion_code_id: string;
-        active: boolean;
-        max_redemptions: number | null;
-        times_redeemed: number;
-        expires_at: string | null;
-      }
-    | null;
-  const { admin_promo_codes: _omit, ...invite } = data as AdminPremiumInviteRow & {
-    admin_promo_codes: typeof promo;
-  };
+  const invite = data as AdminPremiumInviteRow;
+  let promoCode: string | null = null;
+  if (invite.promo_code_id) {
+    const promoMap = await loadPromoCodeMap([invite.promo_code_id]);
+    promoCode = promoMap.get(invite.promo_code_id) ?? null;
+  }
 
   return {
-    ...(invite as AdminPremiumInviteRow),
-    promo_code: promo?.code ?? null,
+    ...invite,
+    promo_code: promoCode,
   };
 }
 

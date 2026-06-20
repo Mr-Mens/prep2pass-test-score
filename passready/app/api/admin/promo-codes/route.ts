@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createStripePromoForDiscount, deactivateStripePromotionCode } from "@/lib/server/admin-promo-stripe";
+import { handleAdminPromoRouteError, jsonAdminError } from "@/lib/server/admin-promo-route-errors";
 import { assertAdminAccess, getAdminKeyFromRequest } from "@/lib/server/admin-gate";
+import { isPromoModuleReady, PROMO_MIGRATION_HINT } from "@/lib/server/commercial-schema";
+import { isSupabaseConfigured } from "@/lib/server/supabase";
 import {
   deactivateAdminPromoCode,
   generateAutoPromoCode,
@@ -11,10 +14,6 @@ import {
 } from "@/lib/server/repositories/admin-promo-repository";
 
 export const runtime = "nodejs";
-
-function jsonError(status: number, code: string, message: string) {
-  return NextResponse.json({ success: false as const, error: { code, message } }, { status });
-}
 
 const createPromoSchema = z.object({
   discountPercent: z.union([
@@ -43,12 +42,22 @@ const createPromoSchema = z.object({
 
 export async function GET(request: Request) {
   const gate = assertAdminAccess(getAdminKeyFromRequest(request));
-  if (!gate.ok) return jsonError(401, "UNAUTHORIZED", gate.message);
+  if (!gate.ok) return jsonAdminError(401, "UNAUTHORIZED", gate.message);
+  if (!isSupabaseConfigured()) {
+    return jsonAdminError(
+      503,
+      "SUPABASE_NOT_CONFIGURED",
+      "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.",
+    );
+  }
 
   try {
+    const migrationRequired = !(await isPromoModuleReady());
     const promos = await listAdminPromoCodes();
     return NextResponse.json({
       success: true as const,
+      migrationRequired,
+      hint: migrationRequired ? PROMO_MIGRATION_HINT : undefined,
       promos: promos.map((p) => ({
         id: p.id,
         code: p.code,
@@ -62,25 +71,31 @@ export async function GET(request: Request) {
       })),
     });
   } catch (e) {
-    console.error("[admin:promo-codes:GET]", e);
-    return jsonError(500, "LIST_FAILED", "Could not load promo codes.");
+    return handleAdminPromoRouteError(e, "Could not load promo codes.");
   }
 }
 
 export async function POST(request: Request) {
   const gate = assertAdminAccess(getAdminKeyFromRequest(request));
-  if (!gate.ok) return jsonError(401, "UNAUTHORIZED", gate.message);
+  if (!gate.ok) return jsonAdminError(401, "UNAUTHORIZED", gate.message);
+  if (!isSupabaseConfigured()) {
+    return jsonAdminError(
+      503,
+      "SUPABASE_NOT_CONFIGURED",
+      "Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.",
+    );
+  }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return jsonError(400, "INVALID_JSON", "Request body must be valid JSON");
+    return jsonAdminError(400, "INVALID_JSON", "Request body must be valid JSON");
   }
 
   const parsed = createPromoSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(400, "VALIDATION_ERROR", parsed.error.errors[0]?.message ?? "Invalid payload");
+    return jsonAdminError(400, "VALIDATION_ERROR", parsed.error.errors[0]?.message ?? "Invalid payload");
   }
 
   const code = (parsed.data.code ?? generateAutoPromoCode(parsed.data.discountPercent)).toUpperCase();
@@ -119,9 +134,10 @@ export async function POST(request: Request) {
       },
     });
   } catch (e) {
-    console.error("[admin:promo-codes:POST]", e);
-    const message = e instanceof Error ? e.message : "Could not create promo code.";
-    return jsonError(500, "CREATE_FAILED", message);
+    if (e instanceof Error && e.message === "Promo code already exists") {
+      return jsonAdminError(409, "DUPLICATE_CODE", e.message);
+    }
+    return handleAdminPromoRouteError(e, "Could not create promo code.");
   }
 }
 
@@ -132,23 +148,23 @@ const patchPromoSchema = z.object({
 
 export async function PATCH(request: Request) {
   const gate = assertAdminAccess(getAdminKeyFromRequest(request));
-  if (!gate.ok) return jsonError(401, "UNAUTHORIZED", gate.message);
+  if (!gate.ok) return jsonAdminError(401, "UNAUTHORIZED", gate.message);
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return jsonError(400, "INVALID_JSON", "Request body must be valid JSON");
+    return jsonAdminError(400, "INVALID_JSON", "Request body must be valid JSON");
   }
 
   const parsed = patchPromoSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(400, "VALIDATION_ERROR", "Invalid payload");
+    return jsonAdminError(400, "VALIDATION_ERROR", "Invalid payload");
   }
 
   try {
     const row = await deactivateAdminPromoCode(parsed.data.id);
-    if (!row) return jsonError(404, "NOT_FOUND", "Promo code not found.");
+    if (!row) return jsonAdminError(404, "NOT_FOUND", "Promo code not found.");
 
     await deactivateStripePromotionCode(row.stripe_promotion_code_id);
 
@@ -161,7 +177,6 @@ export async function PATCH(request: Request) {
       },
     });
   } catch (e) {
-    console.error("[admin:promo-codes:PATCH]", e);
-    return jsonError(500, "UPDATE_FAILED", "Could not deactivate promo code.");
+    return handleAdminPromoRouteError(e, "Could not deactivate promo code.");
   }
 }

@@ -46,7 +46,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJ…` (service role) | Server-side DB writes (reports, subscriptions, admin) |
 | `STRIPE_SECRET_KEY` | `sk_live_…` | Checkout sessions, subscription cancel, admin promo creation |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` (live endpoint) | `/api/stripe/webhook` signature verification |
-| `STRIPE_PRICE_ID_SUBSCRIPTION` | `price_…` (live recurring price) | Learner £6.99/month subscription checkout |
+| `STRIPE_PRICE_ID_SUBSCRIPTION` | `price_1TkiIHFB2iIHeKgtqWFsdGeu` (live, Pass Pilot Premium £6.99/mo) | Learner subscription checkout |
 | `ENTITLEMENT_TOKEN_SECRET` | Random string, min 16 chars | Signed lifetime/grandfathered finalise tokens |
 | `OPENAI_API_KEY` | `sk-…` | AI report generation (falls back to deterministic copy if missing) |
 
@@ -164,7 +164,7 @@ Learner and parent roles are normally set automatically from signup metadata on 
 ### API keys & products
 
 - [ ] Switch Dashboard to **Live mode**
-- [ ] Create live **Product** + recurring **Price** for £6.99/month subscription
+- [ ] Live product **Pass Pilot Premium** + recurring price **£6.99/month GBP** (`price_1TkiIHFB2iIHeKgtqWFsdGeu`)
 - [ ] Copy live `price_…` → `STRIPE_PRICE_ID_SUBSCRIPTION`
 - [ ] Copy live **Secret key** → `STRIPE_SECRET_KEY` (`sk_live_…`)
 

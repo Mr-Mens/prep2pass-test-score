@@ -27,6 +27,18 @@ function resolveSource() {
   throw new Error("Pass Pilot logo not found in public/brand/");
 }
 
+function resolveSocialBannerSource() {
+  const candidates = [
+    path.join(brandDir, "social banner.png"),
+    path.join(brandDir, "social-banner.png"),
+    path.join(socialDir, "pass pilot logo.png"),
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return resolveSource();
+}
+
 async function loadLogoPipeline(src) {
   return sharp(src).trim({ threshold: 12 }).png();
 }
@@ -41,23 +53,14 @@ async function run() {
     .png({ compressionLevel: 6, effort: 10 })
     .toFile(path.join(brandDir, "pass-pilot-logo.png"));
 
+  const socialSrc = resolveSocialBannerSource();
   const ogBackground = { r: 255, g: 255, b: 255, alpha: 1 };
-  await sharp(src)
-    .trim({ threshold: 12 })
-    .resize(1200, 630, {
-      fit: "contain",
-      background: ogBackground,
-    })
-    .png({ compressionLevel: 6 })
-    .toFile(path.join(socialDir, "og.png"));
-  await sharp(src)
-    .trim({ threshold: 12 })
-    .resize(1200, 630, {
-      fit: "contain",
-      background: ogBackground,
-    })
-    .webp({ quality: 92 })
-    .toFile(path.join(socialDir, "og.webp"));
+  const ogPipeline = sharp(socialSrc).resize(1200, 630, {
+    fit: "contain",
+    background: ogBackground,
+  });
+  await ogPipeline.clone().png({ compressionLevel: 6 }).toFile(path.join(socialDir, "og.png"));
+  await ogPipeline.clone().webp({ quality: 92 }).toFile(path.join(socialDir, "og.webp"));
 
   for (const size of [512, 192, 180, 32]) {
     const suffix = size === 32 ? "favicon-32" : `icon-${size}`;

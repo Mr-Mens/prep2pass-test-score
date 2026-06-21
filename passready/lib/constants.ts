@@ -12,7 +12,7 @@ export const PRODUCT = {
   history: "Test Ready Score History",
   snapshot: "Test Ready Score Snapshot",
   tagline: "Know. Improve. Pass.",
-  altTagline: "Know where you stand. Know what to improve next.",
+  altTagline: "Helping learners, instructors and parents understand readiness before test day.",
   eyebrow: "Pass Pilot",
 } as const;
 
@@ -35,11 +35,11 @@ export const SOCIAL_BANNER = {
   src: "/social-banner/og.png",
   width: 1200,
   height: 630,
-  alt: "Pass Pilot, UK learner driving assessment",
+  alt: "Pass Pilot — helping learners, instructors and parents understand readiness before test day",
 } as const;
 
 export const SITE_DEFAULT_DESCRIPTION =
-  "Pass Pilot helps learner drivers understand their readiness, identify risks and focus lessons on what matters most before test day." as const;
+  "Helping learners, instructors and parents understand readiness before test day." as const;
 
 export const SITE_META_TITLE = `${PRODUCT.name} | ${PRODUCT.altTagline}` as const;
 

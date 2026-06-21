@@ -36,7 +36,7 @@ export const SOCIAL_BANNER = {
   src: "/social-banner/og.png",
   width: 1200,
   height: 630,
-  alt: "Pass Pilot — driving education platform for learners, instructors and supervisors",
+  alt: "Pass Pilot — Helping Learners, instructors and Parents/Supervisors",
 } as const;
 
 export const SITE_DEFAULT_DESCRIPTION = PRODUCT.altTagline;

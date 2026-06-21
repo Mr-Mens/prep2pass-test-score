@@ -3,18 +3,19 @@ import { PRICING, BRAND_CTA } from "@/lib/constants";
 import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
 
 const learnerIncludes = [
-  "Unlimited assessments",
-  "Test Ready Score reports",
-  "Progress tracking",
-  "Learning roadmap",
+  "Unlimited Pass Pilot Score assessments",
+  "Premium reports and Progress Insights",
+  "Learning Journey tracking",
+  "Structured coaching guidance",
   "AI-powered debriefs",
-  "Parent/instructor sharing",
+  "Supervisor and instructor sharing",
 ] as const;
 
 const freeIncludes = [
-  "Instructor mock test tools",
+  "Instructor Coaching Tools",
+  "Teaching Diagrams",
   "Pupil progress view",
-  "Parent practice support",
+  "Supervisor practice support",
   "Referral rewards for instructors",
 ] as const;
 
@@ -38,7 +39,7 @@ export function LandingPricing({ hideLearnerCard = false }: Props) {
           <div className="flex flex-wrap items-start justify-between gap-3 gap-y-2">
             <div className="min-w-0 flex-1">
               <h3 className="text-lg font-semibold tracking-tight text-brand-950">Pass Pilot for learners</h3>
-              <p className="mt-1 text-sm leading-relaxed text-brand-600">Until you pass or cancel</p>
+              <p className="mt-1 text-sm leading-relaxed text-brand-600">Full platform access until you pass or cancel</p>
             </div>
             <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white shadow-sm">
               Learners
@@ -78,7 +79,7 @@ export function LandingPricing({ hideLearnerCard = false }: Props) {
       <div
         className={`flex h-full flex-col rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02] sm:p-8 sm:ring-0 ${hideLearnerCard ? "lg:col-span-2" : ""}`}
       >
-        <h3 className="text-lg font-semibold tracking-tight text-brand-950">Instructors &amp; Parents</h3>
+        <h3 className="text-lg font-semibold tracking-tight text-brand-950">Instructors &amp; Supervisors</h3>
         <p className="mt-1 text-sm leading-relaxed text-brand-600">Free forever</p>
         <p className="mt-6 text-4xl font-semibold tracking-tight text-brand-950 sm:text-5xl">Free</p>
         <ul className="mt-6 flex-1 space-y-3 text-sm leading-relaxed text-brand-800">

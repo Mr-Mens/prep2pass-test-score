@@ -56,7 +56,7 @@ export function PremiumReportSections({
 
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">
-          Estimated hours to test readiness
+          Estimated lesson hours across your Learning Journey
         </p>
         <div className="mt-4">
           <EstimatedLessonHoursBlock hours={model.estimatedHours} />

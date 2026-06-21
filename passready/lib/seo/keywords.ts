@@ -1,13 +1,13 @@
-/** Primary UK driving-test readiness keywords for public marketing pages. */
+/** Primary UK driving education keywords for public marketing pages. */
 export const SEO_KEYWORDS = [
   "Pass Pilot",
-  "driving test readiness",
-  "UK driving test",
-  "learner driver assessment",
-  "driving test preparation",
-  "Test Ready Score",
+  "driving education platform",
+  "UK driving lessons",
+  "learner driver progress",
   "driving instructor tools",
-  "parent supervisor driving practice",
-  "driving test risks",
-  "practical driving test UK",
+  "supervisor private practice",
+  "Test Ready Score",
+  "driving test preparation",
+  "ADI coaching tools",
+  "learning to drive UK",
 ] as const;

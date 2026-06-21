@@ -46,12 +46,12 @@ const sectionBox =
   "rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-7 sm:shadow-sm sm:ring-0";
 
 const CHECKOUT_VALUE_BULLETS = [
-  "Your readiness score, explained in plain English",
+  "Your Pass Pilot Score, explained in plain English",
   "A roadmap of syllabus topics touched versus still to practise",
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
-  "A realistic band for how many more lesson hours you may need before test readiness",
+  "A realistic band for how many more lesson hours you may need across your Learning Journey",
 ] as const;
 
 const checkoutSubmitButtonClass = "w-full";
@@ -384,7 +384,7 @@ export function AssessmentForm({
             <LockedPreviewBlock
               title="Lesson Guidance"
               lines={[
-                "Estimated hours to test readiness and how to use that band with your instructor.",
+                "Estimated lesson hours across your Learning Journey and how to use that band with your instructor.",
                 "Unlock after checkout to see the full Premium report, including this section.",
               ]}
             />
@@ -428,7 +428,7 @@ export function AssessmentForm({
               </h2>
               <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
                 See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic
-                band for how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
+                band for how many more lesson hours you may need to keep building skills, so you can plan with your ADI.
               </p>
               <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
                 Subscribe for {PRICING.subscription.display}/month to unlock unlimited assessments, AI reports, and
@@ -808,7 +808,7 @@ export function AssessmentForm({
             </h2>
             <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
               See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic band for
-              how many more lesson hours you may need to build test readiness, so you can plan with your ADI.
+              how many more lesson hours you may need to keep building skills, so you can plan with your ADI.
             </p>
             <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
               Everything listed below is included in your Premium report once checkout completes (not in the free preview).

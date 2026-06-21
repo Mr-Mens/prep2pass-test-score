@@ -6,7 +6,8 @@ import { PRODUCT, SITE_DEFAULT_DESCRIPTION } from "@/lib/constants";
 const year = new Date().getFullYear();
 
 const footerLinks = [
-  { href: "/assessment", label: "Get your score" },
+  { href: "/learning-centre", label: "Learning Centre" },
+  { href: "/assessment", label: "Pass Pilot Score" },
   { href: "/sample-report", label: "Sample report" },
   { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },

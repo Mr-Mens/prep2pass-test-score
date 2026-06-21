@@ -7,10 +7,10 @@ import { Button } from "@/components/Button";
 import { PRICING } from "@/lib/constants";
 
 const benefits = [
-  "Unlimited assessments",
-  "Progress tracking",
+  "Unlimited Pass Pilot Score assessments",
+  "Learning Journey tracking",
   "AI-powered Premium reports",
-  "Roadmap insights",
+  "Progress Insights",
 ] as const;
 
 type Props = {
@@ -75,7 +75,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <section className="rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/80 via-white to-brand-50/50 p-8 shadow-card ring-1 ring-teal-100">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Learner subscription</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Learner platform access</p>
         <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-brand-950">
           {PRICING.subscription.display}
           <span className="ml-2 text-lg font-medium text-brand-500">/ month</span>
@@ -112,7 +112,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
           ))}
         </ul>
         <p className="mt-5 text-xs leading-relaxed text-brand-500">
-          Billing continues until you cancel or record your practical test pass (Graduate Mode). Instructors and parents
+          Billing continues until you cancel or record your practical test pass (Graduate Mode). Instructors and supervisors
           use Pass Pilot free forever.
         </p>
         {error ? (

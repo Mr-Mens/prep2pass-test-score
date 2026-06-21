@@ -13,6 +13,7 @@ import { Section } from "@/components/Section";
 import { TrustBadge } from "@/components/TrustBadge";
 import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA, PRODUCT } from "@/lib/constants";
 import { PUBLIC_FAQ } from "@/lib/content/public-faq";
+import { PLATFORM, PLATFORM_TERMS } from "@/lib/platform-copy";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { getServerAuthUser } from "@/lib/supabase/server";
@@ -20,32 +21,32 @@ import { getServerAuthUser } from "@/lib/supabase/server";
 const audienceCards = [
   {
     label: "Learners",
-    headline: "Know if you're genuinely test ready.",
-    body: "Track readiness, monitor progress, and know exactly what to practise next.",
+    headline: "Build skills with structure and clarity.",
+    body: "Track your Learning Journey, get Progress Insights and prepare confidently for test day.",
     href: "/welcome?role=learner&next=%2Fassessment",
     cta: BRAND_CTA.getMyScore,
   },
   {
     label: "Instructors",
-    headline: "Free tools for better pupil coaching.",
-    body: "Digital mock tests, pupil tracking, readiness insights, and teaching support.",
+    headline: "Coaching Tools for better pupil outcomes.",
+    body: "Digital mock tests, pupil tracking, Teaching Diagrams and structured lesson support.",
     href: "/welcome?role=instructor",
     cta: "Instructor Access",
   },
   {
-    label: "Parents",
+    label: "Supervisors",
     headline: "Support private practice with confidence.",
-    body: "Know exactly what to practise and help your learner progress safely.",
+    body: "View Progress Insights, reports and coaching guidance between paid lessons.",
     href: "/welcome?role=parent",
-    cta: "Parent Access",
+    cta: "Supervisor Access",
   },
 ] as const;
 
 const socialProof = [
   { title: "Designed using real lesson experience", body: "Built from patterns seen across everyday teaching." },
-  { title: "Built around practical test readiness", body: "Focused on what actually affects test day." },
+  { title: "Structured driving education", body: "Focused on skill-building across every stage of learning." },
   { title: "Created by a DVSA-approved driving instructor", body: "Instructor-led, not generic advice." },
-  { title: "Focused on clear, practical next steps", body: "Plain English you can use straight away." },
+  { title: "Clear Progress Insights and next steps", body: "Plain English you can use straight away." },
 ] as const;
 
 const failedTestCards = [
@@ -92,18 +93,18 @@ const failedTestCards = [
 
 const valueCards = [
   {
-    title: "Avoid expensive failed tests",
-    body: "Spot weak areas before test day.",
+    title: "Structured skill development",
+    body: "Move from guesswork to a clear Learning Journey.",
     icon: "£",
   },
   {
     title: "Know what to practise next",
-    body: "Turn uncertainty into a clear action plan.",
+    body: "Turn uncertainty into a focused action plan.",
     icon: "→",
   },
   {
-    title: "Track progress over time",
-    body: "See your score improve.",
+    title: "Track Progress Insights",
+    body: "See how your driving skills develop over time.",
     icon: "↗",
   },
   {
@@ -190,20 +191,14 @@ export async function MarketingHomePage() {
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-16">
             <div className="text-center lg:text-left">
               <p className="inline-flex items-center rounded-full border border-teal-200/70 bg-white/80 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
-                Pass Pilot
+                {PLATFORM.category}
               </p>
-              <p className="mt-3 text-xs font-medium text-brand-600">
-                Created by a DVSA-approved driving instructor
-              </p>
+              <p className="mt-3 text-xs font-medium text-brand-600">{PRODUCT.tagline}</p>
               <h1 className="mt-5 font-heading text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.025em] text-brand-950 sm:text-4xl lg:text-[2.75rem]">
-                Stop guessing if you&apos;re ready for your driving test.
+                {PLATFORM.heroHeadline}
               </h1>
               <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-brand-700 lg:mx-0">
-                Get your Test Ready Score, personalised action plan and realistic lesson-hour estimate in minutes.
-              </p>
-              <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-brand-600 lg:mx-0">
-                Stop wasting money on failed tests and stop guessing whether you&apos;re ready. Know where you stand
-                and what to improve next.
+                {PLATFORM.heroSubheading}
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -217,7 +212,7 @@ export async function MarketingHomePage() {
               <CtaMicrocopy />
               <p className="mt-3 text-xs text-brand-600">Secure account · Progress saved · Cancel anytime</p>
               <p className="mt-2 text-xs text-brand-500">
-                Built for learners, instructors and parents supporting private practice.
+                Built for learners, instructors and supervisors across the UK.
               </p>
               {!hideLearnerPricing ? (
                 <div className="mt-5 text-left">
@@ -246,11 +241,12 @@ export async function MarketingHomePage() {
       {/* FOMO / problem statement */}
       <Section
         className="border-b border-brand-100/80 bg-gradient-to-b from-teal-50/30 to-white"
-        eyebrow="Clarity"
-        title="Stop relying on guesswork and start preparing with a plan."
+        eyebrow={PLATFORM_TERMS.progressInsights}
+        title="Understand progress, improve skills and prepare with a plan."
       >
         <p className="mx-auto max-w-2xl text-center text-base leading-relaxed text-brand-700">
-          Know where you stand, understand your biggest risks and focus your lessons on what matters most.
+          Pass Pilot brings structure to your {PLATFORM_TERMS.learningJourney.toLowerCase()} with clear Progress
+          Insights, coaching guidance and practical next steps.
         </p>
       </Section>
 
@@ -278,8 +274,8 @@ export async function MarketingHomePage() {
           ))}
         </div>
         <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-brand-700">
-          Pass Pilot helps you make more informed decisions about when to book and what to improve before test
-          day.
+          Pass Pilot helps you make informed decisions about your {PLATFORM_TERMS.learningJourney.toLowerCase()} and
+          what to focus on before test day.
         </p>
       </Section>
 
@@ -287,12 +283,13 @@ export async function MarketingHomePage() {
       <Section
         eyebrow="Your report"
         title={`What's included in your ${PRODUCT.report}`}
-        subtitle="Designed to help you and your instructor focus on what matters most before test day."
+        subtitle="Designed to help you and your instructor focus on skill-building across your Learning Journey."
       >
         <PremiumReportFeatures />
         <div className="mx-auto mt-8 max-w-2xl rounded-xl border border-brand-100 bg-brand-50/40 px-5 py-4 text-center text-sm leading-relaxed text-brand-700">
           Built to support your instructor&apos;s professional judgement, not replace it. Pass Pilot gives learners,
-          instructors and parents a structured way to understand progress and agree clear next steps together.
+          instructors and supervisors a structured {PLATFORM_TERMS.drivingEducationPlatform.toLowerCase()} to
+          understand progress and agree clear next steps together.
         </div>
         <p className="mt-6 text-center">
           <Link href="/sample-report" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
@@ -302,12 +299,12 @@ export async function MarketingHomePage() {
       </Section>
 
       {/* Test countdown */}
-      <Section className="bg-white" eyebrow="Test day focus" title="Stay focused as test day approaches">
+      <Section className="bg-white" eyebrow="Test day focus" title="Stay focused as your test approaches">
         <TestCountdownPreview />
       </Section>
 
       {/* Why learners use Pass Pilot */}
-      <Section eyebrow="Value" title="Why learners use Pass Pilot">
+      <Section eyebrow="Value" title={`Why learners choose ${PRODUCT.name}`}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {valueCards.map((item) => (
             <div
@@ -328,7 +325,7 @@ export async function MarketingHomePage() {
       </Section>
 
       {/* Audience */}
-      <Section className="bg-white" eyebrow="Audience" title="Built for everyone involved in learning to drive">
+      <Section className="bg-white" eyebrow="Audience" title="A platform for everyone involved in learning to drive">
         <div className="grid gap-5 md:grid-cols-3">
           {audienceCards.map((card) => (
             <Link
@@ -373,6 +370,27 @@ export async function MarketingHomePage() {
         </div>
       </Section>
 
+      {/* Learning Centre */}
+      <Section
+        className="border-y border-brand-100 bg-brand-50/30"
+        eyebrow={PLATFORM_TERMS.learningCentre}
+        title={`Explore ${PLATFORM_TERMS.resources} and upcoming modules`}
+        subtitle="Pass Pilot is expanding into a full driving education ecosystem."
+      >
+        <p className="mx-auto max-w-2xl text-center text-sm leading-relaxed text-brand-600">
+          Pass Pilot Score and Coaching Tools are live today. Theory Hub, Driving Routes, ADI Part 3 Hub and more
+          are on the way.
+        </p>
+        <p className="mt-6 text-center">
+          <Link
+            href="/learning-centre"
+            className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline"
+          >
+            View the {PLATFORM_TERMS.learningCentre} →
+          </Link>
+        </p>
+      </Section>
+
       {/* Pricing */}
       <Section id="pricing" className="bg-white" eyebrow="Plans" title="Simple pricing">
         {hideLearnerPricing ? (
@@ -392,20 +410,20 @@ export async function MarketingHomePage() {
       <Section
         eyebrow="Trust"
         title="Pass Pilot gives honest, practical guidance"
-        subtitle="Pass Pilot gives learners, parents and instructors a structured way to understand progress and focus on what matters most before test day."
+        subtitle={`${PRODUCT.name} gives learners, supervisors and instructors a structured way to build skills, track progress and prepare confidently.`}
       >
         <div className="mx-auto mb-6 max-w-3xl rounded-2xl border border-teal-200/70 bg-teal-50/50 p-6 text-center shadow-sm ring-1 ring-teal-100/80">
           <h3 className="font-heading text-base font-semibold text-brand-950 sm:text-lg">
             Built to support your instructor&apos;s professional judgement, not replace it.
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-brand-700">
-            Pass Pilot gives learners, instructors and parents a structured way to understand progress and agree
-            clear next steps together.
+            Pass Pilot gives learners, instructors and supervisors a structured {PLATFORM.category.toLowerCase()} to
+            build skills, track progress and prepare confidently.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <TrustBadge title="Created by an approved driving instructor" description="Instructor-led insight." />
-          <TrustBadge title="Built around practical test readiness" description="Real test-day themes." />
+          <TrustBadge title="Structured driving education" description="Skills for every stage." />
           <TrustBadge title="Clear plain-English guidance" description="No jargon or hype." />
           <TrustBadge title="Secure checkout and saved progress" description="Stripe billing · saved reports." />
         </div>
@@ -428,10 +446,11 @@ export async function MarketingHomePage() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-300/90">Start today</p>
           <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            Ready to check your test readiness?
+            Ready to start your Learning Journey?
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-brand-200">
-            Complete the assessment in a few minutes and get a clear plan for what to improve next.
+            Complete your Pass Pilot Score assessment in a few minutes and get Progress Insights plus a clear plan
+            for what to improve next.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3">
             <Button

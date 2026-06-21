@@ -18,6 +18,7 @@ function signInLinkActive(pathname: string): boolean {
 }
 
 const guestLinks = [
+  { href: "/learning-centre", label: "Learning Centre" },
   { href: "/sample-report", label: "Sample Report" },
   { href: "/pricing", label: "Plans" },
   { href: "/faq", label: "FAQ" },

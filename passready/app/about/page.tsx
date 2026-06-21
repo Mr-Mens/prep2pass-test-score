@@ -3,13 +3,14 @@ import type { Metadata } from "next";
 import { Section } from "@/components/Section";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE, SITE_DEFAULT_DESCRIPTION } from "@/lib/constants";
+import { PLATFORM, PLATFORM_TERMS } from "@/lib/platform-copy";
 import { webPageJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "About",
-  description: `About ${SITE.name}: UK driving test readiness for learners, instructors and parents. Created by a DVSA-approved driving instructor.`,
+  description: `${PLATFORM.aboutIntro}`,
   path: "/about",
 });
 
@@ -32,17 +33,16 @@ export default async function AboutPage() {
             About {SITE.name}
           </h1>
           <div className="mt-8 space-y-5 text-base leading-relaxed text-brand-700">
+            <p>{PLATFORM.aboutIntro}</p>
             <p>
-              {SITE.name} helps UK learner drivers understand test readiness with a structured assessment, Premium
-              report, and practical next steps, written in calm, instructor-style language.
+              {SITE.name} is a {PLATFORM_TERMS.drivingEducationPlatform.toLowerCase()} that combines Pass Pilot
+              Score assessments, Premium reports, {PLATFORM_TERMS.progressInsights}, {PLATFORM_TERMS.coachingTools}{" "}
+              and a growing {PLATFORM_TERMS.learningCentre}. It is not an official DVSA product and should always
+              be reviewed alongside your instructor and on-road performance.
             </p>
             <p>
-              {SITE.name} is created by a DVSA-approved driving instructor. It is not an official DVSA product or
-              score, and it should always be reviewed alongside your instructor and on-road performance.
-            </p>
-            <p>
-              Learners, parents, and instructors each have a dedicated workspace so the right people see the right
-              information at the right time.
+              Learners, supervisors and instructors each have a dedicated workspace so the right people see the
+              right information at the right time.
             </p>
           </div>
         </div>

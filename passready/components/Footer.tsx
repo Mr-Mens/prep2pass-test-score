@@ -34,6 +34,12 @@ export function Footer() {
           <nav className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Footer">
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              href="/learning-centre"
+            >
+              Learning Centre
+            </Link>
+            <Link
+              className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               href="/pricing"
             >
               Pricing

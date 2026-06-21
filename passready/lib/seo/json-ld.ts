@@ -60,7 +60,7 @@ export function productOfferJsonLd(): JsonLd {
     "@type": "Product",
     name: `${PRODUCT.name} Premium`,
     description:
-      "Monthly subscription for learners: unlimited Test Ready Score assessments, Premium AI reports, and progress tracking until you pass or cancel.",
+      "Monthly learner platform access: unlimited Pass Pilot Score assessments, Premium AI reports, Progress Insights and Learning Journey tracking until you pass or cancel.",
     brand: {
       "@type": "Brand",
       name: PRODUCT.name,
@@ -79,7 +79,7 @@ export function productOfferJsonLd(): JsonLd {
         billingDuration: 1,
         billingIncrement: 1,
       },
-      description: `${PRICING.subscription.display}/month until you pass or cancel. Instructors and parents use Pass Pilot free.`,
+      description: `${PRICING.subscription.display}/month until you pass or cancel. Instructors and supervisors use Pass Pilot free.`,
     },
   };
 }

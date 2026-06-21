@@ -26,7 +26,7 @@ export function ReportReadinessSnapshot({
 
   return (
     <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm sm:p-8">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Your readiness snapshot</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Your score snapshot</p>
       <div className="mt-6 flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:gap-10">
         <ScoreRingGauge score={score} size={176} slim className={`shrink-0 ${styles.ring}`} />
         <div className="min-w-0 flex-1 text-center sm:text-left">

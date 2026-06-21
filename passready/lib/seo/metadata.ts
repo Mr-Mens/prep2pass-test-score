@@ -13,6 +13,7 @@ export const PUBLIC_SITEMAP_PATHS = [
   "/pricing",
   "/sample-report",
   "/assessment",
+  "/learning-centre",
   "/welcome",
   "/terms",
   "/privacy",

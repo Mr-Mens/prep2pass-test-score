@@ -2,11 +2,11 @@ import { Button } from "@/components/Button";
 import { BRAND_CTA, PRODUCT } from "@/lib/constants";
 
 const DEFAULT_BULLETS = [
-  "Your readiness score, explained in plain English",
+  "Your Pass Pilot Score, explained in plain English",
   "A breakdown of your highest-risk driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
-  "A realistic band for how many more lesson hours you may need before test readiness",
+  "A realistic band for how many more lesson hours you may need across your Learning Journey",
 ] as const;
 
 type PricingCardProps = {

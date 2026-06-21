@@ -58,7 +58,7 @@ export function SampleLifetimeJourneyPreview() {
       <div className="border-b border-teal-200/70 pb-6 sm:flex sm:items-start sm:justify-between sm:gap-6">
         <div className="min-w-0">
           <h2 id="sample-lifetime-heading" className="font-heading text-xl font-semibold tracking-tight text-brand-950 sm:text-2xl">
-            Sample lifetime dashboard: readiness arc
+            Sample Learning Journey dashboard
           </h2>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
             This block is <span className="font-semibold text-brand-800">not</span> inside your one-off PDF-style report. It
@@ -73,7 +73,7 @@ export function SampleLifetimeJourneyPreview() {
       </div>
 
       <h3 className="mt-8 font-heading text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
-        See how readiness moves between lessons
+        See how Progress Insights move between lessons
       </h3>
       <p className="mt-3 max-w-prose text-center text-sm leading-relaxed text-brand-600 sm:text-left">
         With lifetime access, each saved Premium report adds another point on your private timeline, with the same layout as your

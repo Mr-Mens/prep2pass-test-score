@@ -2,7 +2,7 @@ import { pickCopyVariant } from "@/lib/deterministic-report-copy";
 import type { AssessmentPayload, EstimatedLessonHours, SyllabusProgressSnapshot } from "@/lib/validation";
 import { productMeta, type WeakAreaId } from "@/lib/product-skill-map";
 
-export const ESTIMATED_HOURS_TITLE = "Estimated hours to test readiness";
+export const ESTIMATED_HOURS_TITLE = "Estimated lesson hours across your Learning Journey";
 
 export const ESTIMATED_HOURS_SUPPORTING =
   "This estimate reflects remaining syllabus areas, identified weaknesses, and your reported experience.";

@@ -10,7 +10,8 @@ import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Choose your role",
-  description: "Choose how you use Pass Pilot: learner, instructor, or parent supporting UK driving test readiness.",
+  description:
+    "Choose how you use Pass Pilot: learner, instructor, or supervisor on our driving education platform.",
   path: "/welcome",
 });
 

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { BrandLogo } from "@/components/BrandLogo";
 import { PRODUCT } from "@/lib/constants";
+import { PLATFORM_TERMS } from "@/lib/platform-copy";
 
 type RoleKey = "learner" | "instructor" | "parent";
 
@@ -27,11 +28,12 @@ function safeNextPath(raw: string | null): string | null {
 
 const ROLE_TAGLINE: Record<RoleKey, string> = {
   learner: "Your journey to test readiness starts here.",
-  instructor: "Free tools to manage pupils, run mock tests, and track progress.",
-  parent: "Support your learner between lessons with scores, reports, and guidance.",
+  instructor: `${PLATFORM_TERMS.coachingTools} to manage pupils, run mock tests and track progress.`,
+  parent: "Support your learner between lessons with Progress Insights, reports and coaching guidance.",
 };
 
-const DEFAULT_TAGLINE = "Choose how you use Pass Pilot: learner, instructor, or parent.";
+const DEFAULT_TAGLINE =
+  "Choose how you use Pass Pilot: learner, instructor, or supervisor on our driving education platform.";
 
 const ROLES: readonly {
   key: RoleKey;
@@ -46,8 +48,13 @@ const ROLES: readonly {
   {
     key: "learner",
     title: "I’m a Learner",
-    description: "Check your readiness score and prepare with confidence.",
-    features: ["Check readiness score", "View reports", "Track your progress", "Get personalised guidance"],
+    description: "Get your test readiness score and prepare with confidence.",
+    features: [
+      "Get your Test Ready Score",
+      "View Premium reports",
+      `Track your ${PLATFORM_TERMS.learningJourney.toLowerCase()}`,
+      "Personalised coaching guidance",
+    ],
     cta: "Continue as Learner",
     accent: "from-emerald-600 to-teal-600",
     cardRing: "ring-emerald-200/80 hover:ring-emerald-300",
@@ -57,8 +64,13 @@ const ROLES: readonly {
   {
     key: "instructor",
     title: "I’m an instructor",
-    description: "Manage pupils and mock tests with powerful tools.",
-    features: ["Mock test tool", "Pupil progress tracking", "Detailed reports", "Save time and improve results"],
+    description: "Manage pupils and mock tests with Coaching Tools.",
+    features: [
+      "Mock test tool",
+      "Pupil progress tracking",
+      "Teaching Diagrams",
+      "Structured lesson support",
+    ],
     cta: "Continue as Instructor",
     accent: "from-slate-700 to-brand-900",
     cardRing: "ring-slate-200/90 hover:ring-slate-300",
@@ -68,9 +80,14 @@ const ROLES: readonly {
   {
     key: "parent",
     title: "I’m a Parent / Supervisor",
-    description: "Support your learner and track their progress.",
-    features: ["Monitor learner progress", "View reports and scores", "Get practice guidance", "Support between lessons"],
-    cta: "Continue as Parent",
+    description: "Support your learner and track their progress with supervisor tools.",
+    features: [
+      "Monitor learner progress",
+      "View reports and Test Ready Score",
+      "Supervisor coaching guidance",
+      "Support between lessons",
+    ],
+    cta: "Continue as Supervisor",
     accent: "from-violet-600 to-indigo-700",
     cardRing: "ring-violet-200/80 hover:ring-violet-300",
     buttonClass:
@@ -125,7 +142,7 @@ export function WelcomeLanding() {
                 ? "Sign in or create your learner account"
                 : selected === "instructor"
                   ? "Sign in or create your instructor account"
-                  : "Sign in or create your parent account"
+                  : "Sign in or create your supervisor account"
               : "Choose your role to continue"}
           </p>
         </header>

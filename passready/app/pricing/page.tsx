@@ -10,7 +10,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
-  description: `Pass Pilot for learners is ${PRICING.subscription.display}/month until you pass or cancel. Instructors and parents are free.`,
+  description: `Pass Pilot learner platform access is ${PRICING.subscription.display}/month until you pass or cancel. Instructors and supervisors are free.`,
   path: "/pricing",
 });
 
@@ -27,7 +27,7 @@ export default async function PricingPage() {
             Simple pricing
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-brand-600">
-            Learners pay {PRICING.subscription.display}/month until they pass or cancel. Instructors and parents use
+            Learners pay {PRICING.subscription.display}/month until they pass or cancel. Instructors and supervisors use
             Pass Pilot free.
           </p>
           <div className="mt-10">

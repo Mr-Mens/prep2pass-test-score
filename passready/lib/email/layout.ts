@@ -1,6 +1,6 @@
 import "server-only";
 
-import { PRODUCT } from "@/lib/constants";
+import { PRODUCT, SITE_DEFAULT_DESCRIPTION } from "@/lib/constants";
 
 import { getAppUrlForEmail } from "./app-url";
 
@@ -84,7 +84,7 @@ export function renderPassPilotEmailLayout(options: PassPilotEmailLayoutOptions)
             <tr>
               <td style="padding:16px 24px 20px 24px;border-top:1px solid #e2e8f0;">
                 <p style="margin:0;font-size:13px;line-height:1.6;color:#475569;">
-                  Pass Pilot helps learners, instructors and parents understand readiness before test day.
+                  ${escapeHtml(SITE_DEFAULT_DESCRIPTION)}
                 </p>
                 <p style="margin:8px 0 0 0;font-size:13px;line-height:1.6;color:#64748b;">
                   Independent and not affiliated with DVSA.

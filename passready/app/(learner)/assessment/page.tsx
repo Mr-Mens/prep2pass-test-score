@@ -13,16 +13,16 @@ import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/se
 export const metadata: Metadata = buildPageMetadata({
   title: `Get Your ${PRODUCT.score}`,
   description:
-    "Answer a few questions and receive your personalised Pass Pilot readiness score, risks and action plan. Created by a DVSA-approved driving instructor.",
+    "Answer a few questions and receive your Pass Pilot Score, Progress Insights, risks and a personalised action plan. Created by a DVSA-approved driving instructor.",
   path: "/assessment",
 });
 
 const VALUE_BULLETS = [
-  "Your readiness score, explained in plain English",
-  "A breakdown of your highest-risk driving skills",
+  "Your Pass Pilot Score, explained in plain English",
+  "A breakdown of your highest-priority driving skills",
   "A focused action plan for your next lessons",
   "An instructor-style coach note",
-  "A realistic band for how many more lesson hours you may need before test readiness",
+  "A realistic band for how many more lesson hours you may need across your Learning Journey",
 ] as const;
 
 export default async function AssessmentPage() {

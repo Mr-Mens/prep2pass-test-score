@@ -1,6 +1,6 @@
 export const SITE = {
   name: "Pass Pilot",
-  tagline: "Pass Pilot for learner drivers.",
+  tagline: "Pass Pilot driving education platform.",
   locale: "en-GB",
 } as const;
 
@@ -12,7 +12,8 @@ export const PRODUCT = {
   history: "Test Ready Score History",
   snapshot: "Test Ready Score Snapshot",
   tagline: "Know. Improve. Pass.",
-  altTagline: "Helping learners, instructors and parents understand readiness before test day.",
+  altTagline:
+    "Helping learners, instructors and supervisors build skills, track progress and prepare confidently for every stage of the driving journey.",
   eyebrow: "Pass Pilot",
 } as const;
 
@@ -35,11 +36,10 @@ export const SOCIAL_BANNER = {
   src: "/social-banner/og.png",
   width: 1200,
   height: 630,
-  alt: "Pass Pilot — helping learners, instructors and parents understand readiness before test day",
+  alt: "Pass Pilot — driving education platform for learners, instructors and supervisors",
 } as const;
 
-export const SITE_DEFAULT_DESCRIPTION =
-  "Helping learners, instructors and parents understand readiness before test day." as const;
+export const SITE_DEFAULT_DESCRIPTION = PRODUCT.altTagline;
 
 export const SITE_META_TITLE = `${PRODUCT.name} | ${PRODUCT.altTagline}` as const;
 
@@ -58,18 +58,19 @@ export const BRAND_CTA = {
   helpLearnerGetScore: "Help Your Learner Get Their Test Ready Score",
   takesFiveMinutes: "Takes around 5 minutes",
   entrySubtext:
-    "Answer a few questions and receive your personalised Test Ready Score, risks and action plan.",
+    "Answer a few questions and receive your Pass Pilot Score, Progress Insights and a personalised action plan.",
 } as const;
 
 /** Calm membership copy inside authenticated flows when entitlement is active. */
 export const PREMIUM_MEMBER_UI = {
   badge: "Subscription active",
-  unlimited: "Unlimited assessments unlocked",
-  journey: "Your driving journey",
+  unlimited: "Full platform access unlocked",
+  journey: "Your Learning Journey",
   reportsHistory: "View My Test Ready Score History",
-  journeyInsights: "Journey Insights",
+  progressInsights: "Progress Insights",
+  journeyInsights: "Progress Insights",
   progressRhythm:
-    "Each saved report adds to your history. Look back to see how your score and weak areas change over time.",
+    "Each saved report adds to your Learning Journey. Look back to see how your skills and focus areas develop over time.",
   graduateBadge: "Graduate, congratulations!",
   graduateNote: "Your account and reports stay available. New Test Ready Scores are disabled after you pass.",
 } as const;
@@ -82,7 +83,7 @@ export const PRICING = {
   subscription: {
     display: "£6.99",
     label: "Monthly subscription",
-    hint: "Unlimited assessments, progress tracking, AI reports, and roadmap access.",
+    hint: "Full platform access: Pass Pilot Score, Progress Insights, Premium reports, and Learning Journey tracking.",
     interval: "month" as const,
   },
   /** Legacy one-off tiers, retained for historical payment metadata only. */

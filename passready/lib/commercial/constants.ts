@@ -5,7 +5,7 @@ export const COMMERCIAL = {
     amountPence: 699,
     interval: "month" as const,
     label: "Monthly subscription",
-    hint: "Unlimited assessments, progress tracking, AI reports, and roadmap access.",
+    hint: "Full platform access: Pass Pilot Score, Progress Insights, Premium reports, and Learning Journey tracking.",
   },
   referral: {
     signupBonusPence: 200,
@@ -16,6 +16,7 @@ export const COMMERCIAL = {
   roles: {
     instructor: "Free forever",
     parent: "Free forever",
+    supervisor: "Free forever",
   },
 } as const;
 

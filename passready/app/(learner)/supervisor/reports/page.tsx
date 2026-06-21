@@ -48,7 +48,7 @@ export default async function SupervisorReportsPage() {
 
       {view.latestScore ? (
         <section className="rounded-2xl border border-teal-200/80 bg-teal-50/50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Latest readiness</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Latest Progress Insights</p>
           <p className="mt-2 font-heading text-3xl font-semibold text-brand-950">
             {view.latestScore.score}/100 · {view.latestScore.label}
           </p>

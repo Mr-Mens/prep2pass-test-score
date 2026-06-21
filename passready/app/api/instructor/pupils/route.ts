@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireInstructorApiUser } from "@/lib/server/api-auth";
+import { EmailNotConfiguredError } from "@/lib/email/resend";
 import { createPupilInvite, listPupilsForInstructor } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
@@ -41,6 +42,9 @@ export async function POST(request: Request) {
     const pupil = await createPupilInvite({ instructorUserId: auth.userId, pupilName, pupilEmail });
     return NextResponse.json({ success: true as const, pupil });
   } catch (e) {
+    if (e instanceof EmailNotConfiguredError) {
+      return jsonError(503, "EMAIL_NOT_CONFIGURED", e.message);
+    }
     const msg = e instanceof Error ? e.message : "Unable to create pupil.";
     return jsonError(500, "PUPIL_CREATE_ERROR", msg);
   }

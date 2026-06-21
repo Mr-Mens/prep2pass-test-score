@@ -1,5 +1,9 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
+import { sendParentLearnerInviteEmail } from "@/lib/email/templates/parent-learner-invite";
+import { EmailNotConfiguredError } from "@/lib/email/resend";
 import { normalizeEmail } from "@/lib/normalize-email";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/server/supabase";
 import { isMissingSupervisorTableError, SUPERVISOR_MIGRATION_HINT } from "@/lib/server/supervisor-schema";
@@ -89,6 +93,7 @@ export async function createLearnerLink(input: {
   const learnerUserId = await resolveLearnerUserIdByEmail(email);
   const now = new Date().toISOString();
   const status = learnerUserId ? "linked" : "pending";
+  const invitationToken = randomUUID();
 
   const { data, error } = await supabase
     .from("parent_learner_links")
@@ -99,6 +104,7 @@ export async function createLearnerLink(input: {
         learner_name: input.learnerName.trim() || null,
         learner_user_id: learnerUserId,
         status,
+        invitation_token: invitationToken,
         linked_at: learnerUserId ? now : null,
         updated_at: now,
       },
@@ -113,7 +119,27 @@ export async function createLearnerLink(input: {
     }
     throw new Error(error.message);
   }
-  return data as ParentLearnerLinkRow;
+
+  const link = data as ParentLearnerLinkRow;
+  const parentProfile = await getParentProfile(input.parentUserId);
+  const parentName = parentProfile?.display_name?.trim() || "A parent / supervisor";
+
+  try {
+    await sendParentLearnerInviteEmail({
+      toEmail: email,
+      learnerName: input.learnerName.trim() || "Learner",
+      parentName,
+      hasExistingAccount: Boolean(learnerUserId),
+      alreadyLinked: status === "linked",
+    });
+  } catch (e) {
+    if (process.env.NODE_ENV === "production" || e instanceof EmailNotConfiguredError) {
+      throw e instanceof Error ? e : new Error("Could not send learner link email.");
+    }
+    console.warn("[parent-learner-invite] email skipped", e);
+  }
+
+  return link;
 }
 
 /** Re-attempt linking when a learner account appears after a pending link. */

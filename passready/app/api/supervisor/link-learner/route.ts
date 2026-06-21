@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireParentApiUser } from "@/lib/server/api-auth";
+import { EmailNotConfiguredError } from "@/lib/email/resend";
 import {
   createLearnerLink,
   listLearnerLinksForParent,
@@ -55,6 +56,9 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ success: true as const, link });
   } catch (e) {
+    if (e instanceof EmailNotConfiguredError) {
+      return jsonError(503, "EMAIL_NOT_CONFIGURED", e.message);
+    }
     const msg = e instanceof Error ? e.message : "Unable to link learner.";
     return jsonError(500, "LINK_ERROR", msg);
   }

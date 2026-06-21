@@ -6,6 +6,8 @@ import {
   activateReferralOnSubscription,
   processReferralSubscriptionPayment,
 } from "@/lib/server/repositories/referrals-repository";
+import { sendSubscriptionConfirmationEmail } from "@/lib/email/templates/subscription-confirmation";
+import { lookupUserContact } from "@/lib/server/lookup-user-contact";
 import {
   incrementAdminPromoRedemption,
   markAdminPremiumInviteRedeemed,
@@ -60,6 +62,20 @@ export async function handleSubscriptionCheckoutCompleted(session: Stripe.Checko
   const inviteId = session.metadata?.admin_premium_invite_id;
   if (promoCodeId) await incrementAdminPromoRedemption(promoCodeId);
   if (inviteId) await markAdminPremiumInviteRedeemed(inviteId, userId);
+
+  const contact = await lookupUserContact(userId);
+  const toEmail =
+    (typeof session.customer_email === "string" && session.customer_email.trim()) || contact.email;
+  if (toEmail) {
+    try {
+      await sendSubscriptionConfirmationEmail({
+        toEmail,
+        firstName: contact.firstName,
+      });
+    } catch (e) {
+      console.error("[subscription-email] confirmation_failed", e);
+    }
+  }
 }
 
 export async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {

@@ -28,7 +28,7 @@ export function VerifyEmailFlow() {
   }, [params]);
 
   const verifyRole = useMemo(
-    () => appRoleFromDestination(continueSafe) ?? "learner",
+    () => (continueSafe ? appRoleFromDestination(continueSafe) : null) ?? "learner",
     [continueSafe],
   );
 

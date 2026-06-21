@@ -21,7 +21,7 @@ Use this checklist before pointing a live domain at the Pass Pilot Next.js app (
 | Role redirects | ✅ Layout-based | No active Edge middleware; layouts gate `/dashboard`, `/instructor`, `/supervisor` |
 | Graduate → cancel subscription | ✅ Implemented | `POST /api/learner/graduate` cancels Stripe + DB subscription |
 | Console/debug in production | ⚠️ Review | Server `console.error`/`console.warn` used for ops logging; dev-only `console.info` for email links; webhook logs checkout events |
-| OG / canonical domain | ⚠️ Verify | `metadataBase` is hardcoded to `https://passready.app` in `app/layout.tsx` |
+| OG / canonical domain | ✅ Set | `metadataBase` is `https://thepasspilot.com` in `app/layout.tsx` |
 
 ### Do **not** set in production
 
@@ -40,7 +40,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 
 | Variable | Example / format | Used for |
 |----------|------------------|----------|
-| `NEXT_PUBLIC_APP_URL` | `https://passready.app` | Stripe success/cancel URLs, admin premium invite links, mock-test email deep links |
+| `NEXT_PUBLIC_APP_URL` | `https://thepasspilot.com` | Stripe success/cancel URLs, invite links, all Resend email deep links |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` | Auth + database (must end in `.supabase.co`) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ…` (anon key) | Browser + SSR Supabase client |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJ…` (service role) | Server-side DB writes (reports, subscriptions, admin) |
@@ -55,8 +55,8 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 | Variable | When required |
 |----------|---------------|
 | `ADMIN_ACCESS_KEY` | Admin dashboard (`/admin`) and `/api/admin/*` — use a long random secret; prefer header auth over query param |
-| `RESEND_API_KEY` | Instructor mock-test report emails |
-| `REPORT_ACCESS_FROM_EMAIL` | Verified sender in Resend (e.g. `Pass Pilot <noreply@yourdomain.com>`) |
+| `RESEND_API_KEY` | App-generated transactional emails (invites, mock tests, subscription/graduate confirmations) |
+| `EMAIL_FROM` | Verified sender in Resend (e.g. `Pass Pilot <hello@thepasspilot.com>`) |
 
 ### Optional / legacy
 
@@ -85,9 +85,9 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 
 | Setting | Production value |
 |---------|------------------|
-| **Site URL** | `https://passready.app` (or your live origin) |
-| **Redirect URLs** | `https://passready.app/auth/callback` |
-| | `https://passready.app/auth/callback/**` (if your project requires wildcard query paths) |
+| **Site URL** | `https://thepasspilot.com` |
+| **Redirect URLs** | `https://thepasspilot.com/auth/callback` |
+| | `https://thepasspilot.com/auth/callback/**` (if your project requires wildcard query paths) |
 
 Auth flows that land on `/auth/callback`:
 
@@ -99,7 +99,7 @@ Auth flows that land on `/auth/callback`:
 
 - [ ] **Email** provider enabled
 - [ ] **Confirm email** enabled for production (recommended)
-- [ ] Customize email templates (optional): mention Pass Pilot / Prep2Pass branding
+- [ ] Customize email templates (optional): mention Pass Pilot branding
 
 ### Database migrations
 
@@ -158,7 +158,7 @@ Learner and parent roles are normally set automatically from signup metadata on 
 Create a **live** webhook pointing to:
 
 ```
-https://passready.app/api/stripe/webhook
+https://thepasspilot.com/api/stripe/webhook
 ```
 
 **Events to subscribe:**
@@ -192,40 +192,79 @@ Not required for launch — subscription cancel on pass is handled by `POST /api
 
 ## 4. Required Resend / domain email settings
 
-Pass Pilot uses **Supabase Auth** for signup verification and password reset emails.
+Pass Pilot uses **Supabase Auth** for authentication emails only:
 
-**Resend** is used only for **instructor mock-test report emails** (`/api/instructor/mock-tests/[id]/send`).
+- Confirm signup
+- Reset password
+- Magic link (if enabled)
+- Change email
+- Reauthentication
 
-### Resend setup
+**Resend** handles **app-generated transactional emails** (server-side only via `lib/email/resend.ts`):
 
-- [ ] Add and verify your sending domain in Resend
-- [ ] Set `REPORT_ACCESS_FROM_EMAIL` to a verified address (e.g. `Pass Pilot <noreply@passready.app>`)
-- [ ] Set `RESEND_API_KEY` (`re_…`)
+| Email | Trigger |
+|-------|---------|
+| Instructor → pupil invite | `POST /api/instructor/pupils` |
+| Parent → learner link | `POST /api/supervisor/link-learner` |
+| Mock test shared with pupil | `POST /api/instructor/mock-tests/[id]/send` |
+| Subscription confirmation | Stripe `checkout.session.completed` webhook |
+| Graduate Mode confirmation | `POST /api/learner/graduate` |
 
-### Email content
+### Resend setup checklist
 
-Mock-test emails link to:
+- [ ] **Resend API key** added to Vercel (`RESEND_API_KEY=re_…`)
+- [ ] **Domain verified** in Resend for `thepasspilot.com`
+- [ ] **SPF** DNS record configured (per Resend dashboard)
+- [ ] **DKIM** DNS record configured (per Resend dashboard)
+- [ ] **DMARC** DNS record configured (recommended)
+- [ ] **`EMAIL_FROM`** set to `Pass Pilot <hello@thepasspilot.com>` in Vercel
+- [ ] **`NEXT_PUBLIC_APP_URL`** set to `https://thepasspilot.com` (all email links use this — no localhost in production)
+- [ ] **Test instructor invite email** sent successfully (invite a pupil in production or staging)
+- [ ] **Test parent link email** sent successfully (link a learner from supervisor workspace)
+- [ ] **Test mock-test email** sent successfully (instructor sends completed mock test)
+- [ ] **Test subscription confirmation** received after live checkout (optional smoke test)
+- [ ] **Test graduate confirmation** received after recording pass (optional smoke test)
+
+### Development testing
+
+```bash
+# With npm run dev running and RESEND_API_KEY + EMAIL_FROM in .env.local:
+npm run test:email -- you@example.com
+```
+
+The dev-only route `/api/dev/test-email` returns 404 in production.
+
+### Dev fallback behaviour
+
+If `RESEND_API_KEY` is missing in **development**, invite/action links are logged to the server console and the API continues.
+
+If `RESEND_API_KEY` or `EMAIL_FROM` is missing in **production**, email sends fail with a clear `503 EMAIL_NOT_CONFIGURED` or server error.
+
+### Email link patterns
+
+All links use `{NEXT_PUBLIC_APP_URL}`:
 
 ```
-{NEXT_PUBLIC_APP_URL}/mock-tests/{deliveryId}
+/signup?invite={token}&next=/dashboard     # New pupil invite
+/login?next=/dashboard                    # Existing pupil invite
+/mock-tests/{id}                          # Mock test report
+/dashboard                                # Subscription / graduate confirmations
 ```
-
-If Resend vars are missing in development, the link is logged to the server console instead of sending.
 
 ---
 
 ## 5. Required DNS / domain settings
 
-Assuming production domain **`passready.app`** (matches `metadataBase` in `app/layout.tsx`). Adjust if using a different domain and update `metadataBase` accordingly.
+Assuming production domain **`thepasspilot.com`** (matches `metadataBase` in `app/layout.tsx`).
 
 ### Vercel
 
 - [ ] Add custom domain in Vercel project
 - [ ] Point DNS A/CNAME records per Vercel instructions
 - [ ] Enable automatic HTTPS
-- [ ] Set `NEXT_PUBLIC_APP_URL=https://passready.app` (no trailing slash)
+- [ ] Set `NEXT_PUBLIC_APP_URL=https://thepasspilot.com` (no trailing slash)
 
-### Resend (if sending from `@passready.app`)
+### Resend (sending from `@thepasspilot.com`)
 
 - [ ] Add DNS records (SPF, DKIM, optional DMARC) Resend provides for the domain
 
@@ -274,7 +313,8 @@ Run these on the **production URL** after deploy, using fresh test accounts wher
 
 - [ ] Signup as instructor → lands on `/instructor`
 - [ ] Non-instructors cannot access `/instructor/*` (redirected)
-- [ ] Add pupil via `/instructor/pupils` — existing learner gets in-app notification
+- [ ] Add pupil via `/instructor/pupils` — pupil receives **“Your instructor invited you to Pass Pilot”** email with Accept Invitation link
+- [ ] Existing learner gets in-app notification **and** email with sign-in link
 - [ ] Learner accepts invite via notification → instructor sees linked pupil
 - [ ] **New learner invite:** signup with `?invite=<token>` auto-links after email confirm
 - [ ] Create mock test at `/instructor/mock-test/new`
@@ -286,7 +326,7 @@ Run these on the **production URL** after deploy, using fresh test accounts wher
 ### Parent / supervisor journey
 
 - [ ] Signup as parent → lands on `/supervisor`
-- [ ] Link learner at `/supervisor/link-learner` (learner must have account + reports)
+- [ ] Link learner at `/supervisor/link-learner` — learner receives parent connection email at their address
 - [ ] View linked learner reports at `/supervisor/reports` and `/supervisor/reports/[id]`
 - [ ] Cannot access `/dashboard` as primary home (redirected to supervisor)
 - [ ] Practice log at `/supervisor/practice-log` saves entries
@@ -339,7 +379,7 @@ These are product/security improvements, not deployment misconfigurations:
 2. **Parent auto-link** — linking by learner email grants report access without learner consent (unlike instructor invites).
 3. **Graduated users** — `canStartAssessment` is enforced on scoring API but checkout/finalise paths may still allow edge cases for grandfathered premium users.
 4. **`pending_premium_invite_token`** — stored in signup metadata but premium invite flow relies on URL param through subscribe (keep invite URL intact).
-5. **Instructor invite signup URL** — helper exists in code but is not surfaced in instructor UI (notifications + manual signup link only).
+5. **Instructor invite signup URL** — email includes accept link; in-app notification remains for existing learners.
 6. **Admin UI at `/admin`** — page is public; APIs are key-gated. Replace with real admin auth before wider exposure.
 7. **Server logging** — `console.error`/`console.warn` in API routes is intentional for Vercel logs; not debug noise. Webhook logs checkout session IDs on success.
 

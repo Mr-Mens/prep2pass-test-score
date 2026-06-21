@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { requireInstructorApiUser } from "@/lib/server/api-auth";
+import { getAppUrlForEmail } from "@/lib/email/app-url";
+import { EmailNotConfiguredError } from "@/lib/email/resend";
 import { getMockTestForInstructor } from "@/lib/server/repositories/instructor-mock-repository";
 import { sendMockTestToLearner } from "@/lib/server/repositories/learner-mock-test-repository";
 import { sendMockTestReportEmail } from "@/lib/server/send-mock-test-report-email";
@@ -12,10 +14,6 @@ type Props = { params: { id: string } };
 
 function jsonError(status: number, code: string, message: string) {
   return NextResponse.json({ success: false as const, error: { code, message } }, { status });
-}
-
-function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 }
 
 export async function POST(_request: Request, { params }: Props) {
@@ -43,7 +41,7 @@ export async function POST(_request: Request, { params }: Props) {
 
     await sendMockTestReportEmail({
       toEmail: recipientEmail,
-      viewUrl: `${appUrl()}/mock-tests/${params.id}`,
+      viewUrl: `${getAppUrlForEmail()}/mock-tests/${params.id}`,
       instructorName,
       outcome: mockTest.outcome,
       pupilName: mockTest.pupil_name_snapshot?.trim() || "Learner",
@@ -55,6 +53,9 @@ export async function POST(_request: Request, { params }: Props) {
       recipientEmail,
     });
   } catch (e) {
+    if (e instanceof EmailNotConfiguredError) {
+      return jsonError(503, "EMAIL_NOT_CONFIGURED", e.message);
+    }
     const msg = e instanceof Error ? e.message : "Unable to send mock test report.";
     return jsonError(500, "MOCK_SEND_ERROR", msg);
   }

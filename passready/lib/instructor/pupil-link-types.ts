@@ -17,6 +17,7 @@ export type PupilRow = {
   linked_learner_user_id: string | null;
   link_status: PupilLinkStatus;
   link_responded_at: string | null;
+  invite_token?: string;
   created_at: string;
   updated_at: string;
 };

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
+import { sendGraduateConfirmationEmail } from "@/lib/email/templates/graduate-confirmation";
+import { lookupUserContact } from "@/lib/server/lookup-user-contact";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { markReferralPassed } from "@/lib/server/repositories/referrals-repository";
 import { recordGraduation } from "@/lib/server/repositories/graduations-repository";
@@ -58,6 +60,17 @@ export async function POST(request: Request) {
     });
 
     await markReferralPassed(auth.userId);
+
+    try {
+      const contact = await lookupUserContact(auth.userId);
+      await sendGraduateConfirmationEmail({
+        toEmail: auth.email,
+        firstName: contact.firstName,
+        passDate: parsed.data.passDate,
+      });
+    } catch (e) {
+      console.error("[graduate] confirmation_email_failed", e);
+    }
 
     return NextResponse.json({
       success: true as const,

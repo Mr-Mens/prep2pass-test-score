@@ -1,5 +1,7 @@
 import "server-only";
 
+import { sendInstructorPupilInviteEmail } from "@/lib/email/templates/instructor-pupil-invite";
+import { EmailNotConfiguredError } from "@/lib/email/resend";
 import { normalizeEmail } from "@/lib/normalize-email";
 import { resolveLearnerUserIdByEmail } from "@/lib/server/resolve-learner-user-id";
 import { linkReferralToPupil, upsertReferralForPupilInvite } from "@/lib/server/repositories/referrals-repository";
@@ -112,6 +114,25 @@ export async function createPupilInvite(input: {
   }).catch(() => {
     /* referral tables optional until migration 010 */
   });
+
+  const inviteToken = pupil.invite_token?.trim();
+  if (inviteToken) {
+    const instructorName = await getInstructorDisplayName(input.instructorUserId);
+    try {
+      await sendInstructorPupilInviteEmail({
+        toEmail: email,
+        pupilName: pupil.pupil_name,
+        instructorName,
+        inviteToken,
+        hasExistingAccount: Boolean(proposedLearnerId),
+      });
+    } catch (e) {
+      if (process.env.NODE_ENV === "production" || e instanceof EmailNotConfiguredError) {
+        throw e instanceof Error ? e : new Error("Could not send pupil invitation email.");
+      }
+      console.warn("[instructor-pupil-invite] email skipped", e);
+    }
+  }
 
   return pupil;
 }
@@ -240,7 +261,7 @@ export async function autoAcceptPupilInviteByToken(input: {
 export async function getPupilInviteSignupUrl(pupilLinkId: string, origin: string): Promise<string | null> {
   const pupil = await getPupilLinkById(pupilLinkId);
   if (!pupil) return null;
-  const token = (pupil as PupilRow & { invite_token?: string }).invite_token;
+  const token = pupil.invite_token?.trim();
   if (!token) return null;
   const q = new URLSearchParams({ invite: token, next: "/dashboard" });
   return `${origin}/signup?${q.toString()}`;

@@ -10,6 +10,7 @@
     "analyze": "ANALYZE=true next build",
     "test:scoring": "npx --yes tsx scripts/test-scoring.ts",
     "test:reasoning": "npx --yes tsx scripts/test-report-reasoning.ts",
+    "test:email": "npx --yes tsx scripts/test-email.ts",
     "knockout-brand-logo-bg": "node scripts/knockout-brand-logo-background.cjs",
     "optimize:diagrams": "node scripts/optimize-diagram-images.mjs",
     "optimize:brand": "node scripts/optimize-brand-assets.mjs"
@@ -22,6 +23,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",
+    "resend": "^6.14.0",
     "stripe": "^16.12.0",
     "zod": "^3.23.8"
   },

@@ -276,7 +276,7 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
                   <tr key={i.id}>
                     <td className="py-2">{i.pupilEmail}</td>
                     <td className="py-2">{formatDiscountLabel(i.discountPercent)}</td>
-                    <td className="py-2 font-mono text-xs">{i.promoCode ?? "—"}</td>
+                    <td className="py-2 font-mono text-xs">{i.promoCode ?? "-"}</td>
                     <td className="py-2 capitalize">{i.status}</td>
                     <td className="py-2">{new Date(i.expiresAt).toLocaleString("en-GB")}</td>
                     <td className="py-2">

@@ -55,8 +55,9 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 | Variable | When required |
 |----------|---------------|
 | `ADMIN_ACCESS_KEY` | Admin dashboard (`/admin`) and `/api/admin/*` — use a long random secret; prefer header auth over query param |
-| `RESEND_API_KEY` | App-generated transactional emails (invites, mock tests, subscription/graduate confirmations) |
+| `RESEND_API_KEY` | App-generated transactional emails (invites, mock tests, subscription/graduate confirmations, **auth emails via hook**) |
 | `EMAIL_FROM` | Verified sender in Resend (e.g. `Pass Pilot <hello@thepasspilot.com>`) |
+| `SUPABASE_AUTH_SEND_EMAIL_HOOK_SECRET` | Supabase Auth Send Email hook secret (after enabling hook in dashboard) |
 
 ### Optional / legacy
 
@@ -99,7 +100,21 @@ Auth flows that land on `/auth/callback`:
 
 - [ ] **Email** provider enabled
 - [ ] **Confirm email** enabled for production (recommended)
-- [ ] Customize email templates (optional): mention Pass Pilot branding
+
+### Dashboard → Authentication → Hooks → Send Email (required for branded auth emails)
+
+By default Supabase sends verification and password reset emails from its own mailer (`noreply@mail.app.supabase.io`). Pass Pilot routes auth emails through **Resend** when this hook is enabled.
+
+- [ ] Hook type: **HTTPS**
+- [ ] Hook URL: `https://thepasspilot.com/api/auth/hook/send-email`
+- [ ] Generate hook secret and add to Vercel as `SUPABASE_AUTH_SEND_EMAIL_HOOK_SECRET` (full value including `v1,whsec_…`)
+- [ ] Ensure `RESEND_API_KEY` and `EMAIL_FROM=Pass Pilot <hello@thepasspilot.com>` are set (same as other transactional email)
+- [ ] Send a test signup verification email and confirm:
+  - **From:** `hello@thepasspilot.com`
+  - **Branding:** Pass Pilot layout (no emojis)
+  - **Link:** confirms account and returns to `/auth/callback`
+
+Until this hook is enabled, signup verification and password reset emails will still come from Supabase's default sender.
 
 ### Database migrations
 
@@ -192,7 +207,7 @@ Not required for launch — subscription cancel on pass is handled by `POST /api
 
 ## 4. Required Resend / domain email settings
 
-Pass Pilot uses **Supabase Auth** for authentication emails only:
+Pass Pilot uses **Supabase Auth** for authentication flows, but delivery is handled by **Resend** when the Send Email hook is enabled (see section 2):
 
 - Confirm signup
 - Reset password
@@ -200,7 +215,7 @@ Pass Pilot uses **Supabase Auth** for authentication emails only:
 - Change email
 - Reauthentication
 
-**Resend** handles **app-generated transactional emails** (server-side only via `lib/email/resend.ts`):
+**Resend** also handles other **app-generated transactional emails** (server-side only via `lib/email/resend.ts`):
 
 | Email | Trigger |
 |-------|---------|

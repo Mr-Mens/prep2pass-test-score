@@ -35,7 +35,7 @@ export const SOCIAL_BANNER = {
   src: "/social-banner/og.png",
   width: 1200,
   height: 630,
-  alt: "Pass Pilot — UK learner driving assessment",
+  alt: "Pass Pilot, UK learner driving assessment",
 } as const;
 
 export const SITE_DEFAULT_DESCRIPTION =

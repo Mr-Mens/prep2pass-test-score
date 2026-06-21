@@ -15,11 +15,11 @@ export async function sendGraduateConfirmationEmail(input: {
 
   const bodyHtml = `<p style="margin:0 0 12px 0;">${escape(greeting)}</p>
     <p style="margin:0 0 12px 0;">We recorded your pass on <strong>${escape(input.passDate)}</strong> in Graduate Mode.</p>
-    <p style="margin:0;">Your subscription has been cancelled and your reports stay available on Pass Pilot. New assessments are disabled — enjoy the road!</p>`;
+    <p style="margin:0;">Your subscription has been cancelled and your reports stay available on Pass Pilot. New assessments are disabled. Enjoy the road!</p>`;
 
   const html = renderPassPilotEmailLayout({
     preheader: "Congratulations on passing your driving test",
-    heading: "Pass recorded — congratulations!",
+    heading: "Pass recorded. Congratulations!",
     bodyHtml,
     cta: { label: "View your reports", href: dashboardUrl },
     fallbackUrl: dashboardUrl,
@@ -31,7 +31,7 @@ export async function sendGraduateConfirmationEmail(input: {
 
   await sendEmail({
     to: input.toEmail,
-    subject: "Congratulations — your pass is recorded on Pass Pilot",
+    subject: "Congratulations! Your pass is recorded on Pass Pilot",
     html,
     text,
   });

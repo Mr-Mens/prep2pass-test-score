@@ -31,7 +31,7 @@ const ROLE_TAGLINE: Record<RoleKey, string> = {
   parent: "Support your learner between lessons with scores, reports, and guidance.",
 };
 
-const DEFAULT_TAGLINE = "Choose how you use Pass Pilot — learner, instructor, or parent.";
+const DEFAULT_TAGLINE = "Choose how you use Pass Pilot: learner, instructor, or parent.";
 
 const ROLES: readonly {
   key: RoleKey;

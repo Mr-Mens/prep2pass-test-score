@@ -17,9 +17,9 @@ const SIGNUP_INTRO: Record<UserAppRole, string> = {
   learner:
     "Your Premium reports stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Pass Pilot never asks you to repeat your password via email.",
   instructor:
-    "Create your free instructor account for mock tests, pupil tracking, and teaching tools. We email a verification link before you can sign in — Pass Pilot never asks for your password by email.",
+    "Create your free instructor account for mock tests, pupil tracking, and teaching tools. We email a verification link before you can sign in. Pass Pilot never asks for your password by email.",
   parent:
-    "Create your parent account to link to your learner and view their progress. We email a verification link before you can sign in — Pass Pilot never asks for your password by email.",
+    "Create your parent account to link to your learner and view their progress. We email a verification link before you can sign in. Pass Pilot never asks for your password by email.",
 };
 
 function safePostAuthPath(raw: string | null): string {

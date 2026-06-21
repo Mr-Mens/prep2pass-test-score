@@ -10,13 +10,15 @@ import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import type { UserAppRole } from "@/lib/instructor/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+const VERIFY_HEADING = "Check your inbox";
+
 const VERIFY_INTRO: Record<UserAppRole, string> = {
   learner:
-    "Pass Pilot needs a verified inbox before Premium reports appear. That binds retrieval tightly to your account and keeps away from accidental sharing.",
+    "We sent a confirmation link to your email. Open it to finish setting up your account. Your reports stay saved and only you can open them.",
   instructor:
-    "Pass Pilot needs a verified inbox before you can open your instructor workspace. That keeps pupil data tied to the right account.",
+    "We sent a confirmation link to your email. Open it to finish setting up your instructor account.",
   parent:
-    "Pass Pilot needs a verified inbox before you can link to your learner and view their progress.",
+    "We sent a confirmation link to your email. Open it to finish setting up your parent account.",
 };
 
 export function VerifyEmailFlow() {
@@ -37,6 +39,13 @@ export function VerifyEmailFlow() {
       continueSafe ? `/auth/resume?continue=${encodeURIComponent(continueSafe)}` : "/auth/resume",
     [continueSafe],
   );
+
+  const signupAgainHref = useMemo(() => {
+    const q = new URLSearchParams();
+    if (continueSafe) q.set("next", continueSafe);
+    const query = q.toString();
+    return query ? `/signup?${query}` : "/signup";
+  }, [continueSafe]);
 
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -63,7 +72,7 @@ export function VerifyEmailFlow() {
         options: { emailRedirectTo },
       });
       if (error) setMsg(describeAuthEmailError(error, "resend_verify"));
-      else setMsg("Fresh verification instructions are heading to your inbox.");
+      else setMsg("We've sent another confirmation email. Check your inbox and spam folder.");
     } finally {
       setBusy(false);
     }
@@ -73,13 +82,14 @@ export function VerifyEmailFlow() {
     <div className="rounded-2xl border border-teal-200/70 bg-white p-8 shadow-card">
         <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Email verification</p>
         <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-brand-950">
-          Verify your email to continue
+          {VERIFY_HEADING}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-brand-700">{VERIFY_INTRO[verifyRole]}</p>
-        <p className="mt-6 text-sm text-brand-600">
-          Already verified? Reload this tab or jump back to{" "}
+        <p className="mt-4 text-sm text-brand-600">Can&apos;t see it? Check your spam folder, or resend below.</p>
+        <p className="mt-4 text-sm text-brand-600">
+          Already confirmed?{" "}
           <Link href={resumeHref} className="font-semibold text-teal-900 underline underline-offset-4">
-            continue
+            Continue to Pass Pilot
           </Link>
           .
         </p>
@@ -90,8 +100,8 @@ export function VerifyEmailFlow() {
           <Button type="button" variant="secondary" disabled={busy} onClick={() => void resend()}>
             {busy ? "Sending…" : "Resend verification email"}
           </Button>
-          <Button href="/login" variant="ghost">
-            Use a different inbox
+          <Button href={signupAgainHref} variant="ghost">
+            Wrong email? Sign up again
           </Button>
         </div>
       </div>

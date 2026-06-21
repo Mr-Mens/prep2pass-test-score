@@ -40,7 +40,7 @@ export function classifySignInError(error: unknown): ClassifiedSignInError {
     return {
       kind: "other",
       detail:
-        "We could not reach the sign-in service. Check your internet connection, confirm your Supabase project is active (not paused), and verify NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local — then restart the dev server.",
+        "We could not reach the sign-in service. Check your internet connection, confirm your Supabase project is active (not paused), and verify NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local, then restart the dev server.",
     };
   }
 

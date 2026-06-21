@@ -252,7 +252,7 @@ export function AdminPromoCodesPanel({ adminKey }: Props) {
                       {p.maxRedemptions != null ? ` / ${p.maxRedemptions}` : ""}
                     </td>
                     <td className="py-2">{p.active ? "Active" : "Inactive"}</td>
-                    <td className="py-2">{p.expiresAt ? new Date(p.expiresAt).toLocaleString("en-GB") : "—"}</td>
+                    <td className="py-2">{p.expiresAt ? new Date(p.expiresAt).toLocaleString("en-GB") : "-"}</td>
                     <td className="py-2">
                       <div className="flex flex-wrap gap-2">
                         <button

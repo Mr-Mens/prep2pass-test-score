@@ -27,6 +27,12 @@ function safePostAuthPath(raw: string | null): string {
   return "/dashboard";
 }
 
+function buildVerifyEmailPath(postAuthPath: string, email?: string): string {
+  const q = new URLSearchParams({ continue: postAuthPath });
+  if (email) q.set("email", email);
+  return `/verify-email?${q.toString()}`;
+}
+
 export function SignupFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,11 +44,6 @@ export function SignupFlow() {
   const signupAppRole = useMemo(() => {
     const fromPath = appRoleFromDestination(postAuthPath) ?? "learner";
     return isSelfServiceAppRole(fromPath) ? fromPath : "learner";
-  }, [postAuthPath]);
-  /** After email confirmation lands on verify-email with the same destination intent */
-  const verifyEmailHref = useMemo(() => {
-    const q = new URLSearchParams({ continue: postAuthPath });
-    return `/verify-email?${q.toString()}`;
   }, [postAuthPath]);
   const loginHref = useMemo(() => {
     const q = new URLSearchParams({ next: postAuthPath });
@@ -92,7 +93,7 @@ export function SignupFlow() {
     try {
       const supabase = createSupabaseBrowserClient();
       const origin = window.location.origin;
-      const nextAfterCallback = `/verify-email?continue=${encodeURIComponent(postAuthPath)}`;
+      const nextAfterCallback = buildVerifyEmailPath(postAuthPath, em);
       const { error } = await supabase.auth.signUp({
         email: em,
         password,
@@ -113,7 +114,7 @@ export function SignupFlow() {
         setMsg(describeAuthEmailError(error, "signup_verify"));
         return;
       }
-      router.replace(verifyEmailHref);
+      router.replace(buildVerifyEmailPath(postAuthPath, em));
       router.refresh();
     } finally {
       setBusy(false);

@@ -36,7 +36,7 @@ export function LinkLearnerForm() {
       setSuccess(
         data.link?.status === "linked"
           ? "Learner linked. Their progress will appear on your dashboard."
-          : "Link saved. We will connect automatically when your learner has a Prep2Pass account with this email.",
+          : "Link saved. We will connect automatically when your learner has a Pass Pilot account with this email.",
       );
       router.refresh();
     } finally {
@@ -51,7 +51,7 @@ export function LinkLearnerForm() {
     >
       <h2 className="font-heading text-lg font-semibold text-brand-950">Link your learner</h2>
       <p className="mt-2 text-sm leading-relaxed text-brand-600">
-        Enter the email your learner uses for Prep2Pass. If they already have reports on that account, linking is
+        Enter the email your learner uses for Pass Pilot. If they already have reports on that account, linking is
         instant. Otherwise we will connect when their account is ready.
       </p>
 
@@ -104,7 +104,7 @@ export function LinkLearnerForm() {
       <div className="mt-8 rounded-xl border border-dashed border-brand-200 bg-brand-50/60 p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Learner invitation</p>
         <p className="mt-2 text-sm text-brand-700">
-          Ask your learner to sign up at Prep2Pass with the same email, or share their report reference from their
+          Ask your learner to sign up at Pass Pilot with the same email, or share their report reference from their
           account. Full invitation flows are coming soon.
         </p>
       </div>

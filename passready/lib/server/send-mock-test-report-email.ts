@@ -49,7 +49,7 @@ export async function sendMockTestReportEmail({
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #d7e2ee;border-radius:16px;overflow:hidden;">
                   <tr>
                     <td style="padding:20px 24px 8px 24px;">
-                      <p style="margin:0;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0f766e;">Prep2Pass</p>
+                      <p style="margin:0;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0f766e;">Pass Pilot</p>
                     </td>
                   </tr>
                   <tr>
@@ -60,7 +60,7 @@ export async function sendMockTestReportEmail({
                   <tr>
                     <td style="padding:8px 24px 0 24px;">
                       <p style="margin:0;font-size:15px;line-height:1.6;color:#334155;">
-                        ${instructorName} has shared your DVSA-style mock test result (${outcomeLabel}) for ${pupilName}. Open it in Prep2Pass to review faults, notes, and suggested focus areas.
+                        ${instructorName} has shared your DVSA-style mock test result (${outcomeLabel}) for ${pupilName}. Open it in Pass Pilot to review faults, notes, and suggested focus areas.
                       </p>
                     </td>
                   </tr>

@@ -13,7 +13,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 export const metadata: Metadata = {
   title: "Sample Premium Test Ready Score Report",
   description:
-    "Preview a realistic Premium Test Ready Score Report from Prep2Pass before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
+    "Preview a realistic Premium Test Ready Score Report from Pass Pilot before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
 };
 
 const sampleRiskAreas: GroupedRiskArea[] = [
@@ -147,7 +147,7 @@ export default async function SampleReportPage() {
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm text-amber-950">
           <p className="font-semibold">Example disclaimer</p>
           <p className="mt-2">
-            This sample is illustrative only. Prep2Pass is independent and not affiliated with DVSA. It is created by a
+            This sample is illustrative only. Pass Pilot is independent and not affiliated with DVSA. It is created by a
             DVSA-approved driving instructor, is not official DVSA guidance, and does not guarantee pass or fail
             outcomes.
           </p>

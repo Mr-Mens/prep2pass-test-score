@@ -118,7 +118,7 @@ const faqItems = [
   },
   {
     q: "Is this official DVSA guidance?",
-    a: "No. Prep2Pass is independent and not affiliated with DVSA. Pass Pilot is produced by a DVSA-approved driving instructor to complement lessons.",
+    a: "No. Pass Pilot is independent and not affiliated with DVSA. It is produced by a DVSA-approved driving instructor to complement lessons.",
   },
   {
     q: "Does this guarantee I will pass?",

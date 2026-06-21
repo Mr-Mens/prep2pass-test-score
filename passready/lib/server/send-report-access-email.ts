@@ -30,7 +30,7 @@ export async function sendReportAccessEmail({ toEmail, accessUrl }: Args): Promi
     body: JSON.stringify({
       from: fromEmail,
       to: [toEmail],
-      subject: "Your Prep2Pass report access link",
+      subject: "Your Pass Pilot report access link",
       html: `
         <div style="margin:0;padding:0;background:#f4f7fb;font-family:Inter,Arial,sans-serif;color:#0f172a;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:24px 12px;">
@@ -39,7 +39,7 @@ export async function sendReportAccessEmail({ toEmail, accessUrl }: Args): Promi
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #d7e2ee;border-radius:16px;overflow:hidden;">
                   <tr>
                     <td style="padding:20px 24px 8px 24px;">
-                      <p style="margin:0;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0f766e;">Prep2Pass</p>
+                      <p style="margin:0;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0f766e;">Pass Pilot</p>
                     </td>
                   </tr>
                   <tr>

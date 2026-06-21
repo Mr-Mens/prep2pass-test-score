@@ -48,7 +48,7 @@ export function ProgressTrackingSection(props: Props) {
 
         {entries.length === 0 ? (
           <p className="mt-4 text-sm text-brand-700">
-            Your timeline grows as reports save to Prep2Pass. Finish your next assessment and it will slot in here beside
+            Your timeline grows as reports save to Pass Pilot. Finish your next assessment and it will slot in here beside
             this score.
           </p>
         ) : (

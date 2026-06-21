@@ -62,7 +62,7 @@ export function UpgradeFlow() {
         Unlock unlimited Premium reports
       </h1>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-brand-700">
-        One payment of {PRICING.lifetime.display} adds lifetime access to your Prep2Pass account. Generate fresh Premium
+        One payment of {PRICING.lifetime.display} adds lifetime access to your Pass Pilot account. Generate fresh Premium
         reports whenever you retake the assessment, plus the progress timeline on your results page.
       </p>
 
@@ -110,7 +110,7 @@ export function UpgradeFlow() {
           </Button>
         </div>
         <p className="text-xs leading-relaxed text-brand-500">
-          Secure payment powered by Stripe. No subscription. Your reports stay linked to your Prep2Pass account.
+          Secure payment powered by Stripe. No subscription. Your reports stay linked to your Pass Pilot account.
         </p>
       </form>
     </div>

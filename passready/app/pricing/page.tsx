@@ -20,7 +20,7 @@ export default async function PricingPage() {
           Simple pricing
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-brand-600">
-          Learners pay £6.99/month until they pass or cancel. Instructors and parents use Prep2Pass free.
+          Learners pay £6.99/month until they pass or cancel. Instructors and parents use Pass Pilot free.
         </p>
         <div className="mt-10">
           <LandingPricing />

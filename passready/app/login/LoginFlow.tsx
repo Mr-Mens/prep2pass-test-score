@@ -14,6 +14,7 @@ import {
   ROLE_SIGN_IN_LABEL,
   roleMismatchMessage,
 } from "@/lib/auth/login-intent";
+import { PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function LoginFlow() {
@@ -94,7 +95,7 @@ export function LoginFlow() {
       <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Welcome back</h1>
       <p className="mt-2 text-sm leading-relaxed text-brand-600">
         Signing in as <span className="font-semibold text-brand-900">{ROLE_SIGN_IN_LABEL[signingInAs]}</span>. Use your
-        Prep2Pass credentials for this role.
+        {PRODUCT.name} credentials for this role.
       </p>
 
       {roleMismatch && signingInAs ? (

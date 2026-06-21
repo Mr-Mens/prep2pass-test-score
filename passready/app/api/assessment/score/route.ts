@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     const assessmentEmail = normalizeEmail(parsed.data.email);
     if (assessmentEmail !== auth.email) {
-      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Prep2Pass account.");
+      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Pass Pilot account.");
     }
 
     const { canLearnerStartAssessment } = await import("@/lib/server/effective-lifetime-access");

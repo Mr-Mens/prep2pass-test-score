@@ -29,7 +29,7 @@ export default function InstructorHelpPage() {
       </section>
 
       <p className="text-sm text-brand-600">
-        For product help, contact your Prep2Pass administrator. Learner help:{" "}
+        For product help, contact your Pass Pilot administrator. Learner help:{" "}
         <Link href="/explore" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
           explore the learner site
         </Link>

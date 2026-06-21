@@ -1,5 +1,5 @@
 export const SITE = {
-  name: "Prep2Pass",
+  name: "Pass Pilot",
   tagline: "Pass Pilot for learner drivers.",
   locale: "en-GB",
 } as const;

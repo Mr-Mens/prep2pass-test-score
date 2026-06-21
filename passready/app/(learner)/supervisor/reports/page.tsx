@@ -58,7 +58,7 @@ export default async function SupervisorReportsPage() {
 
       {summaries.length === 0 ? (
         <p className="rounded-2xl border border-brand-100 bg-white p-6 text-sm text-brand-600">
-          No saved reports yet. {BRAND_CTA.helpLearnerGetScore} on Prep2Pass.
+          No saved reports yet. {BRAND_CTA.helpLearnerGetScore} on Pass Pilot.
         </p>
       ) : (
         <ul className="space-y-3">

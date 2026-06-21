@@ -7,7 +7,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 const FAQ = [
   {
     q: "Is this official DVSA guidance?",
-    a: "No. Prep2Pass is independent and not affiliated with DVSA. Pass Pilot is produced by a DVSA-approved driving instructor to complement lessons.",
+    a: "No. Pass Pilot is independent and not affiliated with DVSA. It is produced by a DVSA-approved driving instructor to complement lessons.",
   },
   {
     q: "Does this guarantee I will pass?",
@@ -22,14 +22,14 @@ const FAQ = [
     a: "Lifetime access lets you run unlimited Premium reports and unlock progress tracking across your journey.",
   },
   {
-    q: "Can parents use Prep2Pass?",
+    q: "Can parents use Pass Pilot?",
     a: "Yes. Parents and supervisors can link to a learner account to view scores, reports, and practice guidance.",
   },
 ] as const;
 
 export const metadata: Metadata = {
   title: "FAQ · Pass Pilot",
-  description: "Frequently asked questions about Pass Pilot and Prep2Pass.",
+  description: "Frequently asked questions about Pass Pilot.",
 };
 
 export default async function FaqPage() {

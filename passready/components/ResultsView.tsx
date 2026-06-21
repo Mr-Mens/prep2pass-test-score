@@ -208,7 +208,7 @@ export function ResultsView() {
       <Section
         className="max-md:bg-transparent bg-brand-50"
         contentClassName="max-w-3xl"
-        eyebrow="Prep2Pass"
+        eyebrow="Pass Pilot"
         title="Loading your report"
       >
         <div className="animate-pulse space-y-4 rounded-2xl border border-brand-200/80 bg-white p-8 shadow-card ring-1 ring-black/[0.02]">
@@ -225,7 +225,7 @@ export function ResultsView() {
       <Section
         className="max-md:bg-transparent bg-brand-50"
         contentClassName="max-w-xl text-center"
-        eyebrow="Prep2Pass"
+        eyebrow="Pass Pilot"
         title="No report saved on this device yet"
         subtitle="Complete the Test Ready Score once. Your report appears here after checkout, and a copy stays in this browser until you clear site data."
       >
@@ -250,7 +250,7 @@ export function ResultsView() {
       <Section
         className="max-md:bg-transparent bg-brand-50"
         contentClassName="max-w-xl"
-        eyebrow="Prep2Pass"
+        eyebrow="Pass Pilot"
         title="We could not refresh your saved report"
         subtitle={state.message}
       >
@@ -282,7 +282,7 @@ export function ResultsView() {
     <Section
       className="max-md:bg-transparent bg-brand-50 print:bg-white print:py-10"
       contentClassName="max-w-3xl"
-      eyebrow="Prep2Pass"
+      eyebrow="Pass Pilot"
       subtitle="Test prep guidance based on your answers, guided by an ADI. Use it with your instructor."
     >
       <div className="space-y-5 pb-32 sm:space-y-10 sm:pb-0 print:space-y-6 md:pb-0">
@@ -433,7 +433,7 @@ export function ResultsView() {
           <p className="font-medium text-brand-900">What you might do from here</p>
           <p className="mt-2">
             {resultsLifetimeMemberUi
-              ? "When lessons or test timing move, generate a fresh checkpoint. Your Prep2Pass account keeps the full timeline under the same lifetime access, with no checkout between runs."
+              ? "When lessons or test timing move, generate a fresh checkpoint. Your Pass Pilot account keeps the full timeline under the same lifetime access, with no checkout between runs."
               : "Get an updated Test Ready Score if your lessons shift materially, or use Find My Report if you checked out with an email and need this on another device."}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

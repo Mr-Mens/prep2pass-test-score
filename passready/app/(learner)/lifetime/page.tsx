@@ -8,7 +8,7 @@ import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/se
 
 export const metadata: Metadata = {
   title: "Lifetime access",
-  description: "Your Prep2Pass lifetime membership summary and shortcuts.",
+  description: "Your Pass Pilot lifetime membership summary and shortcuts.",
 };
 
 export default async function LifetimeMembershipPage() {
@@ -84,7 +84,7 @@ export default async function LifetimeMembershipPage() {
         </nav>
 
         <p className="mt-10 text-center text-xs leading-relaxed text-brand-500">
-          Questions stay with Prep2Pass support channels; nothing here is a subscription or renewal reminder.
+          Questions stay with Pass Pilot support channels; nothing here is a subscription or renewal reminder.
         </p>
       </div>
     </div>

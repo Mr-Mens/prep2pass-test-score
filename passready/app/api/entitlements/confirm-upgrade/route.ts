@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     }
     const email = normalizeEmail(emailRaw);
     if (email !== auth.email) {
-      return jsonError(403, "EMAIL_MISMATCH", "The Stripe email does not match your Prep2Pass account.");
+      return jsonError(403, "EMAIL_MISMATCH", "The Stripe email does not match your Pass Pilot account.");
     }
 
     if (!isSupabaseConfigured()) {

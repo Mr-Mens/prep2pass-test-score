@@ -692,8 +692,8 @@ function buildSummary(assessment: AssessmentPayload, score: number, salt: number
   ]);
 
   const footer = pickCopyVariant(salt, "sum:foot", [
-    "Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity. Prep2Pass is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, and it should be reviewed with your instructor alongside on-road performance.",
-    "Risk areas follow common teaching groupings for readability. Prep2Pass is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, so use it with your instructor and what they see on the road.",
+    "Risks are grouped by core driving skill areas aligned with common teaching frameworks for clarity. Pass Pilot is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, and it should be reviewed with your instructor alongside on-road performance.",
+    "Risk areas follow common teaching groupings for readability. Pass Pilot is created by a DVSA-approved driving instructor; this is not an official DVSA product or score, so use it with your instructor and what they see on the road.",
   ]);
 
   return `${body} ${footer}`;

@@ -25,6 +25,14 @@ function safeNextPath(raw: string | null): string | null {
   return null;
 }
 
+const ROLE_TAGLINE: Record<RoleKey, string> = {
+  learner: "Your journey to test readiness starts here.",
+  instructor: "Free tools to manage pupils, run mock tests, and track progress.",
+  parent: "Support your learner between lessons with scores, reports, and guidance.",
+};
+
+const DEFAULT_TAGLINE = "Choose how you use Pass Pilot — learner, instructor, or parent.";
+
 const ROLES: readonly {
   key: RoleKey;
   title: string;
@@ -109,7 +117,7 @@ export function WelcomeLanding() {
             Welcome to {PRODUCT.name}
           </h1>
           <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-brand-700 sm:text-base">
-            Your journey to test readiness starts here.
+            {selected ? ROLE_TAGLINE[selected] : DEFAULT_TAGLINE}
           </p>
           <p className="mt-2 text-sm font-medium text-brand-600">
             {selected

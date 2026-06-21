@@ -193,7 +193,7 @@ export async function sendMockTestToLearner(input: {
   const learnerUserId = await resolveLearnerUserIdForMockTest(mockTest, input.instructorUserId);
   if (!learnerUserId) {
     throw new Error(
-      "No linked Prep2Pass learner account found for this email. The pupil must accept your link invitation first, or have a saved report with this email.",
+      "No linked Pass Pilot learner account found for this email. The pupil must accept your link invitation first, or have a saved report with this email.",
     );
   }
 

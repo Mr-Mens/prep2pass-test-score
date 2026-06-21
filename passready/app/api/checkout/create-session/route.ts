@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     const assessmentEmail = normalizeEmail(parsed.data.assessment.email);
     if (assessmentEmail !== normalizeEmail(auth.email)) {
-      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Prep2Pass account.");
+      return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Pass Pilot account.");
     }
 
     const supabaseOk = isSupabaseConfigured();

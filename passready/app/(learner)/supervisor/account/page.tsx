@@ -97,7 +97,7 @@ export default async function SupervisorAccountPage() {
         <MenuRow href="/supervisor/practice-log" title="Practice log" hint="Record private practice sessions" />
         <MenuRow href="/supervisor/reports" title="Reports" hint="View linked learner reports" />
         <MenuRow href="/supervisor/progress" title="Progress" hint="Track syllabus and score trends" />
-        <MenuRow href="/terms" title="Terms & privacy" hint="Prep2Pass legal and policies" />
+        <MenuRow href="/terms" title="Terms & privacy" hint="Pass Pilot legal and policies" />
         <MenuRow href="mailto:hello@prep2pass.co.uk" title="Help & support" hint="hello@prep2pass.co.uk" />
       </nav>
 

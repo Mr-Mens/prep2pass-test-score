@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
           </form>
         ) : (
           <div className="mt-8 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-950">
-            <p>If that email exists on Prep2Pass, reset instructions should arrive shortly. Check inbox and spam.</p>
+            <p>If that email exists on Pass Pilot, reset instructions should arrive shortly. Check inbox and spam.</p>
           </div>
         )}
       </div>

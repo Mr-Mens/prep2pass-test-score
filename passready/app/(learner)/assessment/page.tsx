@@ -109,7 +109,7 @@ export default async function AssessmentPage() {
           </p>
         ) : (
           <p className="mt-6 border-t border-brand-100 pt-5 text-center text-xs leading-relaxed text-brand-600 sm:text-left">
-            Your next report saves straight to Prep2Pass and opens in full Premium. No per-report checkout.
+            Your next report saves straight to Pass Pilot and opens in full Premium. No per-report checkout.
           </p>
         )}
       </div>

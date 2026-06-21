@@ -147,7 +147,7 @@ async function fetchLifetimeAccessFromSession(): Promise<boolean> {
 }
 
 export type AssessmentFormProps = {
-  /** When set (signed-in Prep2Pass account email), email is read-only */
+  /** When set (signed-in Pass Pilot account email), email is read-only */
   lockedAccountEmail?: string;
   prefilledFullName?: string;
   /** Server hint: skips payment UI when true; `/api/checkout/create-session` re-verifies before finalising */
@@ -472,7 +472,7 @@ export function AssessmentForm({
 
   return (
     <form
-      id="prep2pass-assessment"
+      id="pass-pilot-assessment"
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 pb-[calc(7.25rem+env(safe-area-inset-bottom))] sm:space-y-10 md:pb-0"
     >
@@ -480,7 +480,7 @@ export function AssessmentForm({
         <SectionHeader
           step={1}
           title="About you"
-          hint="We use this to personalise your report and keep it saved securely to your Prep2Pass account."
+          hint="We use this to personalise your report and keep it saved securely to your Pass Pilot account."
         />
         <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div className="sm:col-span-1">
@@ -505,8 +505,8 @@ export function AssessmentForm({
             />
             <p className={hintClass}>
               {lockedAccountEmail
-                ? "This is your Prep2Pass account email. It stays on every report you save."
-                : "Used for secure storage on your Prep2Pass account after checkout."}
+                ? "This is your Pass Pilot account email. It stays on every report you save."
+                : "Used for secure storage on your Pass Pilot account after checkout."}
             </p>
             {errors.email ? <p className={errorClass}>{errors.email.message}</p> : null}
           </div>
@@ -875,7 +875,7 @@ export function AssessmentForm({
         <p className="text-center text-xs leading-relaxed text-brand-500">
           For information only, not a substitute for professional instruction.
           {showLifetimeAssessmentChrome
-            ? " Your Premium report attaches to Prep2Pass as part of lifetime access."
+            ? " Your Premium report attaches to Pass Pilot as part of lifetime access."
             : " Your answers generate your Test Ready Score Report after payment."}
         </p>
       </div>

@@ -5,8 +5,19 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
+import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
+import type { UserAppRole } from "@/lib/instructor/types";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const VERIFY_INTRO: Record<UserAppRole, string> = {
+  learner:
+    "Pass Pilot needs a verified inbox before Premium reports appear. That binds retrieval tightly to your account and keeps away from accidental sharing.",
+  instructor:
+    "Pass Pilot needs a verified inbox before you can open your instructor workspace. That keeps pupil data tied to the right account.",
+  parent:
+    "Pass Pilot needs a verified inbox before you can link to your learner and view their progress.",
+};
 
 export function VerifyEmailFlow() {
   const params = useSearchParams();
@@ -15,6 +26,11 @@ export function VerifyEmailFlow() {
     const raw = params.get("continue");
     return raw?.startsWith("/") && !raw.startsWith("//") ? raw : null;
   }, [params]);
+
+  const verifyRole = useMemo(
+    () => appRoleFromDestination(continueSafe) ?? "learner",
+    [continueSafe],
+  );
 
   const resumeHref = useMemo(
     () =>
@@ -59,10 +75,7 @@ export function VerifyEmailFlow() {
         <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-brand-950">
           Verify your email to continue
         </h1>
-        <p className="mt-3 text-base leading-relaxed text-brand-700">
-          Prep2Pass needs a verified inbox before Premium reports appear. That binds retrieval tightly to your account and keeps
-          away from accidental sharing.
-        </p>
+        <p className="mt-3 text-base leading-relaxed text-brand-700">{VERIFY_INTRO[verifyRole]}</p>
         <p className="mt-6 text-sm text-brand-600">
           Already verified? Reload this tab or jump back to{" "}
           <Link href={resumeHref} className="font-semibold text-teal-900 underline underline-offset-4">

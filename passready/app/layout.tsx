@@ -19,7 +19,7 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://passready.app"),
+  metadataBase: new URL("https://thepasspilot.com"),
   title: {
     default: SITE_META_TITLE,
     template: `%s · ${PRODUCT.name}`,

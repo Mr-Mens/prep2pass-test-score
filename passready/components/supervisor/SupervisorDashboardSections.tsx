@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BRAND_CTA } from "@/lib/constants";
+import { BRAND_CTA, PRODUCT } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 
 import type { SupervisorDashboardView, SupervisorTrend } from "@/lib/supervisor/types";
@@ -35,7 +35,7 @@ export function SupervisorDashboardSections({ view }: Props) {
         <section className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 shadow-sm">
           <h2 className="font-heading text-lg font-semibold text-brand-950">Link your learner to get started</h2>
           <p className="mt-2 text-sm leading-relaxed text-brand-700">
-            Connect your learner&apos;s Prep2Pass account to see their Pass Pilot, progress, and personalised
+            Connect your learner&apos;s Pass Pilot account to see their {PRODUCT.score}, progress, and personalised
             practice guidance here.
           </p>
           <Link
@@ -49,7 +49,7 @@ export function SupervisorDashboardSections({ view }: Props) {
         <section className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 shadow-sm">
           <h2 className="font-heading text-lg font-semibold text-brand-950">Waiting to connect with {linkedLearner.name}</h2>
           <p className="mt-2 text-sm text-brand-700">
-            We saved {linkedLearner.email}. Progress appears automatically once that email has a Prep2Pass account with
+            We saved {linkedLearner.email}. Progress appears automatically once that email has a Pass Pilot account with
             saved reports.
           </p>
         </section>
@@ -79,7 +79,7 @@ export function SupervisorDashboardSections({ view }: Props) {
         ) : (
           <p className="mt-4 text-sm text-brand-600">
             No saved reports yet for {linkedLearner?.name ?? "your learner"}. {BRAND_CTA.helpLearnerGetScore} on
-            Prep2Pass.
+            Pass Pilot.
           </p>
         )}
       </section>

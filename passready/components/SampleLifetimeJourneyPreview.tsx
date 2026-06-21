@@ -62,7 +62,7 @@ export function SampleLifetimeJourneyPreview() {
           </h2>
           <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-600">
             This block is <span className="font-semibold text-brand-800">not</span> inside your one-off PDF-style report. It
-            shows what your Prep2Pass dashboard looks like when you choose{" "}
+            shows what your Pass Pilot dashboard looks like when you choose{" "}
             <span className="font-semibold text-brand-900">lifetime progress access</span> and save several Premium reports
             over time.
           </p>

@@ -20,7 +20,7 @@ const paramsSchema = z.object({ id: z.string().uuid() });
 export const metadata: Metadata = {
   title: "Your Test Ready Score Report",
   description:
-    "Saved Premium Test Ready Score Report from Prep2Pass. Created by a DVSA-approved driving instructor; not an official DVSA product.",
+    "Saved Premium Test Ready Score Report from Pass Pilot. Created by a DVSA-approved driving instructor; not an official DVSA product.",
 };
 
 export default async function ReportDetailPage({ params }: Props) {

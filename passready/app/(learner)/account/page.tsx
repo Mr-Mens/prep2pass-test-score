@@ -147,7 +147,7 @@ export default async function LearnerAccountPage() {
           <MenuRow href="/subscribe" title="Subscribe" hint={`${PRICING.subscription.display}/month · unlimited access`} />
         ) : null}
         <MenuRow href="/graduate" title="Graduate Mode" hint="Record your pass · stop billing" />
-        <MenuRow href="/terms" title="Terms & privacy" hint="Prep2Pass legal and policies" />
+        <MenuRow href="/terms" title="Terms & privacy" hint="Pass Pilot legal and policies" />
         <MenuRow href="mailto:hello@prep2pass.co.uk" title="Help & support" hint="hello@prep2pass.co.uk" />
       </nav>
 

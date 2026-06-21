@@ -149,7 +149,7 @@ export default async function InstructorDashboardPage() {
           href="/instructor/pupils"
           kicker="Pupils"
           title="My pupils"
-          body="Maintain your roster and link by email where it matches Prep2Pass, so pupil context stays tidy."
+          body="Maintain your roster and link by email where it matches Pass Pilot, so pupil context stays tidy."
           cta="Manage roster"
           icon={<IconUsers />}
           tint="from-cyan-600 to-teal-800"

@@ -10,7 +10,17 @@ import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import { isSelfServiceAppRole } from "@/lib/auth/self-service-roles";
 import { passwordFieldSchema } from "@/lib/auth/password";
+import type { UserAppRole } from "@/lib/instructor/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const SIGNUP_INTRO: Record<UserAppRole, string> = {
+  learner:
+    "Your Premium reports stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Pass Pilot never asks you to repeat your password via email.",
+  instructor:
+    "Create your free instructor account for mock tests, pupil tracking, and teaching tools. We email a verification link before you can sign in — Pass Pilot never asks for your password by email.",
+  parent:
+    "Create your parent account to link to your learner and view their progress. We email a verification link before you can sign in — Pass Pilot never asks for your password by email.",
+};
 
 function safePostAuthPath(raw: string | null): string {
   if (raw?.startsWith("/") && !raw.startsWith("//")) return raw;
@@ -113,7 +123,7 @@ export function SignupFlow() {
   return (
     <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Create account</p>
-        <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Join Prep2Pass</h1>
+        <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Join Pass Pilot</h1>
         {premiumInviteToken ? (
           <p className="mt-3 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
             You&apos;ve been invited to Pass Pilot Premium. Use the invited email address below, then subscribe with your
@@ -124,9 +134,7 @@ export function SignupFlow() {
             Your instructor invited you to Pass Pilot. After you verify your email, we&apos;ll link you automatically.
           </p>
         ) : null}
-        <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          Your Premium reports stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Prep2Pass never asks you to repeat your password via email.
-        </p>
+        <p className="mt-2 text-sm leading-relaxed text-brand-600">{SIGNUP_INTRO[signupAppRole]}</p>
 
         <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">
           <div>

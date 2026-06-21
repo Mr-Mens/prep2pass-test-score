@@ -6,7 +6,7 @@ import { getLinkedLearnerForParent, requireParentSession } from "@/lib/server/su
 
 export const metadata: Metadata = {
   title: "Link learner · Parent supervisor",
-  description: "Connect your Prep2Pass parent account to your learner.",
+  description: "Connect your Pass Pilot parent account to your learner.",
 };
 
 export default async function SupervisorLinkLearnerPage() {
@@ -18,7 +18,7 @@ export default async function SupervisorLinkLearnerPage() {
       <header>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">Link learner</h1>
         <p className="mt-2 text-sm text-brand-600">
-          Connect your account to your learner&apos;s Prep2Pass profile to view their progress and reports here.
+          Connect your account to your learner&apos;s Pass Pilot profile to view their progress and reports here.
         </p>
       </header>
 

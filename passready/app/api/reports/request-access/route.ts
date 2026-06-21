@@ -8,7 +8,7 @@ export async function POST() {
       success: false as const,
       error: {
         code: "ACCOUNT_REQUIRED",
-        message: "Report access now lives inside your Prep2Pass account. Sign in and open the Dashboard instead.",
+        message: "Report access now lives inside your Pass Pilot account. Sign in and open the Dashboard instead.",
       },
     },
     { status: 403 },

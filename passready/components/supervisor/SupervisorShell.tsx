@@ -8,20 +8,19 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const sidebarNav = [
-  { href: "/supervisor", label: "Home", match: "exact" },
-  { href: "/supervisor/practice-log", label: "Practice log", match: "prefix" },
-  { href: "/supervisor/reports", label: "Reports", match: "prefix" },
-  { href: "/supervisor/progress", label: "Progress", match: "prefix" },
-  { href: "/supervisor/link-learner", label: "Link learner", match: "prefix" },
-  { href: "/supervisor/account", label: "Account", match: "prefix" },
+  { href: "/supervisor", label: "Dashboard", match: "exact" as const },
+  { href: "/supervisor/link-learner", label: "My Learner", match: "prefix" as const },
+  { href: "/supervisor/reflections", label: "Lesson Reflections", match: "prefix" as const },
+  { href: "/supervisor/practice-log", label: "Practice Planner", match: "prefix" as const },
+  { href: "/supervisor/resources", label: "Resources", match: "prefix" as const },
 ] as const;
 
 const dockNav = [
   { href: "/supervisor", label: "Home", icon: "⌂" },
-  { href: "/supervisor/practice-log", label: "Practice", icon: "✎" },
-  { href: "/supervisor/reports", label: "Reports", icon: "☰" },
-  { href: "/supervisor/progress", label: "Progress", icon: "↗" },
-  { href: "/supervisor/account", label: "Account", icon: "⚙" },
+  { href: "/supervisor/link-learner", label: "Learner", icon: "◎" },
+  { href: "/supervisor/reflections", label: "Reflect", icon: "✎" },
+  { href: "/supervisor/practice-log", label: "Planner", icon: "▦" },
+  { href: "/supervisor/resources", label: "Resources", icon: "☰" },
 ] as const;
 
 type Props = {

@@ -1,5 +1,7 @@
 import { sanitiseReportLearnerCopy } from "@/lib/report-copy-sanitise";
 import { mergeNextStepsPreserveOrder } from "@/lib/syllabus-coverage";
+import { computeReflectionScoreAdjustment } from "@/lib/lesson-reflections/insights";
+import { listLessonReflectionsForLearner } from "@/lib/server/repositories/lesson-reflections-repository";
 import { computeMockReadiness } from "@/lib/scoring";
 import { generateReadinessReport } from "@/lib/server/generate-readiness-report";
 import { deterministicToReport } from "@/lib/transformers/deterministic-to-report";
@@ -17,6 +19,8 @@ export type ScoreAssessmentOptions = {
    * Use for free preview (`/api/assessment/score`) so paid `finalise` keeps quota for one AI call per purchase.
    */
   useAiEnrichment?: boolean;
+  /** When set, applies a light ±5 reflection adjustment to the deterministic score. */
+  userId?: string;
 };
 
 /**
@@ -29,7 +33,16 @@ export async function scoreAssessment(
   assessment: AssessmentPayload,
   options: ScoreAssessmentOptions = {},
 ): Promise<ScoreAssessmentResult> {
-  const deterministic = computeMockReadiness(assessment);
+  let reflectionScoreAdjustment = 0;
+  if (options.userId) {
+    const reflections = await listLessonReflectionsForLearner(options.userId, 20);
+    reflectionScoreAdjustment = computeReflectionScoreAdjustment(reflections);
+  }
+
+  const deterministic = computeMockReadiness({
+    ...assessment,
+    reflectionScoreAdjustment,
+  });
 
   if (options.useAiEnrichment === false) {
     return {

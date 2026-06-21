@@ -9,12 +9,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/instructor", label: "Dashboard", icon: "◉" },
-  { href: "/instructor/pupils", label: "My Pupils", icon: "◎" },
-  { href: "/instructor/mock-test/new", label: "Mock Test Tool", icon: "▦" },
-  { href: "/instructor/diagrams", label: "Diagrams", icon: "▨" },
-  { href: "/instructor/mock-tests", label: "Reports", icon: "☰" },
-  { href: "/instructor/settings", label: "Settings", icon: "⚙" },
-  { href: "/instructor/help", label: "Help & Support", icon: "?" },
+  { href: "/instructor/pupils", label: "Pupils", icon: "◎" },
+  { href: "/instructor/mock-tests", label: "Mock Tests", icon: "▦" },
+  { href: "/instructor/reflections", label: "Lesson Reviews", icon: "✎" },
+  { href: "/instructor/diagrams", label: "Teaching Diagrams", icon: "▨" },
+  { href: "/instructor/part-3", label: "Part 3 Hub", icon: "◈" },
 ] as const;
 
 type Props = {
@@ -52,11 +51,9 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
           const active =
             item.href === "/instructor"
               ? pathname === "/instructor"
-              : item.href === "/instructor/mock-test/new"
-                ? pathname.startsWith("/instructor/mock-test") && !pathname.startsWith("/instructor/mock-tests")
-                : item.href === "/instructor/mock-tests"
-                  ? pathname.startsWith("/instructor/mock-tests")
-                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              : item.href === "/instructor/mock-tests"
+                ? pathname.startsWith("/instructor/mock-test")
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}

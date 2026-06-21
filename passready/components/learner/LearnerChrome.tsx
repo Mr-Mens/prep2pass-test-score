@@ -8,37 +8,34 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { BRAND_CTA, PRICING, PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type NavMatch = "home" | "reports" | "progress" | "assessment" | "account";
+type NavMatch = "home" | "assessment" | "journey" | "reflections" | "resources";
 
 const railNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/dashboard", label: "Home", match: "home" },
-  { href: "/my-reports", label: "Reports", match: "reports" },
-  { href: "/progress", label: "Progress", match: "progress" },
-  { href: "/assessment", label: "Score", match: "assessment" },
-  { href: "/account", label: "Account", match: "account" },
+  { href: "/dashboard", label: "Dashboard", match: "home" },
+  { href: "/assessment", label: "Pass Pilot Score", match: "assessment" },
+  { href: "/progress", label: "Learning Journey", match: "journey" },
+  { href: "/dashboard/reflections", label: "Lesson Reflections", match: "reflections" },
+  { href: "/dashboard/resources", label: "Resources", match: "resources" },
 ];
 
-/** Mobile dock: Home, Reports, Progress (lifetime), Assessment, Account */
 const dockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/dashboard", label: "Home", match: "home" },
-  { href: "/my-reports", label: "Reports", match: "reports" },
-  { href: "/progress", label: "Progress", match: "progress" },
+  { href: "/dashboard", label: "Dashboard", match: "home" },
   { href: "/assessment", label: "Score", match: "assessment" },
-  { href: "/account", label: "Account", match: "account" },
+  { href: "/progress", label: "Journey", match: "journey" },
+  { href: "/dashboard/reflections", label: "Reflections", match: "reflections" },
+  { href: "/dashboard/resources", label: "Resources", match: "resources" },
 ];
 
 function activeFor(pathname: string, match: NavMatch): boolean {
   if (match === "home") return pathname === "/dashboard";
-  if (match === "reports") {
-    return (
-      pathname.startsWith("/my-reports") ||
-      pathname.startsWith("/reports") ||
-      pathname.startsWith("/mock-tests")
-    );
-  }
-  if (match === "progress") return pathname === "/progress" || pathname.startsWith("/progress/");
   if (match === "assessment") return pathname === "/assessment" || pathname.startsWith("/assessment/");
-  if (match === "account") return pathname === "/account" || pathname.startsWith("/account/");
+  if (match === "journey") return pathname === "/progress" || pathname.startsWith("/progress/");
+  if (match === "reflections") {
+    return pathname === "/dashboard/reflections" || pathname.startsWith("/dashboard/reflections/");
+  }
+  if (match === "resources") {
+    return pathname === "/dashboard/resources" || pathname.startsWith("/dashboard/resources/");
+  }
   return false;
 }
 
@@ -76,11 +73,11 @@ function IconTarget({ stroke }: { stroke: string }) {
   );
 }
 
-function IconFolder({ stroke }: { stroke: string }) {
+function IconBook({ stroke }: { stroke: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M4 8a2 2 0 012-2h4l2 2h6a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"
+        d="M5 5.5A2.5 2.5 0 017.5 3h9A2.5 2.5 0 0119 5.5v15a1 1 0 01-1.447.894L12 18.118l-5.553 3.276A1 1 0 015 20.5v-15z"
         stroke={stroke}
         strokeWidth="2"
         strokeLinejoin="round"
@@ -89,11 +86,16 @@ function IconFolder({ stroke }: { stroke: string }) {
   );
 }
 
-function IconUser({ stroke }: { stroke: string }) {
+function IconReflect({ stroke }: { stroke: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="8" r="4" stroke={stroke} strokeWidth="2" />
-      <path d="M6 21v-2a6 6 0 0112 0v2" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+      <path d="M8 6h8M8 10h8M8 14h5" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M6 4h12a2 2 0 012 2v12l-3-2-3 2-3-2-3 2-3-2V6a2 2 0 012-2z"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -102,14 +104,14 @@ function iconForMatch(match: NavMatch, stroke: string) {
   switch (match) {
     case "home":
       return <IconHome stroke={stroke} />;
-    case "reports":
-      return <IconFolder stroke={stroke} />;
-    case "progress":
+    case "journey":
       return <IconChart stroke={stroke} />;
     case "assessment":
       return <IconTarget stroke={stroke} />;
-    case "account":
-      return <IconUser stroke={stroke} />;
+    case "reflections":
+      return <IconReflect stroke={stroke} />;
+    case "resources":
+      return <IconBook stroke={stroke} />;
     default:
       return <IconHome stroke={stroke} />;
   }
@@ -146,10 +148,8 @@ function initialsFromMe(me: MeBrief): string {
 export function LearnerChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
   const [me, setMe] = useState<MeBrief | null>(null);
-  /** Progress is lifetime-only; hide until entitlement is confirmed client-side */
-  const showProgressNav = me?.lifetimeAccess === true;
-  const railLinks = railNavItems.filter((item) => item.match !== "progress" || showProgressNav);
-  const dockLinks = dockNavItems.filter((item) => item.match !== "progress" || showProgressNav);
+  const railLinks = railNavItems;
+  const dockLinks = dockNavItems;
 
   useEffect(() => {
     let cancelled = false;
@@ -215,9 +215,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
-        <ul
-          className={`mx-auto grid max-w-xl gap-0 px-1 pt-1 ${showProgressNav ? "grid-cols-5" : "grid-cols-4"}`}
-        >
+        <ul className="mx-auto grid max-w-xl grid-cols-5 gap-0 px-1 pt-1">
           {dockLinks.map((item) => {
             const active = activeFor(pathname, item.match);
             const stroke = strokeDock(active);

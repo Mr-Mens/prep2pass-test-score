@@ -75,3 +75,17 @@ export const PLATFORM_MODULES: PlatformModule[] = [
 
 export const LIVE_PLATFORM_MODULES = PLATFORM_MODULES.filter((m) => m.status === "live");
 export const COMING_SOON_PLATFORM_MODULES = PLATFORM_MODULES.filter((m) => m.status === "coming-soon");
+
+export type PlatformModuleAudience = NonNullable<PlatformModule["audience"]>;
+
+function moduleMatchesAudience(module: PlatformModule, audience: PlatformModuleAudience): boolean {
+  return module.audience === audience || module.audience === "all";
+}
+
+export function liveModulesForAudience(audience: PlatformModuleAudience): PlatformModule[] {
+  return LIVE_PLATFORM_MODULES.filter((module) => moduleMatchesAudience(module, audience));
+}
+
+export function comingSoonModulesForAudience(audience: PlatformModuleAudience): PlatformModule[] {
+  return COMING_SOON_PLATFORM_MODULES.filter((module) => moduleMatchesAudience(module, audience));
+}

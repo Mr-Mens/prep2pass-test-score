@@ -3,6 +3,8 @@ import "server-only";
 import { deriveDeltaVsPrior, deriveStrongestPhrase } from "@/lib/dashboard/journey-insights";
 import type { JourneySnapshot } from "@/lib/dashboard/journey-types";
 import { buildReportViewModel } from "@/lib/report-view-model";
+import { buildReflectionDashboardSummary } from "@/lib/lesson-reflections/insights";
+import type { ReflectionDashboardSummary } from "@/lib/lesson-reflections/types";
 import {
   getCachedRecentReportSummaries,
   getDashboardEntitlements,
@@ -10,6 +12,7 @@ import {
   getDashboardTestBooking,
   getLatestReportSummary,
 } from "@/lib/server/cached-user-data";
+import { listLessonReflectionsForLearner } from "@/lib/server/repositories/lesson-reflections-repository";
 import type { AssessmentPayload, ReadinessLabel, ReportSummaryItem, SyllabusProgressSnapshot } from "@/lib/validation";
 import type { ReadinessBandDisplay, ConfidenceDisplay } from "@/lib/readiness-calibration";
 
@@ -46,6 +49,7 @@ export type LearnerDashboardView = {
   journeyInsights: string[];
   hasLifetimeAccess: boolean;
   snapshots: JourneySnapshot[];
+  reflectionSummary: ReflectionDashboardSummary;
 };
 
 function daysUntil(isoDate: string): number {
@@ -103,12 +107,13 @@ function buildJourneyInsights(
 }
 
 export async function buildLearnerDashboardView(userId: string, firstName = ""): Promise<LearnerDashboardView> {
-  const [snaps, entitlements, latestReport, recentReports, testBooking] = await Promise.all([
+  const [snaps, entitlements, latestReport, recentReports, testBooking, reflections] = await Promise.all([
     getDashboardJourneySnapshots(userId),
     getDashboardEntitlements(userId),
     getLatestReportSummary(userId),
     getCachedRecentReportSummaries(userId, 3),
     getDashboardTestBooking(userId),
+    listLessonReflectionsForLearner(userId),
   ]);
   const delta = deriveDeltaVsPrior(snaps);
   const prevSnap = snaps.length >= 2 ? snaps[snaps.length - 2]! : null;
@@ -192,5 +197,6 @@ export async function buildLearnerDashboardView(userId: string, firstName = ""):
     journeyInsights: buildJourneyInsights(snaps, roadmap),
     hasLifetimeAccess: entitlements.hasLifetimeAccess,
     snapshots: snaps,
+    reflectionSummary: buildReflectionDashboardSummary(reflections),
   };
 }

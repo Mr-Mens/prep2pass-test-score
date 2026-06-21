@@ -714,6 +714,11 @@ export function computeMockReadiness(assessment: AssessmentPayload): Determinist
   score = applySyllabusCriticalGapPenalties(score, assessment, syllabusSnapshot);
   score = applyIndependenceReadinessCeiling(score, assessment, syllabusSnapshot);
 
+  const reflectionAdjustment = assessment.reflectionScoreAdjustment ?? 0;
+  if (reflectionAdjustment !== 0) {
+    score = Math.max(0, Math.min(100, score + reflectionAdjustment));
+  }
+
   const estimatedLessonHours = computeEstimatedLessonHours(
     {
       ...assessment,

@@ -208,7 +208,7 @@ async function finaliseWithStripeSession(
     }
   }
 
-  const { assessment: scoredAssessment, result } = await scoreAssessment(assessment);
+  const { assessment: scoredAssessment, result } = await scoreAssessment(assessment, { userId });
 
   if (skipDbPersist) {
     console.warn(
@@ -274,7 +274,7 @@ async function finaliseWithEntitlementToken(
 
   const syntheticSessionId = `lifetime:${randomUUID()}`;
 
-  const { assessment: scoredAssessment, result } = await scoreAssessment(assessment);
+  const { assessment: scoredAssessment, result } = await scoreAssessment(assessment, { userId: caller.userId });
 
   if (skipDbPersist) {
     console.warn("[reports:finalise] entitlement skipping_db_persist");

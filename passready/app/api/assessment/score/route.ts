@@ -45,7 +45,10 @@ export async function POST(request: Request) {
       return jsonError(403, "GRADUATED", "Congratulations, your account is in Graduate Mode. New assessments are disabled.");
     }
 
-    const { assessment, result } = await scoreAssessment(parsed.data, { useAiEnrichment: false });
+    const { assessment, result } = await scoreAssessment(parsed.data, {
+      useAiEnrichment: false,
+      userId: auth.userId,
+    });
 
     return NextResponse.json({
       success: true as const,

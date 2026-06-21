@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/Button";
 import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory";
+import { LessonReflectionsSummaryCard } from "@/components/reflections/LessonReflectionsSummaryCard";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
@@ -207,6 +208,9 @@ export function LearnerDashboardHome({ view, userId }: Props) {
           )}
         </DashboardCard>
       ) : null}
+
+      {/* Lesson reflections */}
+      <LessonReflectionsSummaryCard summary={view.reflectionSummary} />
 
       {/* Section 6, Recent reports */}
       {view.recentReports.length > 0 ? (

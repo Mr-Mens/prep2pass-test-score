@@ -225,6 +225,8 @@ export const assessmentSchema = z
     /** When set with `topicsCovered`, enables syllabus realism layer (v1). Omit for legacy payloads. */
     syllabusCaptureVersion: z.literal(1).optional(),
     topicsCovered: z.array(z.string()).max(SYLLABUS_TOTAL_TOPIC_COUNT).optional(),
+    /** Server-only light adjustment from lesson reflections (±5). */
+    reflectionScoreAdjustment: z.number().int().min(-5).max(5).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.testBooked === "yes") {

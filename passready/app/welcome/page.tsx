@@ -4,13 +4,15 @@ import { Suspense } from "react";
 
 import { WelcomeLanding } from "@/components/welcome/WelcomeLanding";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Sign in · Pass Pilot",
-  description: "Choose your path: learner, instructor, or parent.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "Choose your role",
+  description: "Choose how you use Pass Pilot: learner, instructor, or parent supporting UK driving test readiness.",
+  path: "/welcome",
+});
 
 function WelcomeLoading() {
   return (

@@ -4,6 +4,7 @@ import { Button } from "@/components/Button";
 import { FaqItem } from "@/components/FaqItem";
 import { LandingPricing } from "@/components/LandingPricing";
 import { HeroScoreCard } from "@/components/marketing/HeroScoreCard";
+import { MarketingSiteFooter } from "@/components/marketing/MarketingSiteFooter";
 import { MarketingStickyCta } from "@/components/marketing/MarketingStickyCta";
 import { PremiumReportFeatures } from "@/components/marketing/PremiumReportFeatures";
 import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
@@ -11,6 +12,7 @@ import { TestCountdownPreview } from "@/components/marketing/TestCountdownPrevie
 import { Section } from "@/components/Section";
 import { TrustBadge } from "@/components/TrustBadge";
 import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA, PRODUCT } from "@/lib/constants";
+import { PUBLIC_FAQ } from "@/lib/content/public-faq";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { getServerAuthUser } from "@/lib/supabase/server";
@@ -111,36 +113,7 @@ const valueCards = [
   },
 ] as const;
 
-const faqItems = [
-  {
-    q: "How much does it cost?",
-    a: `Pass Pilot for learners is ${PRICING.subscription.display}/month until you pass or cancel. Instructor and parent accounts are free.`,
-  },
-  {
-    q: "Is this official DVSA guidance?",
-    a: "No. Pass Pilot is independent and not affiliated with DVSA. It is produced by a DVSA-approved driving instructor to complement lessons.",
-  },
-  {
-    q: "Does this guarantee I will pass?",
-    a: "No. There is no pass guarantee. You still need real-road performance and professional instruction.",
-  },
-  {
-    q: "Can I use this with my instructor?",
-    a: "Yes. Pass Pilot is built to support your instructor's professional judgement, not replace it. Bring your report to agree clear next steps together.",
-  },
-  {
-    q: "Can parents use this for private practice?",
-    a: "Yes. Supervisors can use the risk breakdown and next steps to plan practice drives between paid lessons.",
-  },
-  {
-    q: "What happens when I pass?",
-    a: "Record your pass in Graduate Mode and we automatically stop future billing. Your account and reports stay available.",
-  },
-  {
-    q: "Is my report saved securely?",
-    a: "Yes. Saved reports stay linked to your account. Only you access them while signed in.",
-  },
-] as const;
+const faqItems = PUBLIC_FAQ.slice(0, 6);
 
 const microIconClass = "h-3.5 w-3.5 shrink-0";
 
@@ -506,6 +479,7 @@ export async function MarketingHomePage() {
       </section>
 
       <MarketingStickyCta hidden={hideLearnerPricing} />
+      <MarketingSiteFooter />
     </div>
   );
 }

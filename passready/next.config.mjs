@@ -17,6 +17,11 @@ const nextConfig = {
         destination: "/assessment",
         permanent: true,
       },
+      {
+        source: "/explore",
+        destination: "/",
+        permanent: true,
+      },
     ];
   },
 };

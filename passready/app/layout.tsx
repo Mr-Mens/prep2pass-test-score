@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 
 import { AppShell } from "@/components/AppShell";
-import { PRODUCT, SITE_DEFAULT_DESCRIPTION, SITE_META_TITLE, SOCIAL_BANNER, BRAND_ICONS } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { BRAND_ICONS } from "@/lib/constants";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
+import { buildRootMetadata } from "@/lib/seo/metadata";
 
 import "./globals.css";
 
@@ -19,13 +22,7 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://thepasspilot.com"),
-  title: {
-    default: SITE_META_TITLE,
-    template: `%s · ${PRODUCT.name}`,
-  },
-  description: SITE_DEFAULT_DESCRIPTION,
-  applicationName: PRODUCT.name,
+  ...buildRootMetadata(),
   icons: {
     icon: [
       { url: BRAND_ICONS.favicon32, sizes: "32x32", type: "image/png" },
@@ -36,33 +33,8 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: PRODUCT.name,
+    title: "Pass Pilot",
     statusBarStyle: "default",
-  },
-  openGraph: {
-    title: SITE_META_TITLE,
-    description: SITE_DEFAULT_DESCRIPTION,
-    type: "website",
-    locale: "en_GB",
-    siteName: PRODUCT.name,
-    images: [
-      {
-        url: SOCIAL_BANNER.src,
-        width: SOCIAL_BANNER.width,
-        height: SOCIAL_BANNER.height,
-        alt: SOCIAL_BANNER.alt,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_META_TITLE,
-    description: SITE_DEFAULT_DESCRIPTION,
-    images: [SOCIAL_BANNER.src],
-  },
-  robots: {
-    index: true,
-    follow: true,
   },
 };
 
@@ -76,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" className={`${inter.variable} ${interTight.variable}`}>
       <body className="font-sans">
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
         <AppShell>{children}</AppShell>
       </body>
     </html>

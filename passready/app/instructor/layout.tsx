@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
+
 import { InstructorShell } from "@/components/instructor/InstructorShell";
 import { getInstructorProfileDisplay, requireInstructorSession } from "@/lib/server/instructor-page-auth";
+import { ROBOTS_PRIVATE } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = {
+  robots: ROBOTS_PRIVATE,
+};
 
 export default async function InstructorLayout({ children }: { children: React.ReactNode }) {
   const user = await requireInstructorSession();

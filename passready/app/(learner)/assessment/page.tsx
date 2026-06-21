@@ -4,16 +4,18 @@ import Link from "next/link";
 
 import { AssessmentForm } from "@/components/AssessmentForm";
 import { Button } from "@/components/Button";
-import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING } from "@/lib/constants";
+import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING, PRODUCT } from "@/lib/constants";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Get Your Test Ready Score",
+export const metadata: Metadata = buildPageMetadata({
+  title: `Get Your ${PRODUCT.score}`,
   description:
-    "Answer a few questions and receive your personalised Pass Pilot, risks and action plan. Created by a DVSA-approved driving instructor.",
-};
+    "Answer a few questions and receive your personalised Pass Pilot readiness score, risks and action plan. Created by a DVSA-approved driving instructor.",
+  path: "/assessment",
+});
 
 const VALUE_BULLETS = [
   "Your readiness score, explained in plain English",

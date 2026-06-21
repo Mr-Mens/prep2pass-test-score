@@ -4,17 +4,23 @@ import { Button } from "@/components/Button";
 import { PremiumReportSections } from "@/components/reports/PremiumReportSections";
 import { SampleLifetimeJourneyPreview } from "@/components/SampleLifetimeJourneyPreview";
 import { Section } from "@/components/Section";
-import { BRAND_CTA, PRICING } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { BRAND_CTA, PRICING, PRODUCT } from "@/lib/constants";
 import { buildRecommendedHoursNarrative, type EstimatedHoursInput } from "@/lib/estimated-lesson-hours";
 import { buildReportViewModel } from "@/lib/report-view-model";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
+import { webPageJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
-export const metadata: Metadata = {
+const sampleDescription =
+  "Preview a realistic Premium Test Ready Score Report from Pass Pilot: readiness score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.";
+
+export const metadata: Metadata = buildPageMetadata({
   title: "Sample Premium Test Ready Score Report",
-  description:
-    "Preview a realistic Premium Test Ready Score Report from Pass Pilot before checkout: score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.",
-};
+  description: sampleDescription,
+  path: "/sample-report",
+});
 
 const sampleRiskAreas: GroupedRiskArea[] = [
   {
@@ -132,7 +138,15 @@ export default async function SampleReportPage() {
   const recommendedHours = buildRecommendedHoursNarrative(model.estimatedHours, 42);
 
   return (
-    <Section
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: "/sample-report",
+          title: `Sample Premium ${PRODUCT.score} Report`,
+          description: sampleDescription,
+        })}
+      />
+      <Section
       className="bg-brand-50 print:bg-white"
       contentClassName="max-w-3xl"
       eyebrow="Preview"
@@ -170,5 +184,6 @@ export default async function SampleReportPage() {
         </p>
       </div>
     </Section>
+    </>
   );
 }

@@ -27,17 +27,34 @@ export function Footer() {
           </Link>
           <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">{PRODUCT.tagline}</p>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
-            {PRODUCT.name} helps learner drivers understand readiness, identify risks and focus lessons on what
-            matters most before test day. {PRODUCT.name} is independent and not affiliated with DVSA.
+            {PRODUCT.altTagline} {PRODUCT.name} is independent and not affiliated with DVSA.
           </p>
         </div>
         <div className="flex flex-col gap-4 text-sm text-brand-700 sm:items-end">
           <nav className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Footer">
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-              href="/explore"
+              href="/pricing"
             >
-              Explore
+              Pricing
+            </Link>
+            <Link
+              className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              href="/faq"
+            >
+              FAQ
+            </Link>
+            <Link
+              className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              href="/about"
+            >
+              About
+            </Link>
+            <Link
+              className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              href="/"
+            >
+              Home
             </Link>
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
@@ -50,6 +67,18 @@ export function Footer() {
               href="/sample-report"
             >
               See Sample Report
+            </Link>
+            <Link
+              className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              href="/terms"
+            >
+              Terms
+            </Link>
+            <Link
+              className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              href="/privacy"
+            >
+              Privacy
             </Link>
             <Link
               className="rounded-lg px-2 py-1.5 text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"

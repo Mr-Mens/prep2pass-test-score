@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { DiagramLibraryBrowser } from "@/components/instructor/diagrams/DiagramLibraryBrowser";
 import { getAllTeachingDiagrams } from "@/lib/instructor/diagrams/get-diagram";
@@ -35,7 +36,15 @@ export default function InstructorDiagramsPage() {
         </div>
       </section>
 
-      <DiagramLibraryBrowser diagrams={diagrams} />
+      <Suspense
+        fallback={
+          <div className="rounded-2xl border border-brand-100 bg-white px-6 py-12 text-center text-sm text-brand-600">
+            Loading diagrams…
+          </div>
+        }
+      >
+        <DiagramLibraryBrowser diagrams={diagrams} />
+      </Suspense>
 
       <p className="text-center text-xs text-brand-500">
         Need a diagram on the move?{" "}

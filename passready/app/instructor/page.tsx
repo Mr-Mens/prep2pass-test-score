@@ -263,7 +263,7 @@ export default async function InstructorDashboardPage() {
           href="/instructor/lessons"
           kicker="Lessons"
           title="Lesson records"
-          body="Plan upcoming sessions, mark lessons complete, and jump into lesson reflections when you're done."
+          body="Plan upcoming sessions, mark lessons complete, and see when pupils still owe a reflection."
           cta="Open lessons"
           icon={<IconLessons />}
           tint="from-sky-600 to-teal-900"
@@ -272,7 +272,7 @@ export default async function InstructorDashboardPage() {
           href="/instructor/reflections"
           kicker="Lesson reviews"
           title="Lesson Reviews"
-          body="Log structured post-lesson reflections for linked pupils — spot recurring difficulties and plan the next session."
+          body="Read reflections submitted by linked pupils after their lessons."
           cta="Open reviews"
           icon={<IconLessonReview />}
           tint="from-violet-600 to-teal-900"

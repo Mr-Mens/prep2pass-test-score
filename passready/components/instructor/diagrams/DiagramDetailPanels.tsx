@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { getDiagramCategoryName } from "@/lib/instructor/diagrams/categories";
 import { difficultyBadgeClass, difficultyLabel, formatTeachingTime } from "@/lib/instructor/diagrams/format";
-import type { TeachingDiagram } from "@/lib/instructor/diagrams/types";
+import { diagramDetailHref } from "@/lib/instructor/diagrams/navigation";
+import type { DiagramCategorySlug, TeachingDiagram } from "@/lib/instructor/diagrams/types";
 
 type ListPanelProps = {
   title: string;
@@ -30,9 +31,10 @@ function ListPanel({ title, items, tone }: ListPanelProps) {
 
 type RelatedProps = {
   diagrams: TeachingDiagram[];
+  browseCategory?: DiagramCategorySlug | "all";
 };
 
-export function RelatedDiagramsPanel({ diagrams }: RelatedProps) {
+export function RelatedDiagramsPanel({ diagrams, browseCategory = "all" }: RelatedProps) {
   if (diagrams.length === 0) return null;
 
   return (
@@ -42,7 +44,7 @@ export function RelatedDiagramsPanel({ diagrams }: RelatedProps) {
         {diagrams.map((diagram) => (
           <li key={diagram.slug}>
             <Link
-              href={`/instructor/diagrams/${diagram.slug}`}
+              href={diagramDetailHref(diagram.slug, browseCategory)}
               className="flex items-center justify-between gap-4 rounded-xl border border-brand-100 px-4 py-3 transition hover:border-teal-200 hover:bg-teal-50/40"
             >
               <span>
@@ -65,9 +67,10 @@ export function RelatedDiagramsPanel({ diagrams }: RelatedProps) {
 type DetailPanelsProps = {
   diagram: TeachingDiagram;
   related: TeachingDiagram[];
+  browseCategory?: DiagramCategorySlug | "all";
 };
 
-export function DiagramDetailPanels({ diagram, related }: DetailPanelsProps) {
+export function DiagramDetailPanels({ diagram, related, browseCategory = "all" }: DetailPanelsProps) {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
@@ -97,7 +100,7 @@ export function DiagramDetailPanels({ diagram, related }: DetailPanelsProps) {
         <ListPanel title="Common mistakes" items={diagram.commonMistakes} tone="mistakes" />
       </div>
 
-      <RelatedDiagramsPanel diagrams={related} />
+      <RelatedDiagramsPanel diagrams={related} browseCategory={browseCategory} />
     </div>
   );
 }

@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { DiagramMedia } from "@/components/instructor/diagrams/DiagramMedia";
 import { DIAGRAM_CATEGORIES } from "@/lib/instructor/diagrams/categories";
 import { difficultyBadgeClass, difficultyLabel, formatTeachingTime } from "@/lib/instructor/diagrams/format";
+import {
+  diagramDetailHref,
+  parseDiagramCategoryFilter,
+} from "@/lib/instructor/diagrams/navigation";
 import { filterDiagramsByCategory, filterDiagramsByQuery } from "@/lib/instructor/diagrams/search";
 import type { DiagramCategorySlug, TeachingDiagram } from "@/lib/instructor/diagrams/types";
 
@@ -52,10 +57,16 @@ function CategoryOverviewCards({
   );
 }
 
-function DiagramCard({ diagram }: { diagram: TeachingDiagram }) {
+function DiagramCard({
+  diagram,
+  browseCategory,
+}: {
+  diagram: TeachingDiagram;
+  browseCategory: DiagramCategorySlug | "all";
+}) {
   return (
     <Link
-      href={`/instructor/diagrams/${diagram.slug}`}
+      href={diagramDetailHref(diagram.slug, browseCategory)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-lg"
     >
       <div className="border-b border-brand-100 bg-gradient-to-br from-slate-100 via-white to-teal-50/40 p-3">
@@ -91,9 +102,17 @@ function DiagramCard({ diagram }: { diagram: TeachingDiagram }) {
 }
 
 export function DiagramLibraryBrowser({ diagrams }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const categoryFromUrl = parseDiagramCategoryFilter(searchParams.get("category"));
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<DiagramCategorySlug | "all">("all");
+  const [category, setCategory] = useState<DiagramCategorySlug | "all">(categoryFromUrl);
   const libraryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCategory(categoryFromUrl);
+  }, [categoryFromUrl]);
 
   const filtered = useMemo(() => {
     const byCategory = filterDiagramsByCategory(diagrams, category);
@@ -102,6 +121,11 @@ export function DiagramLibraryBrowser({ diagrams }: Props) {
 
   function selectCategory(next: DiagramCategorySlug | "all") {
     setCategory(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "all") params.delete("category");
+    else params.set("category", next);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     libraryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -170,7 +194,7 @@ export function DiagramLibraryBrowser({ diagrams }: Props) {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((diagram) => (
-            <DiagramCard key={diagram.slug} diagram={diagram} />
+            <DiagramCard key={diagram.slug} diagram={diagram} browseCategory={category} />
           ))}
         </div>
       )}

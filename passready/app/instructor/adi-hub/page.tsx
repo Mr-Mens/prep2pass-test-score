@@ -51,7 +51,7 @@ export default function InstructorAdiHubPage() {
       <section className="rounded-2xl border border-teal-200/70 bg-teal-50/40 p-5 sm:p-6">
         <p className="font-heading text-lg font-semibold text-brand-950">Already teaching day to day?</p>
         <p className="mt-2 text-sm text-brand-700">
-          Use Lesson Reviews to log structured reflections after each session while these hubs are being built.
+          Read pupil lesson reflections while these hubs are being built.
         </p>
         <Link
           href="/instructor/reflections"

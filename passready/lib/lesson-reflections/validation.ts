@@ -28,6 +28,7 @@ export const createLessonReflectionSchema = z
     difficultyNotes: z.string().trim().max(250).optional().nullable(),
     nextFocus: topicIdArray.default([]),
     privatePracticePlanned: z.boolean().default(false),
+    instructorLessonId: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
     const practised = new Set(data.topicsPractised);

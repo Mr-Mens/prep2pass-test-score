@@ -47,6 +47,76 @@ export async function createInstructorPupilInviteNotification(input: {
   return data as AppNotificationRow;
 }
 
+export async function createLessonReflectionRequestNotification(input: {
+  learnerUserId: string;
+  lessonId: string;
+  lessonDate: string;
+  instructorName: string;
+  durationMinutes: number;
+  lessonFocus: string[];
+}): Promise<AppNotificationRow | null> {
+  const supabase = getSupabaseServerClient();
+  const instructorLabel = input.instructorName.trim() || "Your instructor";
+  const title = "Log your lesson reflection";
+  const body = `${instructorLabel} marked your lesson on ${input.lessonDate} as complete. Take two minutes to log how it went — this helps your Pass Pilot progress.`;
+
+  const { data, error } = await supabase
+    .from("app_notifications")
+    .insert({
+      user_id: input.learnerUserId,
+      kind: "lesson_reflection_request",
+      title,
+      body,
+      action_type: "lesson_reflection_request",
+      action_payload: {
+        lessonId: input.lessonId,
+        lessonDate: input.lessonDate,
+        durationMinutes: input.durationMinutes,
+        lessonFocus: input.lessonFocus,
+        instructorName: instructorLabel,
+      },
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") return null;
+    throw new Error(error.message);
+  }
+  return data as AppNotificationRow;
+}
+
+export async function resolveLessonReflectionRequestNotifications(
+  lessonId: string,
+  learnerUserId: string,
+): Promise<void> {
+  const supabase = getSupabaseServerClient();
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("app_notifications")
+    .select("id, action_payload")
+    .eq("user_id", learnerUserId)
+    .eq("kind", "lesson_reflection_request")
+    .is("resolved_at", null);
+
+  if (error) throw new Error(error.message);
+
+  const matches = (data ?? []).filter(
+    (row) => (row.action_payload as Record<string, unknown> | null)?.lessonId === lessonId,
+  );
+
+  for (const row of matches) {
+    await supabase
+      .from("app_notifications")
+      .update({
+        resolved_at: now,
+        read_at: now,
+      })
+      .eq("id", row.id as string)
+      .eq("user_id", learnerUserId);
+  }
+}
+
 export async function markNotificationRead(notificationId: string, userId: string): Promise<void> {
   const supabase = getSupabaseServerClient();
   await supabase

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { updateInstructorLessonSchema } from "@/lib/instructor-lessons/validation";
 import { requireInstructorApiUser } from "@/lib/server/api-auth";
 import {
+  completeInstructorLesson,
   deleteInstructorLesson,
   getLessonForInstructor,
   setInstructorLessonStatus,
@@ -38,7 +39,7 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   try {
     const raw = await request.json();
     if (raw?.action === "complete") {
-      const lesson = await setInstructorLessonStatus(context.params.id, auth.userId, "completed");
+      const lesson = await completeInstructorLesson(context.params.id, auth.userId);
       return NextResponse.json({ success: true as const, lesson });
     }
     if (raw?.action === "cancel") {

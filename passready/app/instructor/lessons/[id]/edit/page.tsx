@@ -27,8 +27,8 @@ export default async function InstructorEditLessonPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-4">
       <header>
-        <Link href="/instructor/lessons" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
-          ← Back to lessons
+        <Link href={`/instructor/lessons/${lesson.id}`} className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
+          ← Back to lesson
         </Link>
         <h1 className="mt-4 font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">Edit lesson</h1>
         <p className="mt-2 text-sm text-brand-600">{lesson.pupil_name}</p>

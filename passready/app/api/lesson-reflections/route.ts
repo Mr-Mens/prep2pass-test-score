@@ -6,7 +6,14 @@ import {
 } from "@/lib/lesson-reflections/insights";
 import { createLessonReflectionSchema } from "@/lib/lesson-reflections/validation";
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { getUserAppRole } from "@/lib/server/user-app-role";
+import {
+  markLessonReflectionSubmittedByLearner,
+} from "@/lib/server/repositories/instructor-lessons-repository";
+import {
+  resolveLessonReflectionRequestNotifications,
+} from "@/lib/server/repositories/app-notifications-repository";
 import {
   createLessonReflection,
   listLessonReflectionsForInstructor,
@@ -115,11 +122,24 @@ export async function POST(request: Request) {
     const target = await resolveLearnerTarget(auth.userId, parsed.data.learnerUserId);
     if (!target.ok) return jsonError(403, "FORBIDDEN", target.message);
 
+    const role = await getUserAppRole(auth.userId);
+    if (role === "learner") {
+      const access = await getLearnerAccessStatus(auth.userId);
+      if (!access.hasPremiumAccess) {
+        return jsonError(403, "PREMIUM_REQUIRED", "Premium access is required to save lesson reflections.");
+      }
+    }
+
     const reflection = await createLessonReflection({
       learnerUserId: target.learnerUserId,
       createdBy: auth.userId,
       payload: parsed.data,
     });
+
+    if (parsed.data.instructorLessonId && role === "learner") {
+      await markLessonReflectionSubmittedByLearner(parsed.data.instructorLessonId, target.learnerUserId);
+      await resolveLessonReflectionRequestNotifications(parsed.data.instructorLessonId, target.learnerUserId);
+    }
 
     return NextResponse.json({ success: true as const, reflection });
   } catch (e) {

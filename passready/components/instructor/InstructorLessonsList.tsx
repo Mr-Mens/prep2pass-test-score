@@ -13,8 +13,9 @@ import {
 import {
   formatLessonDuration,
   formatLessonTime,
+  FUTURE_LESSON_COMPLETE_MESSAGE,
+  isLessonInFuture,
   isUpcomingLesson,
-  reflectionHrefForLesson,
 } from "@/lib/instructor-lessons/format";
 import type { InstructorLessonWithPupil } from "@/lib/instructor-lessons/types";
 import { formatIsoDateUk } from "@/lib/formatting";
@@ -45,10 +46,12 @@ function LessonCard({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
-  const reflectionHref = reflectionHrefForLesson(lesson);
+  const [error, setError] = useState<string | null>(null);
+  const lessonInFuture = lesson.status === "planned" && isLessonInFuture(lesson);
 
   async function runAction(action: "complete" | "cancel" | "delete") {
     setBusy(action);
+    setError(null);
     try {
       const result =
         action === "delete"
@@ -56,7 +59,10 @@ function LessonCard({
           : action === "complete"
             ? await completeInstructorLessonAction(lesson.id)
             : await cancelInstructorLessonAction(lesson.id);
-      if (!result.success) return;
+      if (!result.success) {
+        setError(result.message ?? "Something went wrong.");
+        return;
+      }
       onChanged();
       router.refresh();
     } finally {
@@ -90,6 +96,14 @@ function LessonCard({
         <p className="mt-2 text-sm leading-relaxed text-brand-600">{lesson.instructor_notes}</p>
       ) : null}
 
+      {error ? <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p> : null}
+
+      {lessonInFuture ? (
+        <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          {FUTURE_LESSON_COMPLETE_MESSAGE}
+        </p>
+      ) : null}
+
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={`/instructor/lessons/${lesson.id}/edit`}
@@ -99,15 +113,17 @@ function LessonCard({
         </Link>
         {lesson.status === "planned" ? (
           <>
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-h-[40px] px-3 text-sm"
-              disabled={busy !== null}
-              onClick={() => void runAction("complete")}
-            >
-              {busy === "complete" ? "Saving…" : "Mark completed"}
-            </Button>
+            {!lessonInFuture ? (
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-[40px] px-3 text-sm"
+                disabled={busy !== null}
+                onClick={() => void runAction("complete")}
+              >
+                {busy === "complete" ? "Saving…" : "Mark completed"}
+              </Button>
+            ) : null}
             <button
               type="button"
               disabled={busy !== null}
@@ -117,14 +133,6 @@ function LessonCard({
               Cancel lesson
             </button>
           </>
-        ) : null}
-        {reflectionHref ? (
-          <Link
-            href={reflectionHref}
-            className="inline-flex min-h-[40px] items-center rounded-xl bg-teal-600 px-3 text-sm font-semibold text-white hover:bg-teal-700"
-          >
-            Lesson reflection
-          </Link>
         ) : null}
         <button
           type="button"

@@ -28,6 +28,7 @@ type Props = {
   defaultLessonDate?: string;
   defaultLessonHours?: string;
   defaultTopicsPractised?: string[];
+  defaultInstructorLessonId?: string;
 };
 
 export function ReflectionForm({
@@ -39,6 +40,7 @@ export function ReflectionForm({
   defaultLessonDate,
   defaultLessonHours,
   defaultTopicsPractised,
+  defaultInstructorLessonId,
 }: Props) {
   const router = useRouter();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -107,6 +109,7 @@ export function ReflectionForm({
           difficultyNotes: difficultyNotes.trim() || null,
           nextFocus,
           privatePracticePlanned,
+          instructorLessonId: defaultInstructorLessonId,
         }),
       });
       const json = (await res.json()) as { success?: boolean; error?: { message?: string } };

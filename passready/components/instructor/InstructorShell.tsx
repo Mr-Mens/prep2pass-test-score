@@ -14,8 +14,17 @@ const navItems = [
   { href: "/instructor/mock-tests", label: "Mock Tests", icon: "▦" },
   { href: "/instructor/reflections", label: "Lesson Reviews", icon: "✎" },
   { href: "/instructor/diagrams", label: "Teaching Diagrams", icon: "▨" },
-  { href: "/instructor/part-3", label: "Part 3 Hub", icon: "◈" },
+  { href: "/instructor/adi-hub", label: "ADI Hub", icon: "◈" },
 ] as const;
+
+function isAdiHubPath(pathname: string): boolean {
+  return (
+    pathname === "/instructor/adi-hub" ||
+    pathname.startsWith("/instructor/adi-hub/") ||
+    pathname.startsWith("/instructor/part-3") ||
+    pathname.startsWith("/instructor/standards-check")
+  );
+}
 
 type Props = {
   children: React.ReactNode;
@@ -54,7 +63,9 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
               ? pathname === "/instructor"
               : item.href === "/instructor/mock-tests"
                 ? pathname.startsWith("/instructor/mock-test")
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : item.href === "/instructor/adi-hub"
+                  ? isAdiHubPath(pathname)
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}

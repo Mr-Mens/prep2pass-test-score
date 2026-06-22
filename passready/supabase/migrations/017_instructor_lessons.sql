@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.instructor_lessons (
   duration_minutes integer NOT NULL CHECK (duration_minutes > 0 AND duration_minutes <= 480),
   lesson_focus text[] NOT NULL DEFAULT '{}'::text[],
   location text,
-  status text NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'completed', 'cancelled')),
+  status text NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'completed', 'cancelled', 'reflection_pending')),
   instructor_notes text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()

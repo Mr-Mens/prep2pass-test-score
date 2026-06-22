@@ -62,6 +62,7 @@ export const PLATFORM_MODULES: PlatformModule[] = [
     label: "ADI Part 3 Hub",
     description: "Part 3 preparation resources and coaching frameworks.",
     status: "coming-soon",
+    href: "/instructor/part-3",
     audience: "instructor",
   },
   {
@@ -69,6 +70,7 @@ export const PLATFORM_MODULES: PlatformModule[] = [
     label: "Standards Check Hub",
     description: "Standards Check preparation and reflective coaching tools.",
     status: "coming-soon",
+    href: "/instructor/standards-check",
     audience: "instructor",
   },
 ];

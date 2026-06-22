@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { InstructorLessonsList } from "@/components/instructor/InstructorLessonsList";
+import { InstructorLessonsPlanner } from "@/components/instructor/InstructorLessonsPlanner";
 import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
 import { listLessonsForInstructor } from "@/lib/server/repositories/instructor-lessons-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
 export const metadata: Metadata = {
   title: "Lessons · Instructor",
-  description: "Plan and track lessons with your pupils.",
+  description: "Plan your week, see booked lessons and available gaps.",
 };
 
 export default async function InstructorLessonsPage() {
@@ -21,7 +21,7 @@ export default async function InstructorLessonsPage() {
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">Lessons</h1>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
-            Lightweight lesson records linked to pupils — a simple foundation before full diary management.
+            See booked lessons, find gaps, and book new pupils — your week at a glance.
           </p>
         </div>
         <Link
@@ -32,7 +32,7 @@ export default async function InstructorLessonsPage() {
         </Link>
       </header>
 
-      <InstructorLessonsList lessons={lessons} />
+      <InstructorLessonsPlanner lessons={lessons} />
     </div>
   );
 }

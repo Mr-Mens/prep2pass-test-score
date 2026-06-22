@@ -3,8 +3,10 @@ import Link from "next/link";
 
 import { InstructorEarningsPanel } from "@/components/instructor/InstructorEarningsPanel";
 import { InstructorUpcomingLessonsCard } from "@/components/instructor/InstructorUpcomingLessonsCard";
+import { buildPlannerDay, toIsoDate } from "@/lib/instructor-lessons/planner";
+import { comingSoonModulesForAudience } from "@/lib/platform-navigation";
 import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
-import { listUpcomingLessonsForInstructor } from "@/lib/server/repositories/instructor-lessons-repository";
+import { listLessonsForInstructor } from "@/lib/server/repositories/instructor-lessons-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
 function IconClipboard() {
@@ -129,9 +131,56 @@ function IconLessons() {
   );
 }
 
+function IconHub() {
+  return (
+    <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
+      />
+    </svg>
+  );
+}
+
+type ComingSoonTileProps = {
+  href: string;
+  title: string;
+  body: string;
+};
+
+function ComingSoonTile({ href, title, body }: ComingSoonTileProps) {
+  return (
+    <Link
+      href={href}
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-dashed border-brand-200 bg-brand-50/40 p-7 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:bg-white hover:shadow-md"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-600 to-brand-900 p-3 text-white shadow-md ring-1 ring-black/10">
+          <IconHub />
+        </span>
+        <span className="shrink-0 rounded-full bg-brand-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-600">
+          Coming soon
+        </span>
+      </div>
+      <p className="mt-4 font-heading text-xl font-semibold tracking-tight text-brand-950">{title}</p>
+      <p className="mt-3 flex-1 text-sm leading-relaxed text-brand-600">{body}</p>
+      <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-teal-700 transition-colors group-hover:text-teal-900">
+        Preview hub
+        <span aria-hidden className="transition-transform group-hover:translate-x-1">
+          →
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 export default async function InstructorDashboardPage() {
   const user = await requireInstructorSession();
-  const upcomingLessons = isSupabaseConfigured() ? await listUpcomingLessonsForInstructor(user.id) : [];
+  const lessons = isSupabaseConfigured() ? await listLessonsForInstructor(user.id) : [];
+  const todayIso = toIsoDate(new Date());
+  const today = buildPlannerDay(todayIso, lessons, todayIso);
+  const comingSoonHubs = comingSoonModulesForAudience("instructor").filter((module) => module.audience === "instructor");
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-4">
@@ -171,7 +220,7 @@ export default async function InstructorDashboardPage() {
 
       {isSupabaseConfigured() ? <InstructorEarningsPanel instructorUserId={user.id} /> : null}
 
-      <InstructorUpcomingLessonsCard lessons={upcomingLessons} />
+      <InstructorUpcomingLessonsCard today={today} lessons={lessons} />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <ActionTile
@@ -238,6 +287,25 @@ export default async function InstructorDashboardPage() {
           tint="from-emerald-600 to-teal-900"
         />
       </div>
+
+      {comingSoonHubs.length > 0 ? (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Coming soon</h2>
+            <p className="mt-1 text-sm text-brand-600">Professional development hubs launching on Pass Pilot.</p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {comingSoonHubs.map((module) => (
+              <ComingSoonTile
+                key={module.id}
+                href={module.href ?? "/instructor"}
+                title={module.label}
+                body={module.description}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { InstructorLessonRow, InstructorLessonWithPupil } from "@/lib/instructor-lessons/types";
+import type { InstructorLessonRow } from "@/lib/instructor-lessons/types";
 
 export function formatLessonTime(time: string): string {
   const [hourRaw, minuteRaw] = time.split(":");
@@ -20,18 +20,22 @@ export function lessonDateTimeValue(lesson: Pick<InstructorLessonRow, "lesson_da
   return new Date(`${lesson.lesson_date}T${lesson.start_time}`).getTime();
 }
 
+export function lessonEndDateTimeValue(
+  lesson: Pick<InstructorLessonRow, "lesson_date" | "start_time" | "duration_minutes">,
+): number {
+  return lessonDateTimeValue(lesson) + lesson.duration_minutes * 60_000;
+}
+
+export const FUTURE_LESSON_COMPLETE_MESSAGE =
+  "This lesson is still in the future. Would you like to cancel it instead?";
+
+export function isLessonInFuture(
+  lesson: Pick<InstructorLessonRow, "lesson_date" | "start_time" | "duration_minutes">,
+): boolean {
+  return lessonEndDateTimeValue(lesson) > Date.now();
+}
+
 export function isUpcomingLesson(lesson: Pick<InstructorLessonRow, "lesson_date" | "start_time" | "status">): boolean {
   if (lesson.status !== "planned") return false;
   return lessonDateTimeValue(lesson) >= Date.now() - 60 * 60 * 1000;
-}
-
-export function reflectionHrefForLesson(lesson: InstructorLessonWithPupil): string | null {
-  if (!lesson.linked_learner_user_id || lesson.status !== "completed") return null;
-  const params = new URLSearchParams({
-    learnerId: lesson.linked_learner_user_id,
-    lessonDate: lesson.lesson_date,
-    hours: String(Math.max(0.5, Math.round((lesson.duration_minutes / 60) * 2) / 2)),
-  });
-  if (lesson.lesson_focus.length > 0) params.set("topics", lesson.lesson_focus.join(","));
-  return `/instructor/reflections/new?${params.toString()}`;
 }

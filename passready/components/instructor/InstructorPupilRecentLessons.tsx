@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   formatLessonDuration,
   formatLessonTime,
-  reflectionHrefForLesson,
 } from "@/lib/instructor-lessons/format";
 import type { InstructorLessonWithPupil } from "@/lib/instructor-lessons/types";
 import { formatIsoDateUk } from "@/lib/formatting";
@@ -30,36 +29,27 @@ export function InstructorPupilRecentLessons({ lessons, pupilId }: Props) {
         <p className="mt-4 text-sm text-brand-600">No lessons logged yet for this pupil.</p>
       ) : (
         <ul className="mt-4 divide-y divide-brand-100">
-          {lessons.map((lesson) => {
-            const reflectionHref = reflectionHrefForLesson(lesson);
-            return (
+          {lessons.map((lesson) => (
               <li key={lesson.id} className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="font-semibold text-brand-950">
                     {formatIsoDateUk(lesson.lesson_date)} · {formatLessonTime(lesson.start_time)} ·{" "}
                     {formatLessonDuration(lesson.duration_minutes)}
                   </p>
-                  <p className="mt-0.5 text-sm capitalize text-brand-600">{lesson.status}</p>
+                  <p className="mt-0.5 text-sm capitalize text-brand-600">
+                    {lesson.status === "reflection_pending" ? "Waiting for pupil reflection" : lesson.status}
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    href={`/instructor/lessons/${lesson.id}/edit`}
+                    href={`/instructor/lessons/${lesson.id}`}
                     className="inline-flex min-h-[40px] items-center rounded-xl border border-brand-200 bg-white px-3 text-sm font-semibold text-brand-900 hover:bg-brand-50"
                   >
-                    Edit
+                    View
                   </Link>
-                  {reflectionHref ? (
-                    <Link
-                      href={reflectionHref}
-                      className="inline-flex min-h-[40px] items-center rounded-xl bg-teal-600 px-3 text-sm font-semibold text-white hover:bg-teal-700"
-                    >
-                      Reflection
-                    </Link>
-                  ) : null}
                 </div>
               </li>
-            );
-          })}
+            ))}
         </ul>
       )}
     </section>

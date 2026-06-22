@@ -8,6 +8,7 @@ import {
 } from "@/lib/instructor-lessons/validation";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import {
+  completeInstructorLesson,
   createInstructorLesson,
   deleteInstructorLesson,
   setInstructorLessonStatus,
@@ -31,10 +32,14 @@ async function requireInstructorActionUser(): Promise<
   return { ok: true, userId: user.id };
 }
 
-function revalidateLessonPaths() {
+function revalidateLessonPaths(lessonId?: string) {
   revalidatePath("/instructor/lessons");
   revalidatePath("/instructor");
   revalidatePath("/instructor/pupils");
+  if (lessonId) {
+    revalidatePath(`/instructor/lessons/${lessonId}`);
+    revalidatePath(`/instructor/lessons/${lessonId}/edit`);
+  }
 }
 
 export async function createInstructorLessonAction(
@@ -54,7 +59,7 @@ export async function createInstructorLessonAction(
       instructorUserId: auth.userId,
       payload: parsed.data,
     });
-    revalidateLessonPaths();
+    revalidateLessonPaths(lesson.id);
     return { success: true, lessonId: lesson.id };
   } catch (e) {
     return { success: false, message: e instanceof Error ? e.message : "Unable to create lesson." };
@@ -80,7 +85,7 @@ export async function updateInstructorLessonAction(
       instructorUserId: auth.userId,
       payload: parsed.data,
     });
-    revalidateLessonPaths();
+    revalidateLessonPaths(lesson.id);
     return { success: true, lessonId: lesson.id };
   } catch (e) {
     return { success: false, message: e instanceof Error ? e.message : "Unable to update lesson." };
@@ -92,8 +97,8 @@ export async function completeInstructorLessonAction(lessonId: string): Promise<
   if (!auth.ok) return { success: false, message: auth.message };
 
   try {
-    const lesson = await setInstructorLessonStatus(lessonId, auth.userId, "completed");
-    revalidateLessonPaths();
+    const lesson = await completeInstructorLesson(lessonId, auth.userId);
+    revalidateLessonPaths(lesson.id);
     return { success: true, lessonId: lesson.id };
   } catch (e) {
     return { success: false, message: e instanceof Error ? e.message : "Unable to complete lesson." };
@@ -106,7 +111,7 @@ export async function cancelInstructorLessonAction(lessonId: string): Promise<In
 
   try {
     const lesson = await setInstructorLessonStatus(lessonId, auth.userId, "cancelled");
-    revalidateLessonPaths();
+    revalidateLessonPaths(lesson.id);
     return { success: true, lessonId: lesson.id };
   } catch (e) {
     return { success: false, message: e instanceof Error ? e.message : "Unable to cancel lesson." };
@@ -119,7 +124,7 @@ export async function deleteInstructorLessonAction(lessonId: string): Promise<In
 
   try {
     await deleteInstructorLesson(lessonId, auth.userId);
-    revalidateLessonPaths();
+    revalidateLessonPaths(lessonId);
     return { success: true, lessonId };
   } catch (e) {
     return { success: false, message: e instanceof Error ? e.message : "Unable to delete lesson." };

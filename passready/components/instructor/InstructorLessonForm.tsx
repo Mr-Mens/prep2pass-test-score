@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/Button";
 import { TopicChipField } from "@/components/reflections/TopicChipField";
-import type { InstructorLessonWithPupil } from "@/lib/instructor-lessons/types";
+import { LESSON_STATUS_META } from "@/lib/instructor-lessons/constants";
+import type { InstructorLessonWithPupil, LessonStatus } from "@/lib/instructor-lessons/types";
+import { LESSON_STATUSES } from "@/lib/instructor-lessons/types";
 import type { PupilRow } from "@/lib/instructor/pupil-link-types";
 import {
   createInstructorLessonAction,
@@ -21,20 +23,34 @@ type Props = {
   pupils: PupilRow[];
   lesson?: InstructorLessonWithPupil;
   defaultPupilId?: string;
+  defaultLessonDate?: string;
+  defaultStartTime?: string;
+  defaultDurationMinutes?: string;
   cancelHref: string;
   successHref: string;
 };
 
-export function InstructorLessonForm({ pupils, lesson, defaultPupilId, cancelHref, successHref }: Props) {
+export function InstructorLessonForm({
+  pupils,
+  lesson,
+  defaultPupilId,
+  defaultLessonDate,
+  defaultStartTime,
+  defaultDurationMinutes,
+  cancelHref,
+  successHref,
+}: Props) {
   const router = useRouter();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [pupilId, setPupilId] = useState(lesson?.pupil_id ?? defaultPupilId ?? pupils[0]?.id ?? "");
-  const [lessonDate, setLessonDate] = useState(lesson?.lesson_date ?? today);
-  const [startTime, setStartTime] = useState(lesson?.start_time ?? "09:00");
-  const [durationMinutes, setDurationMinutes] = useState(String(lesson?.duration_minutes ?? 60));
+  const [lessonDate, setLessonDate] = useState(lesson?.lesson_date ?? defaultLessonDate ?? today);
+  const [startTime, setStartTime] = useState(lesson?.start_time ?? defaultStartTime ?? "09:00");
+  const [durationMinutes, setDurationMinutes] = useState(
+    String(lesson?.duration_minutes ?? defaultDurationMinutes ?? 60),
+  );
   const [lessonFocus, setLessonFocus] = useState<string[]>(lesson?.lesson_focus ?? []);
   const [location, setLocation] = useState(lesson?.location ?? "");
   const [instructorNotes, setInstructorNotes] = useState(lesson?.instructor_notes ?? "");
@@ -149,19 +165,19 @@ export function InstructorLessonForm({ pupils, lesson, defaultPupilId, cancelHre
 
         <div>
           <p className="text-sm font-semibold text-brand-900">Status</p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            {(["planned", "completed", "cancelled"] as const).map((value) => (
+          <div className="mt-3 grid gap-2 grid-cols-2">
+            {LESSON_STATUSES.map((value) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setStatus(value)}
-                className={`rounded-xl border px-3 py-3 text-sm font-medium capitalize ${
+                className={`rounded-xl border px-3 py-3 text-sm font-medium ${
                   status === value
                     ? "border-teal-600 bg-teal-600 text-white"
-                    : "border-brand-200 bg-white text-brand-800"
+                    : `border-brand-200 bg-white text-brand-800 ${LESSON_STATUS_META[value as LessonStatus].className}`
                 }`}
               >
-                {value}
+                {LESSON_STATUS_META[value as LessonStatus].label}
               </button>
             ))}
           </div>

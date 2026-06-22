@@ -10,7 +10,14 @@ export const metadata: Metadata = {
   title: "New lesson · Instructor",
 };
 
-type Props = { searchParams: { pupilId?: string } };
+type Props = {
+  searchParams: {
+    pupilId?: string;
+    lessonDate?: string;
+    startTime?: string;
+    durationMinutes?: string;
+  };
+};
 
 export default async function InstructorNewLessonPage({ searchParams }: Props) {
   const user = await requireInstructorSession();
@@ -38,6 +45,9 @@ export default async function InstructorNewLessonPage({ searchParams }: Props) {
         <InstructorLessonForm
           pupils={pupils}
           defaultPupilId={searchParams.pupilId}
+          defaultLessonDate={searchParams.lessonDate}
+          defaultStartTime={searchParams.startTime}
+          defaultDurationMinutes={searchParams.durationMinutes}
           cancelHref="/instructor/lessons"
           successHref="/instructor/lessons"
         />

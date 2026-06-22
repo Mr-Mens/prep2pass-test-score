@@ -61,6 +61,22 @@ export const BRAND_CTA = {
     "Answer a few questions and receive your Pass Pilot Score, Progress Insights and a personalised action plan.",
 } as const;
 
+/** Proprietary Smart intelligence branding for learner-facing copy (not generic "AI"). */
+export const SMART_UI = {
+  report: "Smart Report",
+  reports: "Smart Reports",
+  debrief: "Smart Debrief",
+  debriefs: "Smart Debriefs",
+  insights: "Smart Insights",
+  recommendations: "Smart Recommendations",
+  personalisedReports: "Personalised Smart Reports",
+  personalisedDebriefs: "Personalised Smart Debriefs",
+  marketingLine:
+    "Personalised Smart Reports and Debriefs based on your driving progress and learning journey.",
+  latestReport: "Latest Smart Report",
+  latestDebrief: "Latest Smart Debrief",
+} as const;
+
 /** Calm membership copy inside authenticated flows when entitlement is active. */
 export const PREMIUM_MEMBER_UI = {
   badge: "Subscription active",
@@ -83,8 +99,11 @@ export const PRICING = {
   subscription: {
     display: "£6.99",
     label: "Monthly subscription",
-    hint: "Full platform access: Pass Pilot Score, Progress Insights, Premium reports, and Learning Journey tracking.",
+    hint: `Full platform access: Test Ready Score, ${SMART_UI.insights}, ${SMART_UI.reports}, and Learning Journey tracking.`,
     interval: "month" as const,
+    trialDays: 7,
+    trialCta: "Start 7-Day Free Trial",
+    trialMessage: "Start your 7-day Premium trial to unlock everything.",
   },
   /** Legacy one-off tiers, retained for historical payment metadata only. */
   single: { display: "£3.99", label: "One-off report", hint: "Legacy single report purchase" },

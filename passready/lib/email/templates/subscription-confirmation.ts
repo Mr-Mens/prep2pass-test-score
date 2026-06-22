@@ -1,6 +1,6 @@
 import "server-only";
 
-import { PRICING } from "@/lib/constants";
+import { PRICING, SMART_UI } from "@/lib/constants";
 import { getAppUrlForEmail } from "@/lib/email/app-url";
 import { renderPassPilotEmailLayout, stripHtmlToText } from "@/lib/email/layout";
 import { sendEmail } from "@/lib/email/resend";
@@ -15,7 +15,7 @@ export async function sendSubscriptionConfirmationEmail(input: {
 
   const bodyHtml = `<p style="margin:0 0 12px 0;">${escape(greeting)}</p>
     <p style="margin:0 0 12px 0;">Your Pass Pilot subscription is active at ${escape(PRICING.subscription.display)}/month until you pass or cancel.</p>
-    <p style="margin:0;">You now have unlimited assessments, progress tracking, and Premium reports.</p>`;
+    <p style="margin:0;">You now have unlimited assessments, progress tracking, and ${escape(SMART_UI.personalisedReports)}.</p>`;
 
   const html = renderPassPilotEmailLayout({
     preheader: "Your Pass Pilot subscription is active",

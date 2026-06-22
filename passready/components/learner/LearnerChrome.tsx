@@ -8,11 +8,11 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { BRAND_CTA, PRICING, PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type NavMatch = "home" | "assessment" | "journey" | "reflections" | "resources";
+type NavMatch = "home" | "assessment" | "journey" | "reflections" | "resources" | "subscribe" | "account";
 
 const railNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
   { href: "/dashboard", label: "Dashboard", match: "home" },
-  { href: "/assessment", label: "Pass Pilot Score", match: "assessment" },
+  { href: "/assessment", label: PRODUCT.score, match: "assessment" },
   { href: "/progress", label: "Learning Journey", match: "journey" },
   { href: "/dashboard/reflections", label: "Lesson Reflections", match: "reflections" },
   { href: "/dashboard/resources", label: "Resources", match: "resources" },
@@ -35,6 +35,12 @@ function activeFor(pathname: string, match: NavMatch): boolean {
   }
   if (match === "resources") {
     return pathname === "/dashboard/resources" || pathname.startsWith("/dashboard/resources/");
+  }
+  if (match === "subscribe") {
+    return pathname === "/subscribe" || pathname.startsWith("/subscribe/");
+  }
+  if (match === "account") {
+    return pathname === "/account" || pathname.startsWith("/account/");
   }
   return false;
 }
@@ -131,6 +137,20 @@ type MeBrief = {
   lifetimeAccess: boolean;
 };
 
+const premiumRailNavItems = railNavItems;
+const premiumDockNavItems = dockNavItems;
+
+const freeRailNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/assessment", label: PRODUCT.score, match: "assessment" },
+  { href: "/subscribe", label: "Premium trial", match: "subscribe" },
+];
+
+const freeDockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/assessment", label: "Score", match: "assessment" },
+  { href: "/subscribe", label: "Trial", match: "subscribe" },
+  { href: "/account", label: "Account", match: "account" },
+];
+
 function initialsFromMe(me: MeBrief): string {
   const parts = me.firstName.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
@@ -148,8 +168,10 @@ function initialsFromMe(me: MeBrief): string {
 export function LearnerChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
   const [me, setMe] = useState<MeBrief | null>(null);
-  const railLinks = railNavItems;
-  const dockLinks = dockNavItems;
+  const isPremium = me?.lifetimeAccess ?? false;
+  const railLinks = isPremium ? premiumRailNavItems : freeRailNavItems;
+  const dockLinks = isPremium ? premiumDockNavItems : freeDockNavItems;
+  const homeHref = isPremium ? "/dashboard" : "/assessment";
 
   useEffect(() => {
     let cancelled = false;
@@ -215,7 +237,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
-        <ul className="mx-auto grid max-w-xl grid-cols-5 gap-0 px-1 pt-1">
+        <ul className={`mx-auto grid max-w-xl gap-0 px-1 pt-1 ${isPremium ? "grid-cols-5" : "grid-cols-3"}`}>
           {dockLinks.map((item) => {
             const active = activeFor(pathname, item.match);
             const stroke = strokeDock(active);
@@ -252,7 +274,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh bg-[#f0f2f5] md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
-          <Link href="/dashboard" className="block" aria-label={`${PRODUCT.name} dashboard`}>
+          <Link href={homeHref} className="block" aria-label={`${PRODUCT.name} home`}>
             <BrandLogo variant="learnerRail" />
           </Link>
         </div>
@@ -267,9 +289,9 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
               href="/subscribe"
               className="block rounded-xl border border-teal-500/40 bg-teal-500/10 px-4 py-3 text-xs leading-relaxed text-teal-100 transition hover:border-teal-400/60 hover:bg-teal-500/20"
             >
-              <p className="font-semibold text-white">Subscribe</p>
-              <p className="mt-1 text-slate-300">Unlimited access · {PRICING.subscription.display}/month</p>
-              <p className="mt-2 text-[11px] font-semibold text-teal-200">Subscribe →</p>
+              <p className="font-semibold text-white">{PRICING.subscription.trialCta}</p>
+              <p className="mt-1 text-slate-300">{PRICING.subscription.trialMessage}</p>
+              <p className="mt-2 text-[11px] font-semibold text-teal-200">Start trial →</p>
             </Link>
           </div>
         ) : null}
@@ -301,15 +323,17 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
           <div className="mx-auto flex min-h-[52px] w-full max-w-xl items-center gap-3 px-4 py-3 sm:min-h-[3.25rem]">
             <Link
-              href="/dashboard"
+              href={homeHref}
               className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-3 py-2 shadow-sm"
-              aria-label={`${PRODUCT.name} dashboard`}
+              aria-label={`${PRODUCT.name} home`}
             >
               <BrandLogo variant="learnerMobile" />
             </Link>
             <div className="min-w-0 flex-1">
               <p className="font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>
-              <p className="truncate text-[11px] font-medium leading-tight text-teal-800">{PRODUCT.name} dashboard</p>
+              <p className="truncate text-[11px] font-medium leading-tight text-teal-800">
+                {isPremium ? `${PRODUCT.name} dashboard` : PRODUCT.score}
+              </p>
             </div>
           </div>
         </header>

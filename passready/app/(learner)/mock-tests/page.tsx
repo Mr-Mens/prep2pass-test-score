@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { formatIsoDateUk } from "@/lib/formatting";
+import { SMART_UI } from "@/lib/constants";
 import { listMockTestDeliveriesForLearner } from "@/lib/server/repositories/learner-mock-test-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 import { getServerAuthUser } from "@/lib/supabase/server";
@@ -82,7 +83,7 @@ export default async function LearnerMockTestsPage() {
 
       <p className="text-center text-xs text-brand-600">
         <Link href="/my-reports" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-          Back to Premium reports
+          Back to {SMART_UI.reports.toLowerCase()}
         </Link>
       </p>
     </div>

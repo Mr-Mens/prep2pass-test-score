@@ -1,11 +1,13 @@
 /** V1 commercial model amounts and copy helpers. */
+import { SMART_UI } from "@/lib/constants";
+
 export const COMMERCIAL = {
   subscription: {
     display: "£6.99",
     amountPence: 699,
     interval: "month" as const,
     label: "Monthly subscription",
-    hint: "Full platform access: Pass Pilot Score, Progress Insights, Premium reports, and Learning Journey tracking.",
+    hint: `Full platform access: Test Ready Score, ${SMART_UI.insights}, ${SMART_UI.reports}, and Learning Journey tracking.`,
   },
   referral: {
     signupBonusPence: 200,

@@ -1,13 +1,13 @@
 import { Button } from "@/components/Button";
-import { PRICING, BRAND_CTA } from "@/lib/constants";
+import { PRICING, BRAND_CTA, SMART_UI } from "@/lib/constants";
 import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
 
 const learnerIncludes = [
   "Unlimited Pass Pilot Score assessments",
-  "Premium reports and Progress Insights",
+  `${SMART_UI.reports} and ${SMART_UI.insights}`,
   "Learning Journey tracking",
   "Structured coaching guidance",
-  "AI-powered debriefs",
+  SMART_UI.personalisedDebriefs,
   "Supervisor and instructor sharing",
 ] as const;
 

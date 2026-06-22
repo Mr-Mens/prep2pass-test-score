@@ -60,7 +60,7 @@ export function productOfferJsonLd(): JsonLd {
     "@type": "Product",
     name: `${PRODUCT.name} Premium`,
     description:
-      "Monthly learner platform access: unlimited Pass Pilot Score assessments, Premium AI reports, Progress Insights and Learning Journey tracking until you pass or cancel.",
+      "Monthly learner platform access: unlimited Pass Pilot Score assessments, Personalised Smart Reports, Smart Insights and Learning Journey tracking until you pass or cancel.",
     brand: {
       "@type": "Brand",
       name: PRODUCT.name,

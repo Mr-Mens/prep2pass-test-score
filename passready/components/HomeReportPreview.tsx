@@ -1,9 +1,12 @@
 /** Static marketing preview, concise list of report sections (not live data). */
+import { SMART_UI } from "@/lib/constants";
+
 export function HomeReportPreview() {
   const sections = [
     { title: "Readiness score", detail: "Clear score out of 100 with a readiness band." },
+    { title: SMART_UI.debrief, detail: "Instructor-style summary of how you drive today." },
     { title: "Risk areas", detail: "Highest-risk skills grouped for test day." },
-    { title: "Action plan", detail: "Focused next steps for lessons and practice." },
+    { title: SMART_UI.recommendations, detail: "Focused next steps for lessons and practice." },
     { title: "Estimated guided hours", detail: "Realistic range to plan with your instructor." },
     { title: "Learning roadmap", detail: "Syllabus themes covered versus still to practise." },
   ] as const;
@@ -19,7 +22,7 @@ export function HomeReportPreview() {
           <p className="mt-2 text-sm font-medium text-teal-900">Nearly Test Ready</p>
         </div>
         <span className="rounded-full bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-900 ring-1 ring-teal-200">
-          Premium report
+          {SMART_UI.report}
         </span>
       </div>
 

@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/Button";
-import { PRICING } from "@/lib/constants";
+import { PRICING, SMART_UI } from "@/lib/constants";
 
 const benefits = [
-  "Unlimited Pass Pilot Score assessments",
+  `Unlimited Pass Pilot Score assessments`,
   "Learning Journey tracking",
-  "AI-powered Premium reports",
-  "Progress Insights",
+  SMART_UI.personalisedReports,
+  SMART_UI.insights,
 ] as const;
 
 type Props = {
@@ -80,7 +80,11 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
           {PRICING.subscription.display}
           <span className="ml-2 text-lg font-medium text-brand-500">/ month</span>
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-brand-700">{PRICING.subscription.hint}</p>
+        <p className="mt-3 text-sm leading-relaxed text-brand-700">{PRICING.subscription.trialMessage}</p>
+        <p className="mt-2 text-xs leading-relaxed text-brand-600">
+          {PRICING.subscription.trialDays}-day free trial, then {PRICING.subscription.display}/month until you pass or
+          cancel.
+        </p>
 
         {hasInvite ? (
           <p className="mt-4 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
@@ -127,7 +131,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
           className="mt-6 min-h-[52px] w-full"
           onClick={() => void startCheckout()}
         >
-          {busy ? "Opening checkout…" : `Subscribe · ${PRICING.subscription.display}/month`}
+          {busy ? "Opening checkout…" : PRICING.subscription.trialCta}
         </Button>
       </section>
     </div>

@@ -5,13 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { BrandLogo } from "@/components/BrandLogo";
-import { PRODUCT } from "@/lib/constants";
+import { PRODUCT, SMART_UI } from "@/lib/constants";
 import { PLATFORM_TERMS } from "@/lib/platform-copy";
 
 type RoleKey = "learner" | "instructor" | "parent";
 
 const ROLE_DEST: Record<RoleKey, string> = {
-  learner: "/dashboard",
+  learner: "/assessment",
   instructor: "/instructor",
   parent: "/supervisor",
 };
@@ -51,9 +51,9 @@ const ROLES: readonly {
     description: "Get your test readiness score and prepare with confidence.",
     features: [
       "Get your Test Ready Score",
-      "View Premium reports",
-      `Track your ${PLATFORM_TERMS.learningJourney.toLowerCase()}`,
-      "Personalised coaching guidance",
+      `View ${SMART_UI.reports}`,
+      SMART_UI.insights,
+      SMART_UI.personalisedDebriefs,
     ],
     cta: "Continue as Learner",
     accent: "from-emerald-600 to-teal-600",

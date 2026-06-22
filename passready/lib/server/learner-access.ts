@@ -2,7 +2,10 @@ import "server-only";
 
 import { cache } from "react";
 
-import { getLifetimeAccessByUserId } from "@/lib/server/repositories/entitlements-repository";
+import {
+  getFreeAssessmentByUserId,
+  getLifetimeAccessByUserId,
+} from "@/lib/server/repositories/entitlements-repository";
 import { getGraduationByUserId } from "@/lib/server/repositories/graduations-repository";
 import {
   getSubscriptionByUserId,
@@ -16,6 +19,9 @@ export type LearnerAccessSource = "none" | "subscription" | "legacy_lifetime" | 
 export type LearnerAccessStatus = {
   hasPremiumAccess: boolean;
   canStartAssessment: boolean;
+  hasUsedFreeAssessment: boolean;
+  freeAssessmentScore: number | null;
+  freeAssessmentLabel: string | null;
   isGraduated: boolean;
   passDate: string | null;
   subscriptionStatus: SubscriptionStatus | null;
@@ -25,17 +31,21 @@ export type LearnerAccessStatus = {
 };
 
 export async function getLearnerAccessStatus(userId: string): Promise<LearnerAccessStatus> {
-  const [role, legacyLifetime, subscription, graduation] = await Promise.all([
+  const [role, legacyLifetime, subscription, graduation, freeAssessment] = await Promise.all([
     getUserAppRole(userId),
     getLifetimeAccessByUserId(userId),
     getSubscriptionByUserId(userId),
     getGraduationByUserId(userId),
+    getFreeAssessmentByUserId(userId),
   ]);
 
   if (role === "instructor") {
     return {
       hasPremiumAccess: true,
       canStartAssessment: true,
+      hasUsedFreeAssessment: false,
+      freeAssessmentScore: null,
+      freeAssessmentLabel: null,
       isGraduated: false,
       passDate: null,
       subscriptionStatus: null,
@@ -48,6 +58,9 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
     return {
       hasPremiumAccess: false,
       canStartAssessment: false,
+      hasUsedFreeAssessment: false,
+      freeAssessmentScore: null,
+      freeAssessmentLabel: null,
       isGraduated: false,
       passDate: null,
       subscriptionStatus: null,
@@ -60,6 +73,7 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
   const passDate = graduation?.pass_date ?? null;
   const subscriptionStatus = subscription?.status ?? null;
   const hasActiveSubscription = subscriptionStatus ? subscriptionGrantsPremium(subscriptionStatus) : false;
+  const hasUsedFreeAssessment = Boolean(freeAssessment);
 
   let accessSource: LearnerAccessSource = "none";
   let hasPremiumAccess = false;
@@ -75,9 +89,14 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
     accessSource = "legacy_lifetime";
   }
 
+  const canStartAssessment = !isGraduated && (hasPremiumAccess || !hasUsedFreeAssessment);
+
   return {
     hasPremiumAccess,
-    canStartAssessment: !isGraduated,
+    canStartAssessment,
+    hasUsedFreeAssessment,
+    freeAssessmentScore: freeAssessment?.score ?? null,
+    freeAssessmentLabel: freeAssessment?.label ?? null,
     isGraduated,
     passDate,
     subscriptionStatus,

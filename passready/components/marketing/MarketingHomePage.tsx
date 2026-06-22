@@ -11,7 +11,7 @@ import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
 import { TestCountdownPreview } from "@/components/marketing/TestCountdownPreview";
 import { Section } from "@/components/Section";
 import { TrustBadge } from "@/components/TrustBadge";
-import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA, PRODUCT } from "@/lib/constants";
+import { PREMIUM_MEMBER_UI, PRICING, BRAND_CTA, PRODUCT, SMART_UI } from "@/lib/constants";
 import { PUBLIC_FAQ } from "@/lib/content/public-faq";
 import { PLATFORM, PLATFORM_TERMS } from "@/lib/platform-copy";
 import { getEffectiveLifetimeAccessByUserId } from "@/lib/server/effective-lifetime-access";
@@ -449,8 +449,7 @@ export async function MarketingHomePage() {
             Ready to start your Learning Journey?
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-brand-200">
-            Complete your Pass Pilot Score assessment in a few minutes and get Progress Insights plus a clear plan
-            for what to improve next.
+            {SMART_UI.marketingLine}
           </p>
           <div className="mt-8 flex flex-col items-center gap-3">
             <Button

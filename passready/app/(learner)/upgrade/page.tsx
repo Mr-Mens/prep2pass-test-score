@@ -7,7 +7,7 @@ import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Subscribe · Pass Pilot",
-  description: "£6.99/month for unlimited assessments, AI reports, and progress tracking.",
+  description: "£6.99/month for unlimited assessments, Smart Reports, and progress tracking.",
 };
 
 /** Legacy /upgrade path, redirects to subscription flow. */

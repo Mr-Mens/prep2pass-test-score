@@ -56,8 +56,8 @@ export default async function NewLearnerReflectionPage({ searchParams }: Props) 
           <p className="mt-2 text-sm text-brand-700">
             Your instructor can mark lessons complete — you&apos;ll be prompted to reflect once you have premium access.
           </p>
-          <Button href="/pricing" variant="conversion" className="mt-4 min-h-[48px]">
-            Get premium access
+          <Button href="/subscribe" variant="conversion" className="mt-4 min-h-[48px]">
+            {PRICING.subscription.trialCta}
           </Button>
         </section>
       </div>

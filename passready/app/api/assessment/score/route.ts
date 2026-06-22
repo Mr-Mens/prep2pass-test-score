@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { normalizeEmail } from "@/lib/normalize-email";
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
+import { recordFreeAssessmentUsed } from "@/lib/server/repositories/entitlements-repository";
 import { scoreAssessment } from "@/lib/services/assessment-service";
 import { assessmentDataSchema } from "@/lib/validation";
 
@@ -39,16 +41,35 @@ export async function POST(request: Request) {
       return jsonError(403, "EMAIL_MISMATCH", "Your assessment email must match your Pass Pilot account.");
     }
 
-    const { canLearnerStartAssessment } = await import("@/lib/server/effective-lifetime-access");
-    const canStart = await canLearnerStartAssessment(auth.userId);
-    if (!canStart) {
-      return jsonError(403, "GRADUATED", "Congratulations, your account is in Graduate Mode. New assessments are disabled.");
+    const access = await getLearnerAccessStatus(auth.userId);
+    if (!access.canStartAssessment) {
+      if (access.isGraduated) {
+        return jsonError(
+          403,
+          "GRADUATED",
+          "Congratulations, your account is in Graduate Mode. New assessments are disabled.",
+        );
+      }
+      return jsonError(
+        403,
+        "FREE_ASSESSMENT_USED",
+        "You have already used your free assessment. Start your 7-day Premium trial to unlock unlimited assessments.",
+      );
     }
 
     const { assessment, result } = await scoreAssessment(parsed.data, {
       useAiEnrichment: false,
       userId: auth.userId,
     });
+
+    if (!access.hasPremiumAccess) {
+      await recordFreeAssessmentUsed({
+        userId: auth.userId,
+        score: result.readinessScore,
+        label: result.readinessLabel,
+        assessmentData: parsed.data as Record<string, unknown>,
+      });
+    }
 
     return NextResponse.json({
       success: true as const,

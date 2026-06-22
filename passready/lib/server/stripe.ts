@@ -94,6 +94,7 @@ export async function createSubscriptionCheckoutSession(params: {
       ? { discounts: [{ promotion_code: params.stripePromotionCodeId }] }
       : {}),
     subscription_data: {
+      trial_period_days: 7,
       metadata: {
         supabase_user_id: params.userId,
       },

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LearnerSignOutButton } from "@/components/learner/LearnerSignOutButton";
-import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, SITE } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, PRODUCT, SITE, SMART_UI } from "@/lib/constants";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
@@ -75,9 +75,9 @@ export default async function LearnerAccountPage() {
   const planLabel =
     entitlements.hasLifetimeAccess
       ? `${LIFETIME_MEMBER_UI.badge}`
-      : entitlements.hasPurchasedSingleReport
-        ? `One-off Premium report (${PRICING.single.display ?? "purchase"})`
-        : `No Premium save yet`;
+      : entitlements.hasUsedFreeAssessment
+        ? "Free account · assessment used"
+        : "Free account · one assessment included";
 
   return (
     <div className="flex flex-col gap-6 pb-8">
@@ -109,10 +109,10 @@ export default async function LearnerAccountPage() {
               </span>
             ) : (
               <Link
-                href="/upgrade"
+                href="/subscribe"
                 className="inline-flex min-h-[40px] shrink-0 items-center rounded-xl bg-teal-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
               >
-                Upgrade
+                {PRICING.subscription.trialCta}
               </Link>
             )}
           </div>
@@ -126,7 +126,7 @@ export default async function LearnerAccountPage() {
               <p className="mt-1 text-sm leading-relaxed text-brand-700">
                 {entitlements.hasLifetimeAccess
                   ? LIFETIME_MEMBER_UI.unlimited
-                  : "Lifetime unlocks unlimited checkpoints and tighter progress arcs."}
+                  : PRICING.subscription.trialMessage}
               </p>
             </div>
           </div>
@@ -137,15 +137,27 @@ export default async function LearnerAccountPage() {
         className="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm"
         aria-label="Shortcuts"
       >
-        <MenuRow href="/dashboard" title="Home" hint="Your Pass Pilot dashboard" />
-        <MenuRow href="/assessment" title={BRAND_CTA.updateMyScore} hint="Takes around 5 minutes" />
         {entitlements.hasLifetimeAccess ? (
-          <MenuRow href="/progress" title="Progress timeline" hint="Score arc across Premium reports" />
-        ) : null}
-        <MenuRow href="/my-reports" title={BRAND_CTA.viewScoreHistory} hint="Open past write-ups" />
-        {!entitlements.hasLifetimeAccess ? (
-          <MenuRow href="/subscribe" title="Subscribe" hint={`${PRICING.subscription.display}/month · unlimited access`} />
-        ) : null}
+          <>
+            <MenuRow href="/dashboard" title="Home" hint="Your Pass Pilot dashboard" />
+            <MenuRow href="/assessment" title={BRAND_CTA.updateMyScore} hint="Takes around 5 minutes" />
+            <MenuRow href="/progress" title="Progress timeline" hint={`Score arc across ${SMART_UI.reports.toLowerCase()}`} />
+            <MenuRow href="/my-reports" title={BRAND_CTA.viewScoreHistory} hint="Open past write-ups" />
+          </>
+        ) : (
+          <>
+            <MenuRow
+              href="/assessment"
+              title={entitlements.hasUsedFreeAssessment ? `View ${PRODUCT.score}` : "Complete free assessment"}
+              hint={
+                entitlements.hasUsedFreeAssessment
+                  ? "Your score and readiness band"
+                  : "One free score and readiness band"
+              }
+            />
+            <MenuRow href="/subscribe" title={PRICING.subscription.trialCta} hint={PRICING.subscription.trialMessage} />
+          </>
+        )}
         <MenuRow href="/graduate" title="Graduate Mode" hint="Record your pass · stop billing" />
         <MenuRow href="/terms" title="Terms & privacy" hint="Pass Pilot legal and policies" />
         <MenuRow href="mailto:hello@prep2pass.co.uk" title="Help & support" hint="hello@prep2pass.co.uk" />

@@ -1,6 +1,6 @@
-import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
+import { requirePremiumLearnerAccess } from "@/lib/server/require-premium-learner-access";
 
 export default async function ReportsLayout({ children }: { children: React.ReactNode }) {
-  await requireAuthenticatedSession("/my-reports");
+  await requirePremiumLearnerAccess("/my-reports");
   return <>{children}</>;
 }

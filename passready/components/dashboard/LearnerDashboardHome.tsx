@@ -4,7 +4,7 @@ import { Button } from "@/components/Button";
 import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory";
 import { LessonReflectionsSummaryCard } from "@/components/reflections/LessonReflectionsSummaryCard";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
-import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING } from "@/lib/constants";
+import { BRAND_CTA, PREMIUM_MEMBER_UI, PRICING, SMART_UI } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { readinessBandDisplayLabel } from "@/lib/readiness-calibration";
 import type { LearnerDashboardView } from "@/lib/server/build-learner-dashboard-view";
@@ -73,7 +73,7 @@ export function LearnerDashboardHome({ view, userId }: Props) {
                 href={`/reports/${view.latest.reportId}`}
                 className="mt-5 inline-flex min-h-[48px] items-center justify-center rounded-xl bg-teal-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
               >
-                View latest report
+                View {SMART_UI.latestReport.toLowerCase()}
               </Link>
             </div>
           </div>
@@ -295,8 +295,9 @@ export function LearnerDashboardHome({ view, userId }: Props) {
           <ul className="mt-3 space-y-1.5 text-sm text-brand-700">
             <li>Unlimited assessments</li>
             <li>Progress tracking</li>
-            <li>AI Premium reports</li>
-            <li>Roadmap insights</li>
+            <li>{SMART_UI.reports}</li>
+            <li>{SMART_UI.debriefs}</li>
+            <li>{SMART_UI.insights}</li>
           </ul>
           <Link
             href="/subscribe"

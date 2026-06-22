@@ -8,7 +8,7 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
 import { requestCheckoutSession } from "@/lib/api/create-checkout-session";
 import { requestFinaliseReport } from "@/lib/api/finalise-report";
-import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, WEAK_AREA_OPTIONS } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, PRODUCT, SMART_UI, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import {
   clearPendingAssessment,
@@ -45,12 +45,25 @@ const errorClass = "mt-1 text-sm text-red-700";
 const sectionBox =
   "rounded-2xl border border-brand-200/70 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-7 sm:shadow-sm sm:ring-0";
 
+const FREE_LOCKED_SECTIONS = [
+  { title: SMART_UI.report, lines: ["Your complete Premium write-up with coach note and syllabus context."] },
+  { title: SMART_UI.debrief, lines: ["An instructor-style summary of how you drive and what to tighten next."] },
+  { title: "Test risks", lines: ["Junction timing and late observation patterns that could cause a fail."] },
+  { title: SMART_UI.recommendations, lines: ["Two high-frequency drills and a structured mock reset before your next check."] },
+  { title: "Guided hours estimate", lines: ["A realistic band for how many more lesson hours you may need."] },
+  { title: "Learning roadmap", lines: ["Syllabus topics covered versus still to practise on your journey."] },
+  { title: SMART_UI.insights, lines: ["Score arc and trends across saved Premium checkpoints."] },
+  { title: "Lesson reflections", lines: ["Post-lesson logs that feed progress insights after each session."] },
+  { title: "Lesson history", lines: ["Upcoming and completed lessons with your instructor."] },
+  { title: "Parent sharing", lines: ["Let a parent or supervisor view reports and support private practice."] },
+] as const;
+
 const CHECKOUT_VALUE_BULLETS = [
-  "Your Pass Pilot Score, explained in plain English",
+  `${SMART_UI.report}, explained in plain English`,
   "A roadmap of syllabus topics touched versus still to practise",
-  "A breakdown of your highest-risk driving skills",
-  "A focused action plan for your next lessons",
-  "An instructor-style coach note",
+  "A breakdown of your highest-priority driving skills",
+  `A focused action plan — your ${SMART_UI.recommendations.toLowerCase()}`,
+  `An instructor-style ${SMART_UI.debrief.toLowerCase()}`,
   "A realistic band for how many more lesson hours you may need across your Learning Journey",
 ] as const;
 
@@ -152,17 +165,20 @@ export type AssessmentFormProps = {
   prefilledFullName?: string;
   /** Server hint: skips payment UI when true; `/api/checkout/create-session` re-verifies before finalising */
   hasLifetimeAccess?: boolean;
+  /** When the free assessment was already used, show the post-assessment screen instead of the form */
+  initialPreview?: ScorePreview | null;
 };
 
 export function AssessmentForm({
   lockedAccountEmail,
   prefilledFullName,
   hasLifetimeAccess = false,
+  initialPreview = null,
 }: AssessmentFormProps = {}) {
   const router = useRouter();
   const submitLock = useRef(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<ScorePreview | null>(null);
+  const [preview, setPreview] = useState<ScorePreview | null>(initialPreview);
   const [unlocking, setUnlocking] = useState(false);
   /** True while scoring is done and we are finalising a lifetime report (full Premium, no preview step). */
   const [premiumBuild, setPremiumBuild] = useState(false);
@@ -319,10 +335,30 @@ export function AssessmentForm({
     setUnlocking(true);
     setSubmitError(null);
     try {
-      const out = await runCheckoutOrFinalise(preview.assessment, "subscription");
-      if (out.kind === "stripe") {
-        window.location.assign(out.url);
+      if (preview.assessment) {
+        const out = await runCheckoutOrFinalise(preview.assessment, "subscription");
+        if (out.kind === "stripe") {
+          window.location.assign(out.url);
+        }
+        return;
       }
+
+      const res = await fetch("/api/subscription/create-checkout", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ returnPath: "/checkout/success" }),
+      });
+      const json = (await res.json()) as { success?: boolean; url?: string; error?: { message?: string } | string };
+      if (!json.success || !json.url) {
+        const message =
+          typeof json.error === "string"
+            ? json.error
+            : (json.error as { message?: string } | undefined)?.message ?? "Could not start checkout.";
+        setSubmitError(message);
+        return;
+      }
+      window.location.assign(json.url);
     } catch (e) {
       const message =
         e instanceof ApiRequestError
@@ -335,12 +371,14 @@ export function AssessmentForm({
     }
   }
 
-  if (preview) {
+  function renderPostAssessmentPreview() {
+    if (!preview) return null;
+
     return (
       <div className="space-y-6 pb-[calc(7.25rem+env(safe-area-inset-bottom))] sm:space-y-8 md:pb-0">
         <section className="rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8">
           <p className="text-center text-[11px] font-semibold uppercase tracking-[0.13em] text-brand-500 sm:text-left">
-            Your Test Ready Score
+            {PRODUCT.score}
           </p>
           <div className="mt-5 flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
             <p className="text-6xl font-semibold tracking-tight text-brand-950 tabular-nums">{preview.readinessScore}</p>
@@ -358,36 +396,11 @@ export function AssessmentForm({
         </section>
 
         <section className="rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-brand-500">Full report preview</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-brand-500">Premium features</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <LockedPreviewBlock
-              title="Risk Areas"
-              lines={[
-                "Junction timing and late observation patterns are raising avoidable faults.",
-                "Roundabout lane planning remains inconsistent under pressure.",
-              ]}
-            />
-            <LockedPreviewBlock
-              title="Coach Note"
-              lines={[
-                "Your base confidence is useful, but routine drift appears when pace rises.",
-                "Target one correction loop per lesson before adding complexity.",
-              ]}
-            />
-            <LockedPreviewBlock
-              title="Next Steps"
-              lines={[
-                "Run two high-frequency junction drills this week on familiar routes.",
-                "Use a structured mock reset before your next progress check.",
-              ]}
-            />
-            <LockedPreviewBlock
-              title="Lesson Guidance"
-              lines={[
-                "Estimated lesson hours across your Learning Journey and how to use that band with your instructor.",
-                "Unlock after checkout to see the full Premium report, including this section.",
-              ]}
-            />
+            {FREE_LOCKED_SECTIONS.map((section) => (
+              <LockedPreviewBlock key={section.title} title={section.title} lines={section.lines} />
+            ))}
           </div>
         </section>
 
@@ -395,10 +408,10 @@ export function AssessmentForm({
           {lockedAccountEmail && (hasLifetimeAccess || lifetimeVerifiedFromSession) ? (
             <>
               <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
-                Save your full Test Ready Score Report
+                Save your full {SMART_UI.report}
               </h2>
               <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-                Your active subscription includes unlimited full Premium reports. We attach this assessment to your
+                Your active subscription includes unlimited {SMART_UI.reports.toLowerCase()}. We attach this assessment to your
                 timeline with no extra payment per report.
               </p>
               {submitError ? (
@@ -414,7 +427,7 @@ export function AssessmentForm({
                   className="w-full min-h-[52px] sm:min-w-[18rem]"
                   onClick={() => void onUnlockFullReport()}
                 >
-                  {unlocking ? "Saving your report…" : "Save full Premium report"}
+                  {unlocking ? "Saving your report…" : `Save full ${SMART_UI.report}`}
                 </Button>
                 <p className="mt-3 text-xs leading-relaxed text-brand-600">
                   No checkout step. Confirmed again on the server before we store your report.
@@ -424,29 +437,18 @@ export function AssessmentForm({
           ) : (
             <>
               <h2 className="text-lg font-semibold tracking-tight text-brand-950 sm:text-xl">
-                Unlock your full Test Ready Score Report
+                Unlock your full {PRODUCT.score} experience
               </h2>
-              <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">
-                See exactly what could cause you to fail, and how to fix it before your test. You also get a realistic
-                band for how many more lesson hours you may need to keep building skills, so you can plan with your ADI.
-              </p>
+              <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-700">{PRICING.subscription.trialMessage}</p>
               <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
-                Subscribe for {PRICING.subscription.display}/month to unlock unlimited assessments, AI reports, and
-                progress tracking. Billing stops when you pass or cancel.
+                {PRICING.subscription.trialDays}-day free trial, then {PRICING.subscription.display}/month. Cancel anytime
+                · Graduate Mode stops billing when you pass.
               </p>
               {submitError ? (
                 <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
                   {submitError}
                 </p>
               ) : null}
-              <div className="mt-6 rounded-2xl border border-teal-200 bg-teal-50/50 p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-800">{PRICING.subscription.label}</p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-brand-950">
-                  {PRICING.subscription.display}
-                  <span className="ml-2 text-lg font-medium text-brand-500">/ month</span>
-                </p>
-                <p className="mt-2 text-xs leading-relaxed text-brand-600">{PRICING.subscription.hint}</p>
-              </div>
               <div className="mt-6">
                 <Button
                   type="button"
@@ -455,12 +457,10 @@ export function AssessmentForm({
                   className="w-full min-h-[52px] sm:min-w-[18rem]"
                   onClick={() => void onUnlockFullReport()}
                 >
-                  {unlocking
-                    ? "Please wait…"
-                    : `Subscribe & unlock (${PRICING.subscription.display}/mo)`}
+                  {unlocking ? "Please wait…" : PRICING.subscription.trialCta}
                 </Button>
                 <p className="mt-3 text-xs leading-relaxed text-brand-600">
-                  Secure Stripe checkout · Cancel anytime · Graduate Mode stops billing when you pass
+                  Secure Stripe checkout · Dashboard, lessons, reflections, and unlimited assessments included
                 </p>
               </div>
             </>
@@ -468,6 +468,10 @@ export function AssessmentForm({
         </section>
       </div>
     );
+  }
+
+  if (preview) {
+    return renderPostAssessmentPreview();
   }
 
   return (
@@ -811,7 +815,7 @@ export function AssessmentForm({
               how many more lesson hours you may need to keep building skills, so you can plan with your ADI.
             </p>
             <p className="mt-2 max-w-prose text-xs font-medium leading-relaxed text-brand-600">
-              Everything listed below is included in your Premium report once checkout completes (not in the free preview).
+              Everything listed below is included in your {SMART_UI.report.toLowerCase()} once checkout completes (not in the free preview).
             </p>
             <ul className="mt-5 space-y-2.5 text-sm leading-relaxed text-brand-800">
               {CHECKOUT_VALUE_BULLETS.map((line) => (
@@ -870,12 +874,12 @@ export function AssessmentForm({
           disabled={isSubmitting}
           className={checkoutSubmitButtonClass}
         >
-          {isSubmitting ? (premiumBuild ? "Building your Premium report…" : "Scoring...") : BRAND_CTA.getMyScore}
+          {isSubmitting ? (premiumBuild ? `Building your ${SMART_UI.report.toLowerCase()}…` : "Scoring...") : BRAND_CTA.getMyScore}
         </Button>
         <p className="text-center text-xs leading-relaxed text-brand-500">
           For information only, not a substitute for professional instruction.
           {showLifetimeAssessmentChrome
-            ? " Your Premium report attaches to Pass Pilot as part of lifetime access."
+            ? ` Your ${SMART_UI.report.toLowerCase()} attaches to Pass Pilot as part of lifetime access.`
             : " Your answers generate your Test Ready Score Report after payment."}
         </p>
       </div>
@@ -899,7 +903,7 @@ export function AssessmentForm({
           disabled={isSubmitting}
           className={checkoutSubmitButtonClass}
         >
-          {isSubmitting ? (premiumBuild ? "Building your Premium report…" : "Scoring...") : BRAND_CTA.getMyScore}
+          {isSubmitting ? (premiumBuild ? `Building your ${SMART_UI.report.toLowerCase()}…` : "Scoring...") : BRAND_CTA.getMyScore}
         </Button>
         <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
           Information only, not a substitute for professional instruction

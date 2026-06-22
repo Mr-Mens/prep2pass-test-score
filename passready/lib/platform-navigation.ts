@@ -14,7 +14,7 @@ export const PLATFORM_MODULES: PlatformModule[] = [
   {
     id: "pass-pilot-score",
     label: "Pass Pilot Score",
-    description: "Structured assessments, Premium reports and Progress Insights for your Learning Journey.",
+    description: "Structured assessments, Smart Reports and Smart Insights for your Learning Journey.",
     status: "live",
     href: "/assessment",
     audience: "learner",

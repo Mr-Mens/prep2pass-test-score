@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/Button";
 import { requestUpgradeCheckout } from "@/lib/api/upgrade-to-lifetime";
-import { PRICING } from "@/lib/constants";
+import { PRICING, SMART_UI } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 
 type Account = { email: string } | null;
@@ -59,7 +59,7 @@ export function UpgradeFlow() {
     <div className="rounded-2xl border border-teal-200/75 bg-teal-50/40 p-5 shadow-sm sm:p-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">Lifetime upgrade</p>
       <h1 className="mt-2 font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">
-        Unlock unlimited Premium reports
+        Unlock unlimited {SMART_UI.reports.toLowerCase()}
       </h1>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-brand-700">
         One payment of {PRICING.lifetime.display} adds lifetime access to your Pass Pilot account. Generate fresh Premium

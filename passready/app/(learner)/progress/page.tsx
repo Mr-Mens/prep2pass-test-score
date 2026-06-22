@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory";
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { TestCountdownPlanSection } from "@/components/learner/TestCountdownPlanSection";
-import { BRAND_CTA, SITE } from "@/lib/constants";
+import { BRAND_CTA, SITE, SMART_UI } from "@/lib/constants";
 import { deriveDeltaVsPrior, deriveFocusArea, deriveNextMilestone } from "@/lib/dashboard/journey-insights";
 import { formatCompactDateUk, formatIsoDateUk } from "@/lib/formatting";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
@@ -69,7 +69,7 @@ export default async function LearnerProgressPage() {
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">Progress</h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
-          Quiet timeline of Premium reports: score direction, recurring themes, and what to practise next.
+          Quiet timeline of {SMART_UI.reports.toLowerCase()}: score direction, recurring themes, and what to practise next.
         </p>
       </div>
 
@@ -120,7 +120,7 @@ export default async function LearnerProgressPage() {
         </section>
       ) : (
         <section className="rounded-2xl border border-dashed border-brand-200 bg-white/80 p-8 text-center text-sm leading-relaxed text-brand-700">
-          Save your first Premium report and we chart every next visit here automatically.
+          Save your first {SMART_UI.report.toLowerCase()} and we chart every next visit here automatically.
           <Link href="/assessment" className="mt-4 inline-flex min-h-[48px] items-center justify-center text-base font-semibold text-teal-800 underline-offset-4 hover:underline">
             {BRAND_CTA.getMyScore}
           </Link>

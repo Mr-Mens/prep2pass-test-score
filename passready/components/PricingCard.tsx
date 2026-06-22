@@ -1,11 +1,11 @@
 import { Button } from "@/components/Button";
-import { BRAND_CTA, PRODUCT } from "@/lib/constants";
+import { BRAND_CTA, PRODUCT, SMART_UI } from "@/lib/constants";
 
 const DEFAULT_BULLETS = [
-  "Your Pass Pilot Score, explained in plain English",
+  `${SMART_UI.report}, explained in plain English`,
   "A breakdown of your highest-risk driving skills",
-  "A focused action plan for your next lessons",
-  "An instructor-style coach note",
+  `Your ${SMART_UI.recommendations.toLowerCase()} for next lessons`,
+  `An instructor-style ${SMART_UI.debrief.toLowerCase()}`,
   "A realistic band for how many more lesson hours you may need across your Learning Journey",
 ] as const;
 

@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { CheckoutSuccessFlow } from "@/components/CheckoutSuccessFlow";
+import { PRODUCT, SMART_UI } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Payment confirmed",
-  description: "Verifying payment and preparing your Premium TestReady Score Report.",
+  description: `Verifying payment and preparing your ${SMART_UI.report}.`,
 };
 
 export default function CheckoutSuccessPage() {
@@ -14,7 +15,7 @@ export default function CheckoutSuccessPage() {
       <header>
         <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Payment</p>
         <h1 className="mt-2 font-heading text-2xl font-semibold tracking-tight text-brand-950">
-          Preparing your Premium Test Ready Score Report
+          Preparing your {SMART_UI.report}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-brand-600">
           Confirming payment securely, usually in a few seconds.

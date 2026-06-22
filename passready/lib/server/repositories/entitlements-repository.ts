@@ -16,6 +16,14 @@ export type EntitlementLookupResult = {
   hasActiveSubscription: boolean;
   isGraduated: boolean;
   subscriptionStatus: string | null;
+  hasUsedFreeAssessment: boolean;
+};
+
+export type FreeAssessmentRecord = {
+  usedAt: string;
+  score: number;
+  label: string;
+  assessmentData: Record<string, unknown> | null;
 };
 
 /** Lifetime unlock for Stripe / finalise flows keyed to the signed-in Supabase account. */
@@ -33,6 +41,64 @@ export async function getLifetimeAccessByUserId(userId: string): Promise<boolean
   }
   const row = data as { lifetime_access: boolean } | null;
   return row?.lifetime_access === true;
+}
+
+export async function getFreeAssessmentByUserId(userId: string): Promise<FreeAssessmentRecord | null> {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("user_entitlements")
+    .select("free_assessment_used_at, free_assessment_score, free_assessment_label, free_assessment_data")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[entitlements] getFreeAssessmentByUserId failed", error.message);
+    return null;
+  }
+
+  const row = data as {
+    free_assessment_used_at: string | null;
+    free_assessment_score: number | null;
+    free_assessment_label: string | null;
+    free_assessment_data: Record<string, unknown> | null;
+  } | null;
+
+  if (!row?.free_assessment_used_at || row.free_assessment_score == null || !row.free_assessment_label) {
+    return null;
+  }
+
+  return {
+    usedAt: row.free_assessment_used_at,
+    score: row.free_assessment_score,
+    label: row.free_assessment_label,
+    assessmentData: row.free_assessment_data,
+  };
+}
+
+export async function recordFreeAssessmentUsed(input: {
+  userId: string;
+  score: number;
+  label: string;
+  assessmentData: Record<string, unknown>;
+}): Promise<void> {
+  const supabase = getSupabaseServerClient();
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("user_entitlements").upsert(
+    {
+      user_id: input.userId,
+      free_assessment_used_at: now,
+      free_assessment_score: input.score,
+      free_assessment_label: input.label,
+      free_assessment_data: input.assessmentData,
+      updated_at: now,
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    console.error("[entitlements] recordFreeAssessmentUsed failed", error.message);
+    throw new Error("Failed to record free assessment");
+  }
 }
 
 export async function setLifetimeAccessByUserId(userId: string): Promise<void> {
@@ -62,10 +128,11 @@ function paymentLooksLikeSinglePurchase(rawMetadata: Record<string, unknown> | n
 export async function getEntitlementLookupForUser(userId: string): Promise<EntitlementLookupResult> {
   const supabase = getSupabaseServerClient();
 
-  const [access, reportsCountRes, paymentsRes] = await Promise.all([
+  const [access, reportsCountRes, paymentsRes, freeAssessment] = await Promise.all([
     getLearnerAccessStatus(userId),
     supabase.from("reports").select("id", { count: "exact", head: true }).eq("user_id", userId),
     supabase.from("payments").select("raw_metadata, payment_status").eq("user_id", userId),
+    getFreeAssessmentByUserId(userId),
   ]);
 
   if (reportsCountRes.error) throw new Error("Failed to count reports");
@@ -90,5 +157,6 @@ export async function getEntitlementLookupForUser(userId: string): Promise<Entit
     hasActiveSubscription: access.accessSource === "subscription" && access.hasPremiumAccess,
     isGraduated: access.isGraduated,
     subscriptionStatus: access.subscriptionStatus,
+    hasUsedFreeAssessment: Boolean(freeAssessment),
   };
 }

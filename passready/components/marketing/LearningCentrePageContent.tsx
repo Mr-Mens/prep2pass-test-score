@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/Button";
 import { Section } from "@/components/Section";
-import { BRAND_CTA, PRODUCT } from "@/lib/constants";
+import { BRAND_CTA, PRODUCT, SMART_UI } from "@/lib/constants";
 import { COMING_SOON_PLATFORM_MODULES, LIVE_PLATFORM_MODULES } from "@/lib/platform-navigation";
 import { PLATFORM, PLATFORM_TERMS } from "@/lib/platform-copy";
 
@@ -103,8 +103,8 @@ export function LearningCentrePageContent() {
       <Section className="text-center">
         <h2 className="font-heading text-2xl font-semibold text-brand-950">Start with your Pass Pilot Score</h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-brand-600">
-          Your {PLATFORM_TERMS.learningJourney} begins with structured assessment, Premium reports and{" "}
-          {PLATFORM_TERMS.progressInsights.toLowerCase()}.
+          Your {PLATFORM_TERMS.learningJourney} begins with structured assessment, {SMART_UI.personalisedReports.toLowerCase()} and{" "}
+          {SMART_UI.insights.toLowerCase()}.
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button href="/assessment" variant="conversion">

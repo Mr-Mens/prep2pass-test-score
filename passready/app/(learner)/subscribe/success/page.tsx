@@ -11,7 +11,7 @@ export default function SubscribeSuccessPage() {
       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-teal-800">Subscription active</p>
       <h1 className="mt-4 font-heading text-2xl font-semibold text-brand-950">You&apos;re all set</h1>
       <p className="mt-3 text-sm leading-relaxed text-brand-700">
-        Unlimited assessments, progress tracking, and Premium AI reports are now unlocked on your account.
+        Unlimited assessments, progress tracking, and Personalised Smart Reports are now unlocked on your account.
       </p>
       <Link
         href="/dashboard"

@@ -30,11 +30,19 @@ export async function GET() {
     let lifetimeAccess = false;
     let isGraduated = false;
     let subscriptionStatus: string | null = null;
+    let hasUsedFreeAssessment = false;
+    let canStartAssessment = true;
+    let freeAssessmentScore: number | null = null;
+    let freeAssessmentLabel: string | null = null;
     try {
       const access = await import("@/lib/server/learner-access").then((m) => m.getLearnerAccessStatus(user.id));
       lifetimeAccess = access.hasPremiumAccess;
       isGraduated = access.isGraduated;
       subscriptionStatus = access.subscriptionStatus;
+      hasUsedFreeAssessment = access.hasUsedFreeAssessment;
+      canStartAssessment = access.canStartAssessment;
+      freeAssessmentScore = access.freeAssessmentScore;
+      freeAssessmentLabel = access.freeAssessmentLabel;
     } catch {
       lifetimeAccess = false;
     }
@@ -52,6 +60,10 @@ export async function GET() {
           isGraduated,
           subscriptionStatus,
           role,
+          hasUsedFreeAssessment,
+          canStartAssessment,
+          freeAssessmentScore,
+          freeAssessmentLabel,
         },
       },
       noStore,

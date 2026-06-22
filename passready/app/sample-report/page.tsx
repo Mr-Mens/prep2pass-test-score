@@ -5,7 +5,7 @@ import { PremiumReportSections } from "@/components/reports/PremiumReportSection
 import { SampleLifetimeJourneyPreview } from "@/components/SampleLifetimeJourneyPreview";
 import { Section } from "@/components/Section";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BRAND_CTA, PRICING, PRODUCT } from "@/lib/constants";
+import { BRAND_CTA, PRICING, PRODUCT, SMART_UI } from "@/lib/constants";
 import { buildRecommendedHoursNarrative, type EstimatedHoursInput } from "@/lib/estimated-lesson-hours";
 import { buildReportViewModel } from "@/lib/report-view-model";
 import { sortGroupedRiskAreasByImpact, type GroupedRiskArea } from "@/lib/readiness-risk-areas";
@@ -13,8 +13,7 @@ import { webPageJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated";
 
-const sampleDescription =
-  "Preview a realistic Premium Test Ready Score Report from Pass Pilot: readiness score, risks, next steps, coach note, and lesson focus. Created by a DVSA-approved driving instructor.";
+const sampleDescription = `Preview a realistic ${SMART_UI.report} from Pass Pilot: readiness score, risks, ${SMART_UI.recommendations.toLowerCase()}, ${SMART_UI.debrief.toLowerCase()}, and lesson focus. Created by a DVSA-approved driving instructor.`;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Sample Premium Test Ready Score Report",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { Section } from "@/components/Section";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { SITE, SITE_DEFAULT_DESCRIPTION } from "@/lib/constants";
+import { SITE, SITE_DEFAULT_DESCRIPTION, SMART_UI } from "@/lib/constants";
 import { PLATFORM, PLATFORM_TERMS } from "@/lib/platform-copy";
 import { webPageJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMetadata } from "@/lib/seo/metadata";
@@ -36,7 +36,7 @@ export default async function AboutPage() {
             <p>{PLATFORM.aboutIntro}</p>
             <p>
               {SITE.name} is a {PLATFORM_TERMS.drivingEducationPlatform.toLowerCase()} that combines Pass Pilot
-              Score assessments, Premium reports, {PLATFORM_TERMS.progressInsights}, {PLATFORM_TERMS.coachingTools}{" "}
+              Score assessments, {SMART_UI.personalisedReports.toLowerCase()}, {SMART_UI.insights}, {PLATFORM_TERMS.coachingTools}{" "}
               and a growing {PLATFORM_TERMS.learningCentre}. It is not an official DVSA product and should always
               be reviewed alongside your instructor and on-road performance.
             </p>

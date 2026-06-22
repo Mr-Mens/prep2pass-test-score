@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/Button";
-import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING } from "@/lib/constants";
+import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, PRODUCT, SMART_UI } from "@/lib/constants";
 import { formatIsoDateUk } from "@/lib/formatting";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
 import { listMockTestDeliveriesForLearner } from "@/lib/server/repositories/learner-mock-test-repository";
@@ -81,14 +81,14 @@ export default async function MyReportsPage() {
               </>
             ) : (
               <>
-                Saved Test Ready Score Report write-ups for this account. Open any card for the full coach note and action plan.
+                Saved {PRODUCT.score} write-ups for this account. Open any card for your full {SMART_UI.debrief.toLowerCase()} and {SMART_UI.recommendations.toLowerCase()}.
               </>
             )}
           </p>
           {count > 0 ? (
             <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/12 px-4 py-2 text-[13px] font-semibold backdrop-blur-sm ring-1 ring-white/25">
               <span className="tabular-nums text-teal-100">{count}</span>
-              <span className="text-slate-200">saved Premium report{count === 1 ? "" : "s"}</span>
+              <span className="text-slate-200">saved {SMART_UI.report.toLowerCase()}{count === 1 ? "" : "s"}</span>
             </p>
           ) : null}
         </div>
@@ -156,7 +156,7 @@ export default async function MyReportsPage() {
       <section aria-labelledby="reports-list-heading">
         <div className="flex flex-wrap items-end justify-between gap-2 border-b border-brand-200/80 pb-3">
           <h2 id="reports-list-heading" className="font-heading text-lg font-semibold tracking-tight text-brand-950">
-            All Premium reports
+            All {SMART_UI.reports.toLowerCase()}
           </h2>
           {summaries.length > 0 ? (
             <span className="text-xs font-semibold uppercase tracking-wide text-brand-500">{count} total</span>
@@ -206,7 +206,7 @@ export default async function MyReportsPage() {
                     <p className="mt-2 text-base font-semibold text-brand-950">{report.readiness_label}</p>
                     <p className="mt-1 text-xs font-medium text-brand-500">{formatIsoDateUk(report.created_at)}</p>
                     <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-teal-800 transition group-hover:gap-2">
-                      View Premium report
+                      View {SMART_UI.report.toLowerCase()}
                       <span aria-hidden className="text-teal-600">
                         →
                       </span>

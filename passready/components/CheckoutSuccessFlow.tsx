@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { requestFinaliseReport } from "@/lib/api/finalise-report";
 import { requestConfirmUpgrade } from "@/lib/api/upgrade-to-lifetime";
 import { requestVerifyCheckoutSession } from "@/lib/api/verify-checkout-session";
+import { SMART_UI } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
 import {
   clearPendingAssessment,
@@ -73,7 +74,7 @@ export function CheckoutSuccessFlow() {
           return;
         }
 
-        setMessage("Payment confirmed. Building your Premium TestReady Score Report…");
+        setMessage(`Payment confirmed. Building your ${SMART_UI.report}…`);
         if (!finalisePromises.has(sessionId)) {
           finalisePromises.set(
             sessionId,

@@ -1,6 +1,6 @@
-import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
+import { requirePremiumLearnerAccess } from "@/lib/server/require-premium-learner-access";
 
 export default async function ProgressLayout({ children }: { children: React.ReactNode }) {
-  await requireAuthenticatedSession("/progress");
+  await requirePremiumLearnerAccess("/progress");
   return <>{children}</>;
 }

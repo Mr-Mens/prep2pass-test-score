@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { sendParentLearnerInviteEmail } from "@/lib/email/templates/parent-learner-invite";
 import { EmailNotConfiguredError } from "@/lib/email/resend";
 import { normalizeEmail } from "@/lib/normalize-email";
+import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/server/supabase";
 import { isMissingSupervisorTableError, SUPERVISOR_MIGRATION_HINT } from "@/lib/server/supervisor-schema";
 
@@ -92,7 +93,18 @@ export async function createLearnerLink(input: {
   const email = normalizeEmail(input.learnerEmail);
   const learnerUserId = await resolveLearnerUserIdByEmail(email);
   const now = new Date().toISOString();
-  const status = learnerUserId ? "linked" : "pending";
+
+  let status: "pending" | "linked" = "pending";
+  let linkedAt: string | null = null;
+
+  if (learnerUserId) {
+    const access = await getLearnerAccessStatus(learnerUserId);
+    if (access.hasPremiumAccess) {
+      status = "linked";
+      linkedAt = now;
+    }
+  }
+
   const invitationToken = randomUUID();
 
   const { data, error } = await supabase
@@ -105,7 +117,7 @@ export async function createLearnerLink(input: {
         learner_user_id: learnerUserId,
         status,
         invitation_token: invitationToken,
-        linked_at: learnerUserId ? now : null,
+        linked_at: linkedAt,
         updated_at: now,
       },
       { onConflict: "parent_user_id,learner_email" },
@@ -163,6 +175,25 @@ export async function refreshLearnerLink(linkId: string, parentUserId: string): 
 
   const learnerUserId = await resolveLearnerUserIdByEmail(row.learner_email);
   if (!learnerUserId) return row;
+
+  const access = await getLearnerAccessStatus(learnerUserId);
+  if (!access.hasPremiumAccess) {
+    const { data: pendingUpdate, error: pendingError } = await supabase
+      .from("parent_learner_links")
+      .update({
+        learner_user_id: learnerUserId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", linkId)
+      .eq("parent_user_id", parentUserId)
+      .select("*")
+      .single();
+    if (pendingError) {
+      if (isMissingSupervisorTableError(pendingError)) return row;
+      throw new Error(pendingError.message);
+    }
+    return pendingUpdate as ParentLearnerLinkRow;
+  }
 
   const now = new Date().toISOString();
   const { data, error } = await supabase

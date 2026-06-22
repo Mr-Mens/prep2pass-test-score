@@ -12,10 +12,11 @@ import { isSelfServiceAppRole } from "@/lib/auth/self-service-roles";
 import { passwordFieldSchema } from "@/lib/auth/password";
 import type { UserAppRole } from "@/lib/instructor/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { SMART_UI } from "@/lib/constants";
 
 const SIGNUP_INTRO: Record<UserAppRole, string> = {
   learner:
-    "Your Premium reports stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Pass Pilot never asks you to repeat your password via email.",
+    `Your ${SMART_UI.reports.toLowerCase()} stay linked to your account so only you can open them. We email a verification link so we know the inbox belongs to you; please confirm before signing in. Payments stay inside Stripe and Pass Pilot never asks you to repeat your password via email.`,
   instructor:
     "Create your free instructor account for mock tests, pupil tracking, and teaching tools. We email a verification link before you can sign in. Pass Pilot never asks for your password by email.",
   parent:

@@ -10,6 +10,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 const navItems = [
   { href: "/instructor", label: "Dashboard", icon: "◉" },
   { href: "/instructor/pupils", label: "Pupils", icon: "◎" },
+  { href: "/instructor/lessons", label: "Lessons", icon: "◷" },
   { href: "/instructor/mock-tests", label: "Mock Tests", icon: "▦" },
   { href: "/instructor/reflections", label: "Lesson Reviews", icon: "✎" },
   { href: "/instructor/diagrams", label: "Teaching Diagrams", icon: "▨" },

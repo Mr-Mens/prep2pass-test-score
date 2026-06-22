@@ -25,6 +25,9 @@ type Props = {
   learnerUserId?: string;
   learnerOptions?: Array<{ id: string; label: string }>;
   defaultLessonType?: LessonReflectionType;
+  defaultLessonDate?: string;
+  defaultLessonHours?: string;
+  defaultTopicsPractised?: string[];
 };
 
 export function ReflectionForm({
@@ -33,6 +36,9 @@ export function ReflectionForm({
   learnerUserId,
   learnerOptions,
   defaultLessonType = "instructor",
+  defaultLessonDate,
+  defaultLessonHours,
+  defaultTopicsPractised,
 }: Props) {
   const router = useRouter();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -42,11 +48,13 @@ export function ReflectionForm({
   const [stepError, setStepError] = useState<string | null>(null);
 
   const [selectedLearnerId, setSelectedLearnerId] = useState(learnerUserId ?? learnerOptions?.[0]?.id ?? "");
-  const [lessonDate, setLessonDate] = useState(today);
-  const [lessonHours, setLessonHours] = useState("1");
+  const [lessonDate, setLessonDate] = useState(defaultLessonDate ?? today);
+  const [lessonHours, setLessonHours] = useState(defaultLessonHours ?? "1");
   const [lessonType, setLessonType] = useState<LessonReflectionType>(defaultLessonType);
-  const [topicsPractised, setTopicsPractised] = useState<string[]>([]);
-  const [topicConfidence, setTopicConfidence] = useState<TopicConfidenceMap>({});
+  const [topicsPractised, setTopicsPractised] = useState<string[]>(defaultTopicsPractised ?? []);
+  const [topicConfidence, setTopicConfidence] = useState<TopicConfidenceMap>(() =>
+    syncTopicConfidenceWithTopics(defaultTopicsPractised ?? [], {}),
+  );
   const [strengths, setStrengths] = useState<string[]>([]);
   const [difficulties, setDifficulties] = useState<string[]>([]);
   const [difficultyNotes, setDifficultyNotes] = useState("");

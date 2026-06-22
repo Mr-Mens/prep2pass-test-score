@@ -44,16 +44,35 @@ function firstNameFromMetadata(meta: Record<string, unknown> | undefined): strin
   );
 }
 
-export const getServerAuthUser = cache(async (): Promise<ServerAuthUser | null> => {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user?.id || !user.email) return null;
+function mapServerAuthUser(user: {
+  id: string;
+  email?: string | null;
+  email_confirmed_at?: string | null;
+  user_metadata?: Record<string, unknown>;
+}): ServerAuthUser | null {
+  if (!user.id || !user.email?.trim()) return null;
   return {
     id: user.id,
     email: user.email.trim().toLowerCase(),
     emailConfirmedAt: user.email_confirmed_at ?? null,
-    firstName: firstNameFromMetadata(user.user_metadata as Record<string, unknown> | undefined),
+    firstName: firstNameFromMetadata(user.user_metadata),
   };
+}
+
+/** Resolves the signed-in user, refreshing the cookie session when needed (no Edge middleware). */
+export async function resolveServerAuthUser(): Promise<ServerAuthUser | null> {
+  const supabase = createSupabaseServerClient();
+  const first = await supabase.auth.getUser();
+  if (first.data.user) return mapServerAuthUser(first.data.user);
+
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) return null;
+
+  const refreshed = await supabase.auth.refreshSession();
+  const user = refreshed.data.user ?? session.data.session.user;
+  return mapServerAuthUser(user);
+}
+
+export const getServerAuthUser = cache(async (): Promise<ServerAuthUser | null> => {
+  return resolveServerAuthUser();
 });

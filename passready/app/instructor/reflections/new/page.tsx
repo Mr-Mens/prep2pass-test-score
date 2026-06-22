@@ -5,12 +5,22 @@ import { ReflectionForm } from "@/components/reflections/ReflectionForm";
 import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
 import { listPupilsForInstructor } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
+import { SYLLABUS_TOPIC_ID_SET } from "@/lib/syllabus-topics";
 
 export const metadata: Metadata = {
   title: "Log lesson review · Instructor",
 };
 
-export default async function InstructorNewReflectionPage() {
+type Props = {
+  searchParams: {
+    learnerId?: string;
+    lessonDate?: string;
+    hours?: string;
+    topics?: string;
+  };
+};
+
+export default async function InstructorNewReflectionPage({ searchParams }: Props) {
   const user = await requireInstructorSession();
   const pupils = isSupabaseConfigured() ? await listPupilsForInstructor(user.id) : [];
   const learnerOptions = pupils
@@ -19,6 +29,16 @@ export default async function InstructorNewReflectionPage() {
       id: p.linked_learner_user_id as string,
       label: p.pupil_name,
     }));
+
+  const defaultTopicsPractised = (searchParams.topics ?? "")
+    .split(",")
+    .map((topic) => topic.trim())
+    .filter((topic) => SYLLABUS_TOPIC_ID_SET.has(topic));
+
+  const prefillLearnerId =
+    searchParams.learnerId && learnerOptions.some((option) => option.id === searchParams.learnerId)
+      ? searchParams.learnerId
+      : undefined;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-4">
@@ -50,7 +70,11 @@ export default async function InstructorNewReflectionPage() {
           cancelHref="/instructor/reflections"
           successHref="/instructor/reflections"
           learnerOptions={learnerOptions}
+          learnerUserId={prefillLearnerId}
           defaultLessonType="instructor"
+          defaultLessonDate={searchParams.lessonDate}
+          defaultLessonHours={searchParams.hours}
+          defaultTopicsPractised={defaultTopicsPractised}
         />
       )}
     </div>

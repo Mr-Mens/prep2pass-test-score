@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { InstructorEarningsPanel } from "@/components/instructor/InstructorEarningsPanel";
+import { InstructorUpcomingLessonsCard } from "@/components/instructor/InstructorUpcomingLessonsCard";
 import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
+import { listUpcomingLessonsForInstructor } from "@/lib/server/repositories/instructor-lessons-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
 function IconClipboard() {
@@ -115,8 +117,21 @@ function IconLessonReview() {
   );
 }
 
+function IconLessons() {
+  return (
+    <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 3v2.25M17.25 3v2.25M4.5 8.25h15M4.5 19.5A2.25 2.25 0 006.75 21.75h10.5A2.25 2.25 0 0019.5 19.5V8.25H4.5v11.25z"
+      />
+    </svg>
+  );
+}
+
 export default async function InstructorDashboardPage() {
   const user = await requireInstructorSession();
+  const upcomingLessons = isSupabaseConfigured() ? await listUpcomingLessonsForInstructor(user.id) : [];
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-4">
@@ -156,6 +171,8 @@ export default async function InstructorDashboardPage() {
 
       {isSupabaseConfigured() ? <InstructorEarningsPanel instructorUserId={user.id} /> : null}
 
+      <InstructorUpcomingLessonsCard lessons={upcomingLessons} />
+
       <div className="grid gap-5 sm:grid-cols-2">
         <ActionTile
           href="/instructor/pupils"
@@ -192,6 +209,15 @@ export default async function InstructorDashboardPage() {
           cta="Open library"
           icon={<IconPhotos />}
           tint="from-teal-700 to-cyan-900"
+        />
+        <ActionTile
+          href="/instructor/lessons"
+          kicker="Lessons"
+          title="Lesson records"
+          body="Plan upcoming sessions, mark lessons complete, and jump into lesson reflections when you're done."
+          cta="Open lessons"
+          icon={<IconLessons />}
+          tint="from-sky-600 to-teal-900"
         />
         <ActionTile
           href="/instructor/reflections"

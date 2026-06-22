@@ -5,8 +5,10 @@ import { DashboardTrajectory } from "@/components/dashboard/DashboardTrajectory"
 import { ScoreRingGauge } from "@/components/learner/ScoreRingGauge";
 import { deriveDeltaVsPrior } from "@/lib/dashboard/journey-insights";
 import { formatCompactDateUk, formatIsoDateUk } from "@/lib/formatting";
+import { InstructorPupilRecentLessons } from "@/components/instructor/InstructorPupilRecentLessons";
 import { requireInstructorSession } from "@/lib/server/instructor-page-auth";
 import { getInstructorPupilInsights } from "@/lib/server/repositories/instructor-pupil-link-repository";
+import { listLessonsForPupil } from "@/lib/server/repositories/instructor-lessons-repository";
 import { isSupabaseConfigured } from "@/lib/server/supabase";
 
 type Props = { params: { pupilId: string } };
@@ -17,6 +19,8 @@ export default async function InstructorPupilDetailPage({ params }: Props) {
 
   const insights = await getInstructorPupilInsights(params.pupilId, user.id);
   if (!insights) notFound();
+
+  const recentLessons = await listLessonsForPupil(params.pupilId, user.id);
 
   const { pupil, learner, parents, reports, journeySnapshots } = insights;
   const delta = deriveDeltaVsPrior(journeySnapshots);
@@ -74,6 +78,8 @@ export default async function InstructorPupilDetailPage({ params }: Props) {
           </div>
         </section>
       ) : null}
+
+      <InstructorPupilRecentLessons lessons={recentLessons} pupilId={pupil.id} />
 
       <section className="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">Individual reports</h2>

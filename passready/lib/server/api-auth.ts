@@ -2,7 +2,7 @@ import "server-only";
 
 import { normalizeEmail } from "@/lib/normalize-email";
 import { getUserAppRole } from "@/lib/server/user-app-role";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolveServerAuthUser } from "@/lib/supabase/server";
 
 export type RouteAuthResult =
   | { ok: true; userId: string; email: string }
@@ -11,19 +11,15 @@ export type RouteAuthResult =
 /** Cookie-backed caller context for authenticated API routes only. */
 export async function requireVerifiedApiUser(): Promise<RouteAuthResult> {
   try {
-    const supabase = createSupabaseServerClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-    if (error || !user?.id || !user.email?.trim()) {
+    const user = await resolveServerAuthUser();
+    if (!user) {
       return {
         ok: false,
         status: 401,
         message: "Please sign in to continue.",
       };
     }
-    if (!user.email_confirmed_at) {
+    if (!user.emailConfirmedAt) {
       return {
         ok: false,
         status: 403,
@@ -31,9 +27,7 @@ export async function requireVerifiedApiUser(): Promise<RouteAuthResult> {
       };
     }
 
-    const email = normalizeEmail(user.email);
-
-    return { ok: true, userId: user.id, email };
+    return { ok: true, userId: user.id, email: normalizeEmail(user.email) };
   } catch {
     return { ok: false, status: 500, message: "Authentication failed. Try again shortly." };
   }

@@ -34,8 +34,8 @@ export function LoginFlow() {
   );
 
   const postLoginHref = useMemo(() => {
-    if (!nextResolved) return null;
-    return `/auth/resume?continue=${encodeURIComponent(nextResolved)}`;
+    if (nextResolved) return `/auth/resume?continue=${encodeURIComponent(nextResolved)}`;
+    return "/auth/resume";
   }, [nextResolved]);
 
   const [email, setEmail] = useState("");
@@ -46,7 +46,6 @@ export function LoginFlow() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIssue(null);
-    if (!postLoginHref) return;
 
     setBusy(true);
     try {
@@ -73,29 +72,19 @@ export function LoginFlow() {
     }
   }
 
-  if (!nextResolved || !signingInAs) {
-    return (
-      <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Sign in</p>
-        <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Choose your role first</h1>
-        <p className="mt-3 text-sm leading-relaxed text-brand-600">
-          Sign in must start from the welcome page (Learner, Instructor, or Parent) so we open the correct workspace for
-          your account.
-        </p>
-        <Button href="/welcome" variant="conversion" className="mt-8 w-full">
-          Back to welcome
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-2xl border border-brand-200/90 bg-white p-6 shadow-card sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">Sign in</p>
       <h1 className="mt-3 font-heading text-2xl font-semibold tracking-tight text-brand-950">Welcome back</h1>
       <p className="mt-2 text-sm leading-relaxed text-brand-600">
-        Signing in as <span className="font-semibold text-brand-900">{ROLE_SIGN_IN_LABEL[signingInAs]}</span>. Use your
-        {PRODUCT.name} credentials for this role.
+        {signingInAs ? (
+          <>
+            Signing in as <span className="font-semibold text-brand-900">{ROLE_SIGN_IN_LABEL[signingInAs]}</span>. Use
+            your {PRODUCT.name} credentials for this role.
+          </>
+        ) : (
+          <>Use your {PRODUCT.name} email and password. We&apos;ll open the workspace for your account.</>
+        )}
       </p>
 
       {roleMismatch && signingInAs ? (
@@ -182,14 +171,14 @@ export function LoginFlow() {
           </p>
         ) : null}
 
-        <Button type="submit" variant="conversion" className="w-full" disabled={busy || !postLoginHref}>
-          {busy ? "Signing in…" : `Sign in as ${ROLE_SIGN_IN_LABEL[signingInAs]}`}
+        <Button type="submit" variant="conversion" className="w-full" disabled={busy}>
+          {busy ? "Signing in…" : signingInAs ? `Sign in as ${ROLE_SIGN_IN_LABEL[signingInAs]}` : "Sign in"}
         </Button>
 
         <p className="text-center text-xs text-brand-500">
           New here?{" "}
           <Link
-            href={`/signup?next=${encodeURIComponent(nextResolved)}`}
+            href={nextResolved ? `/signup?next=${encodeURIComponent(nextResolved)}` : "/signup"}
             className="font-semibold text-teal-800 underline-offset-4 hover:underline"
           >
             Create an account

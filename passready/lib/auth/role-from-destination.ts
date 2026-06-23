@@ -4,6 +4,19 @@ const ROLE_DESTINATIONS: ReadonlyArray<{ prefix: string; role: UserAppRole }> = 
   { prefix: "/instructor", role: "instructor" },
   { prefix: "/supervisor", role: "parent" },
   { prefix: "/dashboard", role: "learner" },
+  { prefix: "/assessment", role: "learner" },
+  { prefix: "/subscribe", role: "learner" },
+  { prefix: "/mock-tests", role: "learner" },
+  { prefix: "/progress", role: "learner" },
+  { prefix: "/account", role: "learner" },
+  { prefix: "/my-reports", role: "learner" },
+  { prefix: "/reports", role: "learner" },
+  { prefix: "/lifetime", role: "learner" },
+  { prefix: "/graduate", role: "learner" },
+  { prefix: "/upgrade", role: "learner" },
+  { prefix: "/results", role: "learner" },
+  { prefix: "/home", role: "learner" },
+  { prefix: "/checkout", role: "learner" },
 ];
 
 export function parseAppRole(value: unknown): UserAppRole | null {

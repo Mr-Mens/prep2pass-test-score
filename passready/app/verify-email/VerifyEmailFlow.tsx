@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
+import { authCallbackRedirectUrl } from "@/lib/auth/post-auth-destination";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import type { UserAppRole } from "@/lib/instructor/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -100,15 +101,10 @@ export function VerifyEmailFlow() {
     try {
       const supabase = createSupabaseBrowserClient();
       const origin = window.location.origin;
-      const verifyParams = new URLSearchParams();
-      if (continueSafe) verifyParams.set("continue", continueSafe);
-      verifyParams.set("email", email);
-      const verifyPath = `/verify-email?${verifyParams.toString()}`;
-      const emailRedirectTo = `${origin}/auth/callback?next=${encodeURIComponent(verifyPath)}`;
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo },
+        options: { emailRedirectTo: authCallbackRedirectUrl(origin, continueSafe) },
       });
       if (error) setMsg(describeAuthEmailError(error, "resend_verify"));
       else {

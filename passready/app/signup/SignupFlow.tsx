@@ -99,10 +99,11 @@ export function SignupFlow() {
         email: em,
         password,
         options: {
-          emailRedirectTo: authCallbackRedirectUrl(origin, postAuthPath),
+          emailRedirectTo: authCallbackRedirectUrl(origin),
           data: {
             first_name: fn,
             app_role: signupAppRole,
+            post_auth_continue: postAuthPath,
             ...(inviteToken ? { pending_invite_token: inviteToken } : {}),
             ...(premiumInviteToken ? { pending_premium_invite_token: premiumInviteToken } : {}),
             ...(appRoleFromDestination(postAuthPath) === "instructor"

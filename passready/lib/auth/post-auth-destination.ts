@@ -18,6 +18,7 @@ export function authResumePath(continuePath?: string | null): string {
   return "/auth/resume";
 }
 
-export function authCallbackRedirectUrl(origin: string, continuePath?: string | null): string {
-  return `${origin.replace(/\/$/, "")}/auth/callback?next=${encodeURIComponent(authResumePath(continuePath))}`;
+/** Must match Supabase Auth → URL configuration redirect allow list exactly (no query string). */
+export function authCallbackRedirectUrl(origin: string): string {
+  return `${origin.replace(/\/$/, "")}/auth/callback`;
 }

@@ -58,7 +58,12 @@ export function VerifyEmailFlow() {
 
   const [manualEmail, setManualEmail] = useState("");
   const [resolvedEmail, setResolvedEmail] = useState<string | null>(emailFromUrl);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(() => {
+    if (params.get("error") === "callback") {
+      return "That confirmation link could not finish signing you in. Resend a fresh link below, or sign in if you already confirmed.";
+    }
+    return null;
+  });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -104,7 +109,7 @@ export function VerifyEmailFlow() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo: authCallbackRedirectUrl(origin, continueSafe) },
+        options: { emailRedirectTo: authCallbackRedirectUrl(origin) },
       });
       if (error) setMsg(describeAuthEmailError(error, "resend_verify"));
       else {

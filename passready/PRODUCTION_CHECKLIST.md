@@ -87,8 +87,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 | Setting | Production value |
 |---------|------------------|
 | **Site URL** | `https://thepasspilot.com` |
-| **Redirect URLs** | `https://thepasspilot.com/auth/callback` |
-| | `https://thepasspilot.com/auth/callback/**` (if your project requires wildcard query paths) |
+| **Redirect URLs** | `https://thepasspilot.com/auth/callback` (exact — no query string on this URL) |
 
 Auth flows that land on `/auth/callback`:
 

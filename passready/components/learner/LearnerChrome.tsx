@@ -234,7 +234,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
   function NavDock() {
     return (
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
+        className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
         <ul className={`mx-auto grid max-w-xl gap-0 px-1 pt-1 ${isPremium ? "grid-cols-5" : "grid-cols-3"}`}>
@@ -271,7 +271,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-dvh bg-[#f0f2f5] md:flex-row">
+    <div className="flex min-h-dvh bg-[#f0f2f5] max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:overflow-hidden md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
           <Link href={homeHref} className="block" aria-label={`${PRODUCT.name} home`}>
@@ -319,8 +319,8 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col max-md:overflow-hidden">
+        <header className="z-40 shrink-0 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
           <div className="mx-auto flex min-h-[52px] w-full max-w-xl items-center gap-3 px-4 py-3 sm:min-h-[3.25rem]">
             <Link
               href={homeHref}
@@ -340,7 +340,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
         <main
           id="main"
-          className="relative mx-auto w-full max-w-4xl flex-1 px-4 pb-[calc(5.85rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 md:max-w-none md:px-8 md:pb-10 md:pt-10 lg:px-10"
+          className="relative mx-auto w-full min-h-0 max-w-4xl flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 pb-4 pt-6 [-webkit-overflow-scrolling:touch] sm:px-6 sm:pt-8 md:max-w-none md:flex-none md:overflow-visible md:px-8 md:pb-10 md:pt-10 lg:px-10"
         >
           <div className="mx-auto w-full max-w-4xl">{children}</div>
         </main>

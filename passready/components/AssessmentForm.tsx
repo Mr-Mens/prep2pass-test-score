@@ -375,11 +375,54 @@ export function AssessmentForm({
   }
 
   const mobileScrollPadClass = stackAboveMobileNav
-    ? "pb-[calc(11rem+env(safe-area-inset-bottom))]"
+    ? "pb-4"
     : "pb-[calc(7.25rem+env(safe-area-inset-bottom))]";
-  const mobileStickyBarClass = stackAboveMobileNav
-    ? "bottom-[calc(3.75rem+env(safe-area-inset-bottom))]"
-    : "bottom-0";
+  const mobileStickyBarClass = stackAboveMobileNav ? "" : "bottom-0";
+  const mobileFormShellClass = stackAboveMobileNav
+    ? "flex max-h-[min(100%,calc(100dvh-8rem-env(safe-area-inset-bottom)))] flex-col overflow-hidden md:block md:max-h-none"
+    : "";
+  const mobileFieldsScrollClass = stackAboveMobileNav
+    ? "min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:contents md:overflow-visible"
+    : "contents";
+
+  function renderMobileSubmitBar() {
+    return (
+      <div
+        className={
+          stackAboveMobileNav
+            ? "shrink-0 border-t border-brand-200/90 bg-white pt-3 md:hidden"
+            : `fixed inset-x-0 z-40 border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`
+        }
+        style={{
+          paddingBottom: stackAboveMobileNav
+            ? "0.75rem"
+            : "max(0.75rem, env(safe-area-inset-bottom))",
+        }}
+      >
+        {submitError ? (
+          <p className="mb-2 text-center text-xs font-medium text-red-800">{submitError}</p>
+        ) : (
+          !showLifetimeAssessmentChrome && (
+            <p className="mb-2 text-center text-[11px] leading-snug text-brand-500/90">
+              {PRICING.subscription.display}/month · Secure Stripe checkout · Cancel anytime
+            </p>
+          )
+        )}
+        <Button
+          type="submit"
+          variant="conversion"
+          disabled={isSubmitting}
+          className={checkoutSubmitButtonClass}
+        >
+          {isSubmitting ? (premiumBuild ? `Building your ${SMART_UI.report.toLowerCase()}…` : "Scoring...") : BRAND_CTA.getMyScore}
+        </Button>
+        <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
+          Information only, not a substitute for professional instruction
+          {showLifetimeAssessmentChrome ? " · Saves to your account automatically" : null}
+        </p>
+      </div>
+    );
+  }
 
   function renderPostAssessmentPreview() {
     if (!preview) return null;
@@ -488,8 +531,9 @@ export function AssessmentForm({
     <form
       id="pass-pilot-assessment"
       onSubmit={handleSubmit(onSubmit)}
-      className={`space-y-6 sm:space-y-10 md:pb-0 ${mobileScrollPadClass}`}
+      className={`sm:space-y-10 md:pb-0 ${mobileFormShellClass} ${stackAboveMobileNav ? "" : `space-y-6 ${mobileScrollPadClass}`}`}
     >
+      <div className={mobileFieldsScrollClass}>
       <fieldset className={sectionBox}>
         <SectionHeader
           step={1}
@@ -876,6 +920,7 @@ export function AssessmentForm({
           {submitError}
         </div>
       ) : null}
+      </div>
 
       <div className="mt-10 hidden flex-col gap-5 border-t border-brand-100/80 pt-8 md:flex">
         <Button
@@ -894,36 +939,7 @@ export function AssessmentForm({
         </p>
       </div>
 
-      <div
-        className={`fixed inset-x-0 z-40 border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`}
-        style={{
-          paddingBottom: stackAboveMobileNav
-            ? "0.75rem"
-            : "max(0.75rem, env(safe-area-inset-bottom))",
-        }}
-      >
-        {submitError ? (
-          <p className="mb-2 text-center text-xs font-medium text-red-800">{submitError}</p>
-        ) : (
-          !showLifetimeAssessmentChrome && (
-            <p className="mb-2 text-center text-[11px] leading-snug text-brand-500/90">
-              {PRICING.subscription.display}/month · Secure Stripe checkout · Cancel anytime
-            </p>
-          )
-        )}
-        <Button
-          type="submit"
-          variant="conversion"
-          disabled={isSubmitting}
-          className={checkoutSubmitButtonClass}
-        >
-          {isSubmitting ? (premiumBuild ? `Building your ${SMART_UI.report.toLowerCase()}…` : "Scoring...") : BRAND_CTA.getMyScore}
-        </Button>
-        <p className="mt-2 text-center text-[10px] leading-relaxed text-brand-400">
-          Information only, not a substitute for professional instruction
-          {showLifetimeAssessmentChrome ? " · Saves to your account automatically" : null}
-        </p>
-      </div>
+      {renderMobileSubmitBar()}
     </form>
   );
 }

@@ -10,7 +10,7 @@
   }
 
   body {
-    @apply min-h-dvh text-brand-900 antialiased;
+    @apply min-h-dvh overflow-x-hidden text-brand-900 antialiased;
     text-rendering: optimizeLegibility;
     background-color: #e8ecf3;
   }

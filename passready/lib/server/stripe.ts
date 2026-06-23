@@ -36,6 +36,16 @@ export function getStripeConfig() {
   };
 }
 
+export function isStripeSubscriptionCheckoutReady(): boolean {
+  const secret = process.env.STRIPE_SECRET_KEY?.trim() ?? "";
+  const price =
+    process.env.STRIPE_PRICE_ID_SUBSCRIPTION?.trim() ||
+    process.env.STRIPE_PRICE_ID_LIFETIME?.trim() ||
+    process.env.STRIPE_PRICE_ID?.trim() ||
+    "";
+  return secret.startsWith("sk_") && price.startsWith("price_");
+}
+
 function subscriptionPriceId(): string {
   const id =
     process.env.STRIPE_PRICE_ID_SUBSCRIPTION ||
@@ -90,9 +100,10 @@ export async function createSubscriptionCheckoutSession(params: {
     success_url: `${config.appUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}&mode=subscription`,
     cancel_url: `${config.appUrl}${cancelPath}`,
     customer_email: params.email,
+    payment_method_collection: "always",
     ...(params.stripePromotionCodeId
       ? { discounts: [{ promotion_code: params.stripePromotionCodeId }] }
-      : {}),
+      : { allow_promotion_codes: true }),
     subscription_data: {
       trial_period_days: 7,
       metadata: {

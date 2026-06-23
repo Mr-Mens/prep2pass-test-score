@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { resolveCheckoutPromo } from "@/lib/server/resolve-checkout-promo";
-import { createSubscriptionCheckoutSession } from "@/lib/server/stripe";
+import { checkoutErrorResponse } from "@/lib/server/stripe-checkout-errors";
+import { createSubscriptionCheckoutSession, isStripeSubscriptionCheckoutReady } from "@/lib/server/stripe";
 
 export const runtime = "nodejs";
 
@@ -12,36 +13,45 @@ function jsonError(status: number, code: string, message: string) {
 }
 
 export async function POST(request: Request) {
+  if (!isStripeSubscriptionCheckoutReady()) {
+    console.error("[subscription:create-checkout] stripe_not_configured");
+    return jsonError(
+      503,
+      "CHECKOUT_CONFIG_ERROR",
+      "Subscription checkout is not configured on the server yet.",
+    );
+  }
+
   const auth = await requireVerifiedApiUser();
   if (!auth.ok) return jsonError(auth.status, "AUTH_REQUIRED", auth.message);
 
-  const access = await getLearnerAccessStatus(auth.userId);
-  if (access.hasPremiumAccess) {
-    return jsonError(409, "ALREADY_SUBSCRIBED", "You already have active access.");
-  }
-  if (access.isGraduated) {
-    return jsonError(403, "GRADUATED", "Graduate accounts cannot start a new subscription.");
-  }
-
-  let returnPath = "/subscribe/success";
-  let promoCode: string | undefined;
-  let premiumInviteToken: string | undefined;
   try {
-    const body = (await request.json()) as {
-      returnPath?: string;
-      promoCode?: string;
-      premiumInvite?: string;
-    };
-    if (body.returnPath?.startsWith("/") && !body.returnPath.startsWith("//")) {
-      returnPath = body.returnPath;
+    const access = await getLearnerAccessStatus(auth.userId);
+    if (access.hasPremiumAccess) {
+      return jsonError(409, "ALREADY_SUBSCRIBED", "You already have active access.");
     }
-    if (body.promoCode?.trim()) promoCode = body.promoCode.trim();
-    if (body.premiumInvite?.trim()) premiumInviteToken = body.premiumInvite.trim();
-  } catch {
-    /* default return path */
-  }
+    if (access.isGraduated) {
+      return jsonError(403, "GRADUATED", "Graduate accounts cannot start a new subscription.");
+    }
 
-  try {
+    let returnPath = "/subscribe/success";
+    let promoCode: string | undefined;
+    let premiumInviteToken: string | undefined;
+    try {
+      const body = (await request.json()) as {
+        returnPath?: string;
+        promoCode?: string;
+        premiumInvite?: string;
+      };
+      if (body.returnPath?.startsWith("/") && !body.returnPath.startsWith("//")) {
+        returnPath = body.returnPath;
+      }
+      if (body.promoCode?.trim()) promoCode = body.promoCode.trim();
+      if (body.premiumInvite?.trim()) premiumInviteToken = body.premiumInvite.trim();
+    } catch {
+      /* default return path */
+    }
+
     let stripePromotionCodeId: string | undefined;
     let promoMetadata: { adminPromoCodeId?: string; adminPremiumInviteId?: string } | undefined;
 
@@ -67,10 +77,12 @@ export async function POST(request: Request) {
       stripePromotionCodeId,
       promoMetadata,
     });
-    if (!session.url) return jsonError(500, "STRIPE_SESSION_ERROR", "Could not create checkout session");
+    if (!session.url) {
+      return jsonError(500, "STRIPE_SESSION_ERROR", "Could not create checkout session.");
+    }
     return NextResponse.json({ success: true as const, url: session.url, sessionId: session.id });
   } catch (e) {
-    console.error("[subscription:create-checkout]", e);
-    return jsonError(500, "CHECKOUT_FAILED", "Checkout is temporarily unavailable.");
+    const mapped = checkoutErrorResponse(e);
+    return jsonError(mapped.status, mapped.code, mapped.message);
   }
 }

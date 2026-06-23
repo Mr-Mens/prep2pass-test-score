@@ -36,26 +36,63 @@ export function getStripeConfig() {
   };
 }
 
+export function stripeKeyMode(): "live" | "test" | "unknown" {
+  const secret = process.env.STRIPE_SECRET_KEY?.trim() ?? "";
+  if (secret.startsWith("sk_live_")) return "live";
+  if (secret.startsWith("sk_test_")) return "test";
+  return "unknown";
+}
+
 export function isStripeSubscriptionCheckoutReady(): boolean {
   const secret = process.env.STRIPE_SECRET_KEY?.trim() ?? "";
-  const price =
-    process.env.STRIPE_PRICE_ID_SUBSCRIPTION?.trim() ||
-    process.env.STRIPE_PRICE_ID_LIFETIME?.trim() ||
-    process.env.STRIPE_PRICE_ID?.trim() ||
-    "";
+  const price = process.env.STRIPE_PRICE_ID_SUBSCRIPTION?.trim() ?? "";
   return secret.startsWith("sk_") && price.startsWith("price_");
 }
 
 function subscriptionPriceId(): string {
-  const id =
-    process.env.STRIPE_PRICE_ID_SUBSCRIPTION ||
-    process.env.STRIPE_PRICE_ID_LIFETIME ||
-    process.env.STRIPE_PRICE_ID ||
-    "";
+  const id = process.env.STRIPE_PRICE_ID_SUBSCRIPTION?.trim() ?? "";
   if (!id.startsWith("price_")) {
     throw new Error("STRIPE_PRICE_ID_SUBSCRIPTION is not configured");
   }
   return id;
+}
+
+/** Confirms the subscription price exists on the same Stripe account/mode as the secret key. */
+export async function assertSubscriptionPriceAvailable(): Promise<void> {
+  const stripe = getStripeServerClient();
+  const priceId = subscriptionPriceId();
+  const keyMode = stripeKeyMode();
+
+  let price: Stripe.Price;
+  try {
+    price = await stripe.prices.retrieve(priceId);
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError && error.code === "resource_missing") {
+      console.error("[checkout] subscription_price_missing", {
+        priceId,
+        keyMode,
+        stripeCode: error.code,
+        stripeMessage: error.message,
+      });
+      throw new Error("STRIPE_SUBSCRIPTION_PRICE_NOT_FOUND");
+    }
+    throw error;
+  }
+
+  const priceMode = price.livemode ? "live" : "test";
+  if (keyMode !== "unknown" && priceMode !== keyMode) {
+    console.error("[checkout] subscription_price_mode_mismatch", {
+      priceId,
+      keyMode,
+      priceMode,
+    });
+    throw new Error("STRIPE_SUBSCRIPTION_PRICE_MODE_MISMATCH");
+  }
+
+  if (!price.active) {
+    console.error("[checkout] subscription_price_inactive", { priceId, keyMode, priceMode });
+    throw new Error("STRIPE_SUBSCRIPTION_PRICE_INACTIVE");
+  }
 }
 
 function legacyPriceIdForTier(tier: "single" | "lifetime"): string {
@@ -88,6 +125,8 @@ export async function createSubscriptionCheckoutSession(params: {
     adminPremiumInviteId?: string;
   };
 }) {
+  await assertSubscriptionPriceAvailable();
+
   const stripe = getStripeServerClient();
   const config = getStripeConfig();
   const priceId = subscriptionPriceId();

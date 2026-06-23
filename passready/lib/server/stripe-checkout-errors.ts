@@ -12,9 +12,19 @@ export function checkoutErrorResponse(error: unknown): {
     console.error("[checkout] stripe_error", {
       type: error.type,
       code,
+      param: error.param,
       message: error.message,
     });
     if (code === "resource_missing") {
+      const param = error.param ?? "";
+      if (param.includes("promotion_code")) {
+        return {
+          status: 400,
+          code: "INVALID_PROMO",
+          message:
+            "That promo code is not valid for checkout right now. Remove it and try again, or contact support.",
+        };
+      }
       return {
         status: 500,
         code: "STRIPE_SESSION_ERROR",
@@ -50,6 +60,30 @@ export function checkoutErrorResponse(error: unknown): {
         status: 503,
         code: "CHECKOUT_CONFIG_ERROR",
         message: "We could not reach the database. Please try again shortly.",
+      };
+    }
+    if (error.message === "STRIPE_SUBSCRIPTION_PRICE_NOT_FOUND") {
+      return {
+        status: 503,
+        code: "CHECKOUT_CONFIG_ERROR",
+        message:
+          "Checkout is unavailable because subscription pricing is not set up correctly in Stripe. Please contact support.",
+      };
+    }
+    if (error.message === "STRIPE_SUBSCRIPTION_PRICE_MODE_MISMATCH") {
+      return {
+        status: 503,
+        code: "CHECKOUT_CONFIG_ERROR",
+        message:
+          "Checkout is unavailable because subscription pricing is not set up correctly in Stripe. Please contact support.",
+      };
+    }
+    if (error.message === "STRIPE_SUBSCRIPTION_PRICE_INACTIVE") {
+      return {
+        status: 503,
+        code: "CHECKOUT_CONFIG_ERROR",
+        message:
+          "Checkout is unavailable because subscription pricing is not set up correctly in Stripe. Please contact support.",
       };
     }
     if (

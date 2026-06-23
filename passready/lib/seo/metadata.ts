@@ -1,9 +1,27 @@
 import type { Metadata } from "next";
 
-import { PRODUCT, SITE_DEFAULT_DESCRIPTION, SITE_META_TITLE, SOCIAL_BANNER } from "@/lib/constants";
+import { PRODUCT, SITE_DEFAULT_DESCRIPTION, SITE_META_TITLE, SITE_SOCIAL_DESCRIPTION, SOCIAL_BANNER } from "@/lib/constants";
 
 import { SEO_KEYWORDS } from "./keywords";
 import { absoluteUrl, getSiteUrl } from "./site-url";
+
+/** Target length for og:description and twitter:description in link previews. */
+const SOCIAL_DESCRIPTION_MAX = 110;
+
+function truncateForSocialPreview(text: string): string {
+  const normalized = text.trim().replace(/\s+/g, " ");
+  if (normalized.length <= SOCIAL_DESCRIPTION_MAX) return normalized;
+  const trimmed = normalized.slice(0, SOCIAL_DESCRIPTION_MAX);
+  const lastSpace = trimmed.lastIndexOf(" ");
+  const cut = lastSpace > 48 ? trimmed.slice(0, lastSpace) : trimmed;
+  return `${cut.trimEnd()}…`;
+}
+
+function openGraphDescription(description: string, ogDescription?: string): string {
+  if (ogDescription) return ogDescription;
+  if (description === SITE_DEFAULT_DESCRIPTION) return SITE_SOCIAL_DESCRIPTION;
+  return truncateForSocialPreview(description);
+}
 
 /** Routes that should appear in sitemap.xml and be indexable by default. */
 export const PUBLIC_SITEMAP_PATHS = [
@@ -37,6 +55,8 @@ const openGraphImages: NonNullable<Metadata["openGraph"]>["images"] = [
 type BuildPageMetadataInput = {
   title: string;
   description?: string;
+  /** Overrides truncated description for Open Graph / Twitter only. */
+  ogDescription?: string;
   path: string;
   keywords?: string[];
   index?: boolean;
@@ -46,6 +66,7 @@ type BuildPageMetadataInput = {
 
 export function buildPageMetadata(input: BuildPageMetadataInput): Metadata {
   const description = input.description ?? SITE_DEFAULT_DESCRIPTION;
+  const socialDescription = openGraphDescription(description, input.ogDescription);
   const canonical = absoluteUrl(input.path);
   const index = input.index !== false;
   const title = input.absoluteTitle ? { absolute: input.title } : input.title;
@@ -57,7 +78,7 @@ export function buildPageMetadata(input: BuildPageMetadataInput): Metadata {
     alternates: { canonical },
     openGraph: {
       title: input.title,
-      description,
+      description: socialDescription,
       url: canonical,
       type: input.ogType ?? "website",
       locale: "en_GB",
@@ -67,7 +88,7 @@ export function buildPageMetadata(input: BuildPageMetadataInput): Metadata {
     twitter: {
       card: "summary_large_image",
       title: input.title,
-      description,
+      description: socialDescription,
       images: [SOCIAL_BANNER.src],
     },
     robots: index ? { index: true, follow: true } : ROBOTS_PRIVATE,
@@ -90,7 +111,7 @@ export function buildRootMetadata(): Metadata {
     },
     openGraph: {
       title: SITE_META_TITLE,
-      description: SITE_DEFAULT_DESCRIPTION,
+      description: SITE_SOCIAL_DESCRIPTION,
       url: absoluteUrl("/"),
       type: "website",
       locale: "en_GB",
@@ -100,7 +121,7 @@ export function buildRootMetadata(): Metadata {
     twitter: {
       card: "summary_large_image",
       title: SITE_META_TITLE,
-      description: SITE_DEFAULT_DESCRIPTION,
+      description: SITE_SOCIAL_DESCRIPTION,
       images: [SOCIAL_BANNER.src],
     },
     robots: {

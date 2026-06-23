@@ -36,12 +36,17 @@ export const SOCIAL_BANNER = {
   src: "/social-banner/og.png",
   width: 1200,
   height: 630,
-  alt: "Pass Pilot — Helping Learners, instructors and Parents/Supervisors",
+  alt: "Pass Pilot — Helping learners, instructors and parents/supervisors",
 } as const;
 
 export const SITE_DEFAULT_DESCRIPTION = PRODUCT.altTagline;
 
-export const SITE_META_TITLE = `${PRODUCT.name} | ${PRODUCT.altTagline}` as const;
+/** Short copy for Open Graph / Twitter / link previews (~1–1.5 lines). */
+export const SITE_SOCIAL_DESCRIPTION =
+  "Helping learners, instructors and parents/supervisors." as const;
+
+/** Link-preview title — shortest brand form. */
+export const SITE_META_TITLE = `${PRODUCT.name} | ${PRODUCT.tagline}` as const;
 
 /** Branded call-to-action copy, prefer these over generic “assessment” wording. */
 export const BRAND_CTA = {

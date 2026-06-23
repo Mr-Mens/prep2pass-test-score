@@ -4,14 +4,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/Button";
-import { PRICING, SMART_UI } from "@/lib/constants";
-
-const benefits = [
-  `Unlimited Pass Pilot Score assessments`,
-  "Learning Journey tracking",
-  SMART_UI.personalisedReports,
-  SMART_UI.insights,
-] as const;
+import { PREMIUM_SUBSCRIPTION_BENEFIT_GROUPS, PRICING } from "@/lib/constants";
 
 type Props = {
   initialPromoCode?: string;
@@ -73,9 +66,9 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
   const hasInvite = Boolean(premiumInvite);
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
-      <section className="rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/80 via-white to-brand-50/50 p-8 shadow-card ring-1 ring-teal-100">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Learner platform access</p>
+    <div className="mx-auto max-w-xl space-y-6">
+      <section className="rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/80 via-white to-brand-50/50 p-6 shadow-card ring-1 ring-teal-100 sm:p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Premium trial</p>
         <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-brand-950">
           {PRICING.subscription.display}
           <span className="ml-2 text-lg font-medium text-brand-500">/ month</span>
@@ -83,7 +76,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
         <p className="mt-3 text-sm leading-relaxed text-brand-700">{PRICING.subscription.trialMessage}</p>
         <p className="mt-2 text-xs leading-relaxed text-brand-600">
           {PRICING.subscription.trialDays}-day free trial, then {PRICING.subscription.display}/month until you pass or
-          cancel.
+          cancel. Graduate Mode stops billing when you pass.
         </p>
 
         {hasInvite ? (
@@ -100,24 +93,35 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
               value={manualPromo}
               onChange={(e) => setManualPromo(e.target.value.toUpperCase())}
               placeholder="e.g. PILOT20-ABC123"
-              className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 text-sm font-mono uppercase"
+              className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 font-mono text-sm uppercase"
             />
           </div>
         )}
 
-        <ul className="mt-6 space-y-3 text-sm text-brand-800">
-          {benefits.map((b) => (
-            <li key={b} className="flex gap-3">
-              <span className="font-semibold text-teal-700" aria-hidden>
-                ✓
-              </span>
-              {b}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-5 text-xs leading-relaxed text-brand-500">
-          Billing continues until you cancel or record your practical test pass (Graduate Mode). Instructors and supervisors
-          use Pass Pilot free forever.
+        <div className="mt-8">
+          <h2 className="text-sm font-semibold text-brand-950">Everything included with Premium</h2>
+          <div className="mt-4 space-y-5">
+            {PREMIUM_SUBSCRIPTION_BENEFIT_GROUPS.map((group) => (
+              <div key={group.title}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{group.title}</p>
+                <ul className="mt-2 space-y-2 text-sm leading-relaxed text-brand-800">
+                  {group.items.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span className="mt-0.5 shrink-0 font-semibold text-teal-700" aria-hidden>
+                        ✓
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-brand-500">
+          Instructors and parent supervisors use Pass Pilot free. Learner billing continues until you cancel or record your
+          practical test pass.
         </p>
         {error ? (
           <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">

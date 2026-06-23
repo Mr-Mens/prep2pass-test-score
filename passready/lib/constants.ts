@@ -114,6 +114,41 @@ export const PRICING = {
   },
 } as const;
 
+/** Grouped copy for subscribe / trial upsell (learner Premium). */
+export const PREMIUM_SUBSCRIPTION_BENEFIT_GROUPS = [
+  {
+    title: "Score & Smart Reports",
+    items: [
+      `Unlimited ${PRODUCT.score} assessments`,
+      `${SMART_UI.personalisedReports} with coach notes and syllabus context`,
+      `${SMART_UI.debriefs}, test risks, and ${SMART_UI.recommendations.toLowerCase()}`,
+      `${SMART_UI.insights} and ${PREMIUM_MEMBER_UI.journey} timeline`,
+    ],
+  },
+  {
+    title: "Lessons & mock tests",
+    items: [
+      "Lesson history with your instructor",
+      "Lesson reflections after each session",
+      "Mock test reports delivered to your account",
+    ],
+  },
+  {
+    title: "Parent & supervisor support",
+    items: [
+      "Parent and supervisor connections",
+      "Shared reports and progress for practice between lessons",
+    ],
+  },
+  {
+    title: "Your workspace",
+    items: [
+      "Full learner dashboard and resources",
+      "Instructor link, notifications, and progress tracking",
+    ],
+  },
+] as const;
+
 /** @deprecated use PRICING.single.display */
 export const PREMIUM_PRICE = PRICING.single.display;
 

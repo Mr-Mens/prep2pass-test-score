@@ -7,8 +7,9 @@ import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { getServerAuthUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Subscribe · Pass Pilot",
-  description: `£6.99/month for unlimited assessments, Smart Reports, and progress tracking.`,
+  title: "Start Premium trial · Pass Pilot",
+  description:
+    "7-day free trial: unlimited Test Ready Scores, Smart Reports, lessons, reflections, mock test reports, parent connections, and full learner dashboard.",
 };
 
 function SubscribeLoading() {

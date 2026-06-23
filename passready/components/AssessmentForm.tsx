@@ -167,6 +167,8 @@ export type AssessmentFormProps = {
   hasLifetimeAccess?: boolean;
   /** When the free assessment was already used, show the post-assessment screen instead of the form */
   initialPreview?: ScorePreview | null;
+  /** Lift the mobile submit bar above LearnerChrome bottom tabs */
+  stackAboveMobileNav?: boolean;
 };
 
 export function AssessmentForm({
@@ -174,6 +176,7 @@ export function AssessmentForm({
   prefilledFullName,
   hasLifetimeAccess = false,
   initialPreview = null,
+  stackAboveMobileNav = false,
 }: AssessmentFormProps = {}) {
   const router = useRouter();
   const submitLock = useRef(false);
@@ -371,11 +374,18 @@ export function AssessmentForm({
     }
   }
 
+  const mobileScrollPadClass = stackAboveMobileNav
+    ? "pb-[calc(11rem+env(safe-area-inset-bottom))]"
+    : "pb-[calc(7.25rem+env(safe-area-inset-bottom))]";
+  const mobileStickyBarClass = stackAboveMobileNav
+    ? "bottom-[calc(3.75rem+env(safe-area-inset-bottom))]"
+    : "bottom-0";
+
   function renderPostAssessmentPreview() {
     if (!preview) return null;
 
     return (
-      <div className="space-y-6 pb-[calc(7.25rem+env(safe-area-inset-bottom))] sm:space-y-8 md:pb-0">
+      <div className={`space-y-6 sm:space-y-8 md:pb-0 ${mobileScrollPadClass}`}>
         <section className="rounded-2xl border border-brand-200/80 bg-white p-5 shadow-card ring-1 ring-black/[0.02] sm:p-8">
           <p className="text-center text-[11px] font-semibold uppercase tracking-[0.13em] text-brand-500 sm:text-left">
             {PRODUCT.score}
@@ -478,7 +488,7 @@ export function AssessmentForm({
     <form
       id="pass-pilot-assessment"
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 pb-[calc(7.25rem+env(safe-area-inset-bottom))] sm:space-y-10 md:pb-0"
+      className={`space-y-6 sm:space-y-10 md:pb-0 ${mobileScrollPadClass}`}
     >
       <fieldset className={sectionBox}>
         <SectionHeader
@@ -885,8 +895,12 @@ export function AssessmentForm({
       </div>
 
       <div
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden"
-        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        className={`fixed inset-x-0 z-40 border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`}
+        style={{
+          paddingBottom: stackAboveMobileNav
+            ? "0.75rem"
+            : "max(0.75rem, env(safe-area-inset-bottom))",
+        }}
       >
         {submitError ? (
           <p className="mb-2 text-center text-xs font-medium text-red-800">{submitError}</p>

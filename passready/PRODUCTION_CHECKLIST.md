@@ -102,7 +102,7 @@ Auth flows that land on `/auth/callback`:
 
 ### Dashboard → Authentication → Hooks → Send Email (required for branded auth emails)
 
-By default Supabase sends verification and password reset emails from its own mailer (`noreply@mail.app.supabase.io`). Pass Pilot routes auth emails through **Resend** when this hook is enabled.
+Pass Pilot auth emails (signup confirm, password reset) link **directly** to `https://thepasspilot.com/auth/callback?token_hash=…&type=…` — not via `supabase.co/auth/v1/verify`. The callback exchanges the token and signs the user in server-side.
 
 - [ ] Hook type: **HTTPS**
 - [ ] Hook URL: `https://thepasspilot.com/api/auth/hook/send-email`

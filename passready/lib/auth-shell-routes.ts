@@ -10,6 +10,7 @@ export function isStandaloneAuthRoute(pathname: string): boolean {
     path.startsWith("/signup") ||
     path.startsWith("/forgot-password") ||
     path.startsWith("/reset-password") ||
-    path.startsWith("/verify-email")
+    path.startsWith("/verify-email") ||
+    path.startsWith("/auth/confirmed")
   );
 }

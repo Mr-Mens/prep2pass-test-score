@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
-import { authResumePath } from "@/lib/auth/post-auth-destination";
+import { authConfirmedPath } from "@/lib/auth/post-auth-destination";
 import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
 import { autoAcceptPupilInviteByToken } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
@@ -18,9 +18,9 @@ function safeContinuePath(raw: unknown): string | null {
   return trimmed;
 }
 
-function destinationAfterAuth(user: { user_metadata?: Record<string, unknown> } | null): string {
+function destinationAfterSignupConfirm(user: { user_metadata?: Record<string, unknown> } | null): string {
   const continuePath = safeContinuePath(user?.user_metadata?.post_auth_continue);
-  return continuePath ? authResumePath(continuePath) : "/auth/resume";
+  return authConfirmedPath(continuePath);
 }
 
 function parseOtpType(raw: string | null): EmailOtpType | null {
@@ -44,6 +44,24 @@ function redirectWithCookies(origin: string, path: string, cookiesToSet: Pending
     response.cookies.set(name, value, options);
   });
   return response;
+}
+
+async function verifyOtpWithFallback(
+  supabase: ReturnType<typeof createServerClient>,
+  tokenHash: string,
+  otpType: EmailOtpType,
+): Promise<Error | null> {
+  const attempts: EmailOtpType[] = [otpType];
+  if (otpType === "signup") attempts.push("email");
+  if (otpType === "email") attempts.push("signup");
+
+  let lastError: Error | null = null;
+  for (const type of attempts) {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+    if (!error) return null;
+    lastError = error;
+  }
+  return lastError;
 }
 
 /** First email confirmation after signup, assign self-service role from signup metadata only. */
@@ -83,10 +101,9 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) authError = error;
+    authError = error;
   } else if (tokenHash && otpType) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType });
-    if (error) authError = error;
+    authError = await verifyOtpWithFallback(supabase, tokenHash, otpType);
   }
 
   if (authError) {
@@ -101,6 +118,10 @@ export async function GET(request: NextRequest) {
   if (!user?.id) {
     console.error("[auth/callback] no_user_after_exchange");
     return redirectWithCookies(origin, "/verify-email?error=callback", pendingCookies);
+  }
+
+  if (otpType === "recovery") {
+    return redirectWithCookies(origin, "/reset-password", pendingCookies);
   }
 
   await assignInitialRoleFromSignupMetadata(
@@ -122,5 +143,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return redirectWithCookies(origin, destinationAfterAuth(user), pendingCookies);
+  return redirectWithCookies(origin, destinationAfterSignupConfirm(user), pendingCookies);
 }

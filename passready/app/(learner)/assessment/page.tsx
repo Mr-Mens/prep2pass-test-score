@@ -198,6 +198,7 @@ export default async function AssessmentPage() {
             prefilledFullName={isConfirmedLearner ? firstNameHint || undefined : undefined}
             hasLifetimeAccess={hasLifetimeAccess}
             initialPreview={initialPreview}
+            stackAboveMobileNav={isConfirmedLearner}
           />
         ) : (
           <section className="rounded-2xl border border-brand-200 bg-white p-6 text-center shadow-sm">

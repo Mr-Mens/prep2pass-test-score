@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
+import { getPublicAppOrigin } from "@/lib/auth/public-app-origin";
 import { authCallbackRedirectUrl } from "@/lib/auth/post-auth-destination";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import { isSelfServiceAppRole } from "@/lib/auth/self-service-roles";
@@ -94,7 +95,7 @@ export function SignupFlow() {
     setBusy(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const origin = window.location.origin;
+      const origin = getPublicAppOrigin();
       const { error } = await supabase.auth.signUp({
         email: em,
         password,

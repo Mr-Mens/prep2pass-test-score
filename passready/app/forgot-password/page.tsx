@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { AuthScreenChrome } from "@/components/auth/AuthScreenChrome";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
+import { authCallbackRedirectUrl } from "@/lib/auth/post-auth-destination";
+import { getPublicAppOrigin } from "@/lib/auth/public-app-origin";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
@@ -20,9 +22,9 @@ export default function ForgotPasswordPage() {
     setBusy(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const origin = window.location.origin;
+      const origin = getPublicAppOrigin();
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: `${origin}/auth/callback?next=/reset-password`,
+        redirectTo: authCallbackRedirectUrl(origin),
       });
       if (error) {
         setMsg(describeAuthEmailError(error, "password_reset"));

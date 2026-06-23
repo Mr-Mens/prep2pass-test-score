@@ -1,3 +1,5 @@
+import { getPublicAppOrigin } from "@/lib/auth/public-app-origin";
+
 import type { UserAppRole } from "@/lib/instructor/types";
 
 export function dashboardPathForAppRole(role: UserAppRole): "/dashboard" | "/instructor" | "/supervisor" {
@@ -18,7 +20,22 @@ export function authResumePath(continuePath?: string | null): string {
   return "/auth/resume";
 }
 
+/** Shown immediately after the user confirms their email — clear success before entering the app. */
+export function authConfirmedPath(continuePath?: string | null): string {
+  const q = new URLSearchParams();
+  if (
+    typeof continuePath === "string" &&
+    continuePath.startsWith("/") &&
+    !continuePath.startsWith("//")
+  ) {
+    q.set("continue", continuePath);
+  }
+  const query = q.toString();
+  return query ? `/auth/confirmed?${query}` : "/auth/confirmed";
+}
+
 /** Must match Supabase Auth → URL configuration redirect allow list exactly (no query string). */
-export function authCallbackRedirectUrl(origin: string): string {
-  return `${origin.replace(/\/$/, "")}/auth/callback`;
+export function authCallbackRedirectUrl(origin?: string): string {
+  const base = (origin ?? getPublicAppOrigin()).replace(/\/$/, "");
+  return `${base}/auth/callback`;
 }

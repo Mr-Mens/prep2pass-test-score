@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
 import { authCallbackRedirectUrl } from "@/lib/auth/post-auth-destination";
+import { getPublicAppOrigin } from "@/lib/auth/public-app-origin";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import type { UserAppRole } from "@/lib/instructor/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -105,7 +106,7 @@ export function VerifyEmailFlow() {
     setBusy(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const origin = window.location.origin;
+      const origin = getPublicAppOrigin();
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,

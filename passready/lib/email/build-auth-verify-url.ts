@@ -1,21 +1,28 @@
 import "server-only";
 
-/** Supabase Auth verification link (used in custom send-email hook emails). */
+import { getAppUrlForEmail } from "@/lib/email/app-url";
+
+/**
+ * Direct app callback link for auth emails (signup confirm, password reset, etc.).
+ * Avoids Supabase /auth/v1/verify → redirect_to, which falls back to Site URL when redirect_to fails allow-list checks.
+ */
+export function buildAuthConfirmCallbackUrl(input: {
+  token_hash: string;
+  email_action_type: string;
+}): string {
+  const params = new URLSearchParams({
+    token_hash: input.token_hash,
+    type: input.email_action_type,
+  });
+  return `${getAppUrlForEmail()}/auth/callback?${params.toString()}`;
+}
+
+/** @deprecated Use buildAuthConfirmCallbackUrl — kept for imports during transition. */
 export function buildSupabaseAuthVerifyUrl(input: {
   token_hash: string;
   email_action_type: string;
   redirect_to: string;
 }): string {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim().replace(/\/$/, "");
-  if (!supabaseUrl) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL is not configured");
-  }
-
-  const params = new URLSearchParams({
-    token: input.token_hash,
-    type: input.email_action_type,
-    redirect_to: input.redirect_to,
-  });
-
-  return `${supabaseUrl}/auth/v1/verify?${params.toString()}`;
+  void input.redirect_to;
+  return buildAuthConfirmCallbackUrl(input);
 }

@@ -20,7 +20,16 @@ export async function GET(request: NextRequest) {
   const user = await getServerAuthUser();
 
   if (!user) {
-    return redirect(origin, `/welcome`);
+    const continueRaw = request.nextUrl.searchParams.get("continue");
+    const q = new URLSearchParams({ error: "session" });
+    if (
+      typeof continueRaw === "string" &&
+      continueRaw.startsWith("/") &&
+      !continueRaw.startsWith("//")
+    ) {
+      q.set("continue", continueRaw);
+    }
+    return redirect(origin, `/auth/confirmed?${q.toString()}`);
   }
 
   if (!user.emailConfirmedAt) {

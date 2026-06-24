@@ -5,7 +5,7 @@ import { requireVerifiedApiUser } from "@/lib/server/api-auth";
 import { sendGraduateConfirmationEmail } from "@/lib/email/templates/graduate-confirmation";
 import { lookupUserContact } from "@/lib/server/lookup-user-contact";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
-import { markReferralPassed } from "@/lib/server/repositories/referrals-repository";
+import { markReferralGraduated } from "@/lib/server/repositories/referrals-repository";
 import { recordGraduation } from "@/lib/server/repositories/graduations-repository";
 import { cancelSubscriptionImmediately, getSubscriptionByUserId } from "@/lib/server/repositories/subscriptions-repository";
 import { cancelStripeSubscription } from "@/lib/server/stripe";
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       certificateStoragePath: parsed.data.certificateStoragePath ?? null,
     });
 
-    await markReferralPassed(auth.userId);
+    await markReferralGraduated(auth.userId);
 
     try {
       const contact = await lookupUserContact(auth.userId);

@@ -20,6 +20,9 @@ export function isMissingCommercialTableError(error: DbError): boolean {
 export const COMMERCIAL_MIGRATION_HINT =
   "Run supabase/migrations/010_commercial_model_v1.sql in the Supabase SQL Editor.";
 
+export const COMMISSION_MIGRATION_HINT =
+  "Run supabase/migrations/021_instructor_referral_commissions.sql in the Supabase SQL Editor.";
+
 export const PROMO_MIGRATION_HINT =
   "Run supabase/migrations/014_admin_promo_invites.sql in the Supabase SQL Editor, then reload the API schema cache in Supabase (Settings → API).";
 

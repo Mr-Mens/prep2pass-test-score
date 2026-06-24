@@ -4,12 +4,17 @@ import { getAppUrlForEmail } from "@/lib/email/app-url";
 import { renderPassPilotEmailLayout, stripHtmlToText } from "@/lib/email/layout";
 import { sendEmail } from "@/lib/email/resend";
 
-export function buildPupilInviteAcceptUrl(inviteToken: string, hasExistingAccount: boolean): string {
+export function buildPupilInviteAcceptUrl(
+  inviteToken: string,
+  hasExistingAccount: boolean,
+  referralId?: string | null,
+): string {
   const appUrl = getAppUrlForEmail();
   if (hasExistingAccount) {
     return `${appUrl}/login?next=${encodeURIComponent("/dashboard")}`;
   }
   const q = new URLSearchParams({ invite: inviteToken, next: "/dashboard" });
+  if (referralId?.trim()) q.set("referral", referralId.trim());
   return `${appUrl}/signup?${q.toString()}`;
 }
 
@@ -18,9 +23,10 @@ export async function sendInstructorPupilInviteEmail(input: {
   pupilName: string;
   instructorName: string;
   inviteToken: string;
+  referralId?: string | null;
   hasExistingAccount: boolean;
 }): Promise<void> {
-  const acceptUrl = buildPupilInviteAcceptUrl(input.inviteToken, input.hasExistingAccount);
+  const acceptUrl = buildPupilInviteAcceptUrl(input.inviteToken, input.hasExistingAccount, input.referralId);
   const instructorName = input.instructorName.trim() || "Your instructor";
 
   const bodyHtml = input.hasExistingAccount

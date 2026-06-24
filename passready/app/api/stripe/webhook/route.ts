@@ -9,6 +9,7 @@ import {
 } from "@/lib/server/repositories/payments-repository";
 import {
   handleInvoicePaid,
+  handleInvoicePaymentSucceeded,
   handleSubscriptionCheckoutCompleted,
   handleSubscriptionDeleted,
   handleSubscriptionUpdated,
@@ -65,6 +66,10 @@ export async function POST(request: Request) {
 
     if (event.type === "invoice.paid") {
       await handleInvoicePaid(event.data.object as Stripe.Invoice);
+    }
+
+    if (event.type === "invoice.payment_succeeded") {
+      await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
     }
 
     if (event.type === "customer.subscription.updated") {

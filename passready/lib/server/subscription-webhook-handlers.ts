@@ -2,16 +2,17 @@ import "server-only";
 
 import type Stripe from "stripe";
 
-import {
-  activateReferralOnSubscription,
-  processReferralSubscriptionPayment,
-} from "@/lib/server/repositories/referrals-repository";
 import { sendSubscriptionConfirmationEmail } from "@/lib/email/templates/subscription-confirmation";
 import { lookupUserContact } from "@/lib/server/lookup-user-contact";
+import { recordInstructorCommissionOnInvoicePaid } from "@/lib/server/repositories/instructor-commissions-repository";
 import {
   incrementAdminPromoRedemption,
   markAdminPremiumInviteRedeemed,
 } from "@/lib/server/repositories/admin-promo-repository";
+import {
+  markReferralCancelled,
+  prepareReferralForSubscription,
+} from "@/lib/server/repositories/referrals-repository";
 import {
   mapStripeSubscriptionStatus,
   subscriptionPeriodDates,
@@ -56,16 +57,18 @@ export async function handleSubscriptionCheckoutCompleted(session: Stripe.Checko
   const stripe = await import("@/lib/server/stripe").then((m) => m.getStripeServerClient());
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   await syncSubscriptionFromStripe(subscription);
-  await activateReferralOnSubscription(userId);
+
+  const contact = await lookupUserContact(userId);
+  const pupilEmail =
+    (typeof session.customer_email === "string" && session.customer_email.trim()) || contact.email || undefined;
+  await prepareReferralForSubscription(userId, pupilEmail);
 
   const promoCodeId = session.metadata?.admin_promo_code_id;
   const inviteId = session.metadata?.admin_premium_invite_id;
   if (promoCodeId) await incrementAdminPromoRedemption(promoCodeId);
   if (inviteId) await markAdminPremiumInviteRedeemed(inviteId, userId);
 
-  const contact = await lookupUserContact(userId);
-  const toEmail =
-    (typeof session.customer_email === "string" && session.customer_email.trim()) || contact.email;
+  const toEmail = pupilEmail;
   if (toEmail) {
     try {
       await sendSubscriptionConfirmationEmail({
@@ -85,18 +88,30 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> 
 
   const stripe = await import("@/lib/server/stripe").then((m) => m.getStripeServerClient());
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  await syncSubscriptionFromStripe(subscription);
+}
+
+export async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
+  const subscriptionId =
+    typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id ?? null;
+  if (!subscriptionId || invoice.status !== "paid") return;
+
+  const stripe = await import("@/lib/server/stripe").then((m) => m.getStripeServerClient());
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const userId = await syncSubscriptionFromStripe(subscription);
   if (!userId) return;
 
-  const { start, end } = subscriptionPeriodDates(subscription);
-  const isFirstPaidInvoice = invoice.billing_reason === "subscription_create";
+  const amountPaid = invoice.amount_paid ?? 0;
+  if (amountPaid <= 0) return;
 
-  await processReferralSubscriptionPayment({
-    pupilId: userId,
+  const paidAtSeconds = invoice.status_transitions?.paid_at ?? invoice.created;
+  await recordInstructorCommissionOnInvoicePaid({
+    learnerId: userId,
     stripeInvoiceId: invoice.id,
-    periodStart: start ?? undefined,
-    periodEnd: end ?? undefined,
-    isFirstPaidInvoice,
+    stripeSubscriptionId: subscriptionId,
+    amountPaidMinor: amountPaid,
+    currency: invoice.currency ?? "gbp",
+    earnedAt: new Date(paidAtSeconds * 1000),
   });
 }
 
@@ -110,4 +125,9 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     status: "canceled",
     cancelAtPeriodEnd: false,
   });
+
+  const userId = metadataUserId(subscription.metadata);
+  if (userId) {
+    await markReferralCancelled(userId);
+  }
 }

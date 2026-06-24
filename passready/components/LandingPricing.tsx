@@ -93,7 +93,7 @@ export function LandingPricing({ hideLearnerCard = false }: Props) {
           ))}
         </ul>
         <p className="mt-4 text-xs leading-relaxed text-brand-500">
-          Referral payout tracking available for instructors. Payouts coming soon.
+          Earn 15% recurring commission from referred learner subscriptions. Payouts are manual from £20.
         </p>
         <div className="mt-8 border-t border-brand-100 pt-8">
           <Button href="/welcome" variant="secondary" className="w-full">

@@ -107,12 +107,14 @@ export async function createPupilInvite(input: {
     });
   }
 
-  await upsertReferralForPupilInvite({
+  const referral = await upsertReferralForPupilInvite({
     instructorId: input.instructorUserId,
     pupilLinkId: pupil.id,
     pupilEmail: email,
+    inviteToken: pupil.invite_token,
   }).catch(() => {
     /* referral tables optional until migration 010 */
+    return null;
   });
 
   const inviteToken = pupil.invite_token?.trim();
@@ -124,6 +126,7 @@ export async function createPupilInvite(input: {
         pupilName: pupil.pupil_name,
         instructorName,
         inviteToken,
+        referralId: referral?.id,
         hasExistingAccount: Boolean(proposedLearnerId),
       });
     } catch (e) {
@@ -258,12 +261,17 @@ export async function autoAcceptPupilInviteByToken(input: {
   });
 }
 
-export async function getPupilInviteSignupUrl(pupilLinkId: string, origin: string): Promise<string | null> {
+export async function getPupilInviteSignupUrl(
+  pupilLinkId: string,
+  origin: string,
+  referralId?: string | null,
+): Promise<string | null> {
   const pupil = await getPupilLinkById(pupilLinkId);
   if (!pupil) return null;
   const token = pupil.invite_token?.trim();
   if (!token) return null;
   const q = new URLSearchParams({ invite: token, next: "/dashboard" });
+  if (referralId?.trim()) q.set("referral", referralId.trim());
   return `${origin}/signup?${q.toString()}`;
 }
 

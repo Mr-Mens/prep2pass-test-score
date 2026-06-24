@@ -129,6 +129,7 @@ Run all migrations in order in **Supabase → SQL Editor** (or via CLI):
 | 008 | `008_learner_mock_test_deliveries.sql` | Mock test deliveries |
 | 009 | `009_weak_area_details.sql` | Weak area details |
 | 010 | `010_commercial_model_v1.sql` | Subscriptions, referrals, graduate mode |
+| 021 | `021_instructor_referral_commissions.sql` | 15% referral commissions + manual payout requests |
 | 013 | `013_teaching_diagrams.sql` | Teaching diagrams |
 | 014 | `014_admin_promo_invites.sql` | Admin promo codes + premium invites |
 
@@ -180,9 +181,10 @@ https://thepasspilot.com/api/stripe/webhook
 | Event | Handler purpose |
 |-------|-----------------|
 | `checkout.session.completed` | Subscription start, legacy one-off payments, lifetime entitlement |
-| `invoice.paid` | Renewal sync + referral payouts |
+| `invoice.paid` | Subscription renewal sync |
+| `invoice.payment_succeeded` | 15% instructor referral commission on successful learner payments |
 | `customer.subscription.updated` | Status changes (active, past_due, etc.) |
-| `customer.subscription.deleted` | Cancellation sync |
+| `customer.subscription.deleted` | Cancellation sync + referral status cancelled |
 
 Copy the endpoint **Signing secret** → `STRIPE_WEBHOOK_SECRET`.
 

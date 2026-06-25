@@ -159,6 +159,16 @@ function getCellFromPayload(payload: MockTestFormPayload, compositeId: string): 
   return getCell(block as Record<string, unknown>, rowId);
 }
 
+function appendFaultFocus(message: string, entries: MockTestRiskAreaEntry[], limit = 3): string {
+  if (entries.length === 0) return message;
+  const named = entries
+    .slice(0, limit)
+    .map((entry) => entry.displayLabel)
+    .join("; ");
+  const extra = entries.length > limit ? ` (+${entries.length - limit} more)` : "";
+  return `${message} Focus on: ${named}${extra}.`;
+}
+
 export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshold: number): MockTestSummary {
   const agg = aggregateFaultCounts(payload);
   const scoredRows: { id: string; sectionTitle: string; score: number; marks: FaultMarks }[] = [];
@@ -196,20 +206,30 @@ export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshol
 
   const suggestedFocus: string[] = [];
   if (topRiskAreas.dangerous.length) {
-    suggestedFocus.push("Address dangerous faults before the next mock.");
+    suggestedFocus.push(
+      appendFaultFocus("Address dangerous faults before the next mock.", topRiskAreas.dangerous),
+    );
   }
   if (topRiskAreas.serious.length) {
-    suggestedFocus.push("Review serious faults with your pupil on the next lesson.");
+    suggestedFocus.push(
+      appendFaultFocus("Review serious faults with your pupil on the next lesson.", topRiskAreas.serious),
+    );
   }
   if (topRiskAreas.driving.length) {
-    suggestedFocus.push(`Reduce repeat driving faults in ${topRiskAreas.driving[0]?.sectionTitle ?? "weak areas"}.`);
+    const weightedDriving = topRiskAreas.driving.filter((entry) => entry.minorCount >= 2);
+    const drivingFocus = weightedDriving.length > 0 ? weightedDriving : topRiskAreas.driving;
+    suggestedFocus.push(
+      appendFaultFocus("Review driving faults with your pupil on the next lesson.", drivingFocus),
+    );
   } else if (weakCategories.length) {
     suggestedFocus.push(`Stabilise ${weakCategories[0]} routines first.`);
   }
   if (agg.minorFaultCount > Math.floor(minorThreshold * 0.7) && agg.seriousFaultCount + agg.dangerousFaultCount === 0) {
     suggestedFocus.push("Fault count is approaching typical threshold. Tighten consistency.");
   }
-  if (payload.instructorNotes.trim()) suggestedFocus.push("Use instructor notes below for lesson themes.");
+  if (payload.instructorNotes.trim()) {
+    suggestedFocus.push("Use instructor notes below for lesson themes.");
+  }
 
   return {
     totalMinors: agg.minorFaultCount,
@@ -224,12 +244,11 @@ export function buildMockTestSummary(payload: MockTestFormPayload, minorThreshol
   };
 }
 
-/** Recompute summary when stored JSON predates topRiskAreas grouping. */
+/** Always derive summary from the current payload so fault lists stay in sync after saves. */
 export function resolveMockTestSummary(
   payload: MockTestFormPayload,
   minorThreshold: number,
-  stored?: MockTestSummary | null,
+  _stored?: MockTestSummary | null,
 ): MockTestSummary {
-  if (stored?.topRiskAreas) return stored;
   return buildMockTestSummary(payload, minorThreshold);
 }

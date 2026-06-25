@@ -25,6 +25,10 @@ export function normalizeFaultCell(raw: unknown): { minorCount: number; serious:
   return { minorCount: 0, serious: false, dangerous: false };
 }
 
+export function hasFaultMarks(m: { minorCount: number; serious: boolean; dangerous: boolean }): boolean {
+  return m.minorCount > 0 || m.serious || m.dangerous;
+}
+
 const faultCellSchema = z.preprocess(
   (raw) => normalizeFaultCell(raw),
   z.object({
@@ -43,15 +47,24 @@ function migratePositioningRows(o: Record<string, unknown>) {
   const core = { ...(pc as Record<string, unknown>) };
   for (const rowId of LEGACY_POSITIONING_ROW_IDS) {
     if (!(rowId in core)) continue;
+
+    const coreMarks = normalizeFaultCell(core[rowId]);
     const targetSection = LEGACY_POSITIONING_ROW_TO_SECTION[rowId];
     const existing = o[targetSection];
     const target =
       existing && typeof existing === "object" && !Array.isArray(existing)
         ? { ...(existing as Record<string, unknown>) }
         : {};
+    const targetMarks = normalizeFaultCell(target[rowId]);
+
+    delete core[rowId];
+
+    // Empty legacy cells must not overwrite faults saved in the split section (e.g. useOfSpeed).
+    if (!hasFaultMarks(coreMarks)) continue;
+    if (hasFaultMarks(targetMarks)) continue;
+
     target[rowId] = core[rowId];
     o[targetSection] = target;
-    delete core[rowId];
   }
   o.positioningCore = core;
 }

@@ -12,10 +12,18 @@ export function AuthScreenChrome({ children }: { children: ReactNode }) {
       <div className="mx-auto w-full max-w-lg">
         <Link
           href="/welcome"
-          className="mb-10 block rounded-xl outline-none ring-teal-600 ring-offset-2 focus-visible:ring-2"
+          className="mb-10 block rounded-xl text-center outline-none ring-teal-600 ring-offset-2 focus-visible:ring-2"
           aria-label={`${PRODUCT.name} welcome`}
         >
           <BrandLogo variant="auth" />
+          <p className="sr-only">{PRODUCT.name}</p>
+          <p
+            className="mt-3 font-heading text-xl font-semibold tracking-tight text-brand-950"
+            aria-hidden="true"
+          >
+            <span className="text-brand-900">Pass</span>{" "}
+            <span className="text-teal-700">Pilot</span>
+          </p>
         </Link>
         {children}
       </div>

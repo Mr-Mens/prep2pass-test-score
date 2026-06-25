@@ -11,15 +11,33 @@ export class EmailNotConfiguredError extends Error {
 
 let cachedResend: Resend | null = null;
 
+/** RFC 5322: display names with spaces must be quoted or clients may show only "Pilot". */
+export function normalizeEmailFromHeader(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+
+  const angleMatch = trimmed.match(/^([^<]+)<([^>]+)>$/);
+  if (!angleMatch) return trimmed;
+
+  const displayName = angleMatch[1].trim().replace(/^["']|["']$/g, "");
+  const address = angleMatch[2].trim();
+  if (!displayName) return address;
+  if (displayName.startsWith('"') && displayName.endsWith('"')) {
+    return `${displayName} <${address}>`;
+  }
+  const escaped = displayName.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `"${escaped}" <${address}>`;
+}
+
 export function getEmailFromAddress(): string {
   const from = process.env.EMAIL_FROM?.trim();
-  if (from) return from;
+  if (from) return normalizeEmailFromHeader(from);
   const legacy = process.env.REPORT_ACCESS_FROM_EMAIL?.trim();
-  if (legacy) return legacy;
+  if (legacy) return normalizeEmailFromHeader(legacy);
   if (process.env.NODE_ENV === "production") {
     throw new EmailNotConfiguredError("EMAIL_FROM is not configured");
   }
-  return "Pass Pilot <onboarding@resend.dev>";
+  return '"Pass Pilot" <onboarding@resend.dev>';
 }
 
 function getResendApiKey(): string | null {

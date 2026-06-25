@@ -56,7 +56,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** for *
 |----------|---------------|
 | `ADMIN_ACCESS_KEY` | Admin dashboard (`/admin`) and `/api/admin/*` — use a long random secret; prefer header auth over query param |
 | `RESEND_API_KEY` | App-generated transactional emails (invites, mock tests, subscription/graduate confirmations, **auth emails via hook**) |
-| `EMAIL_FROM` | Verified sender in Resend (e.g. `Pass Pilot <hello@thepasspilot.com>`) |
+| `EMAIL_FROM` | Verified sender in Resend (e.g. `"Pass Pilot" <hello@thepasspilot.com>` — quotes required) |
 | `SUPABASE_AUTH_SEND_EMAIL_HOOK_SECRET` | Supabase Auth Send Email hook secret (after enabling hook in dashboard) |
 
 ### Optional / legacy

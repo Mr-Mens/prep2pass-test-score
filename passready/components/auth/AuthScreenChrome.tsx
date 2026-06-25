@@ -6,7 +6,13 @@ import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { PRODUCT } from "@/lib/constants";
 
-export function AuthScreenChrome({ children }: { children: ReactNode }) {
+type Props = {
+  children: ReactNode;
+  /** When false, show logo only (no Pass / Pilot wordmark). */
+  showWordmark?: boolean;
+};
+
+export function AuthScreenChrome({ children, showWordmark = true }: Props) {
   return (
     <div className="flex flex-col px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-12">
       <div className="mx-auto w-full max-w-lg">
@@ -16,14 +22,17 @@ export function AuthScreenChrome({ children }: { children: ReactNode }) {
           aria-label={`${PRODUCT.name} welcome`}
         >
           <BrandLogo variant="auth" />
-          <p className="sr-only">{PRODUCT.name}</p>
-          <p
-            className="mt-3 font-heading text-xl font-semibold tracking-tight text-brand-950"
-            aria-hidden="true"
-          >
-            <span className="text-brand-900">Pass</span>{" "}
-            <span className="text-teal-700">Pilot</span>
-          </p>
+          {showWordmark ? (
+            <p
+              className="mt-3 font-heading text-xl font-semibold tracking-tight text-brand-950"
+              aria-hidden="true"
+            >
+              <span className="text-brand-900">Pass</span>{" "}
+              <span className="text-teal-700">Pilot</span>
+            </p>
+          ) : (
+            <span className="sr-only">{PRODUCT.name}</span>
+          )}
         </Link>
         {children}
       </div>

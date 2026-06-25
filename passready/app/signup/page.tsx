@@ -14,7 +14,7 @@ function SignupLoading() {
 
 export default function SignupPage() {
   return (
-    <AuthScreenChrome>
+    <AuthScreenChrome showWordmark={false}>
       <Suspense fallback={<SignupLoading />}>
         <SignupFlow />
       </Suspense>

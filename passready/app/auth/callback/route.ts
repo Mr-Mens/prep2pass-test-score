@@ -3,9 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
-import { authConfirmedPath } from "@/lib/auth/post-auth-destination";
+import { authResumePath } from "@/lib/auth/post-auth-destination";
 import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
 import { autoAcceptPupilInviteByToken } from "@/lib/server/repositories/instructor-pupil-link-repository";
+import { syncUserProfileFromSignupMetadata } from "@/lib/server/repositories/user-profiles-repository";
 import { ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/url";
 
@@ -20,7 +21,7 @@ function safeContinuePath(raw: unknown): string | null {
 
 function destinationAfterSignupConfirm(user: { user_metadata?: Record<string, unknown> } | null): string {
   const continuePath = safeContinuePath(user?.user_metadata?.post_auth_continue);
-  return authConfirmedPath(continuePath);
+  return authResumePath(continuePath);
 }
 
 function parseOtpType(raw: string | null): EmailOtpType | null {
@@ -128,6 +129,15 @@ export async function GET(request: NextRequest) {
     user.id,
     user.user_metadata as Record<string, unknown> | undefined,
   );
+
+  try {
+    await syncUserProfileFromSignupMetadata(
+      user.id,
+      user.user_metadata as Record<string, unknown> | undefined,
+    );
+  } catch (e) {
+    console.error("[auth/callback] profile_sync_failed", e);
+  }
 
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const inviteToken = typeof meta?.pending_invite_token === "string" ? meta.pending_invite_token.trim() : "";

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { resolveProfileFirstName } from "@/lib/profile/resolve-display-name";
+import { getUserProfile } from "@/lib/server/repositories/user-profiles-repository";
 import { getSupabaseServerClient } from "@/lib/server/supabase";
 
 export async function lookupUserContact(userId: string): Promise<{
@@ -12,8 +14,8 @@ export async function lookupUserContact(userId: string): Promise<{
     return { email: null, firstName: null };
   }
   const meta = data.user.user_metadata as Record<string, unknown> | undefined;
-  const firstRaw = meta?.first_name;
-  const firstName = typeof firstRaw === "string" && firstRaw.trim() ? firstRaw.trim() : null;
+  const profile = await getUserProfile(userId);
+  const firstName = resolveProfileFirstName(profile, meta) || null;
   const email = data.user.email?.trim().toLowerCase() ?? null;
   return { email, firstName };
 }

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { detectLoginIntentMismatch, loginIntentRoleFromContinue } from "@/lib/auth/login-intent";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
 import { resolvePostAuthDestination } from "@/lib/auth/resolve-post-auth-destination";
+import { syncUserProfileFromSignupMetadata } from "@/lib/server/repositories/user-profiles-repository";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -21,19 +22,33 @@ export async function GET(request: NextRequest) {
 
   if (!user) {
     const continueRaw = request.nextUrl.searchParams.get("continue");
-    const q = new URLSearchParams({ error: "session" });
+    const q = new URLSearchParams();
     if (
       typeof continueRaw === "string" &&
       continueRaw.startsWith("/") &&
       !continueRaw.startsWith("//")
     ) {
-      q.set("continue", continueRaw);
+      q.set("next", continueRaw);
     }
-    return redirect(origin, `/auth/confirmed?${q.toString()}`);
+    const query = q.toString();
+    return redirect(origin, query ? `/login?${query}` : "/login");
   }
 
   if (!user.emailConfirmedAt) {
     return redirect(origin, `/verify-email?next=${encodeURIComponent("/auth/resume")}`);
+  }
+
+  try {
+    const supabase = createSupabaseServerClient();
+    const {
+      data: { user: raw },
+    } = await supabase.auth.getUser();
+    await syncUserProfileFromSignupMetadata(
+      user.id,
+      raw?.user_metadata as Record<string, unknown> | undefined,
+    );
+  } catch (e) {
+    console.warn("[auth/resume] profile_sync_failed", e);
   }
 
   const continueRaw = request.nextUrl.searchParams.get("continue");

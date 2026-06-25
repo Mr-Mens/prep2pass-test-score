@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
-import { authCallbackRedirectUrl } from "@/lib/auth/post-auth-destination";
+import { authCallbackRedirectUrl, authResumePath } from "@/lib/auth/post-auth-destination";
 import { getPublicAppOrigin } from "@/lib/auth/public-app-origin";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
 import type { UserAppRole } from "@/lib/instructor/types";
@@ -16,7 +16,7 @@ const VERIFY_HEADING = "Check your inbox";
 
 const VERIFY_INTRO: Record<UserAppRole, string> = {
   learner:
-    "We sent a confirmation link to your email. Open it to finish setting up your account. Your reports stay saved and only you can open them.",
+    "We sent a confirmation link to your email. Open it and you'll go straight into Pass Pilot — no need to sign in again.",
   instructor:
     "We sent a confirmation link to your email. Open it to finish setting up your instructor account.",
   parent:
@@ -30,6 +30,7 @@ function parseEmailParam(raw: string | null): string | null {
 }
 
 export function VerifyEmailFlow() {
+  const router = useRouter();
   const params = useSearchParams();
 
   const continueSafe = useMemo(() => {
@@ -92,6 +93,23 @@ export function VerifyEmailFlow() {
       cancelled = true;
     };
   }, [emailFromUrl]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (cancelled || !user?.email_confirmed_at) return;
+      router.replace(authResumePath(continueSafe));
+      router.refresh();
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [continueSafe, router]);
 
   const displayEmail = resolvedEmail ?? parseEmailParam(manualEmail);
 

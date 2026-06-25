@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LearnerSignOutButton } from "@/components/learner/LearnerSignOutButton";
+import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { SITE } from "@/lib/constants";
+import { resolveProfileDisplayName } from "@/lib/profile/resolve-display-name";
+import { getUserProfile } from "@/lib/server/repositories/user-profiles-repository";
+import { requireParentSession } from "@/lib/server/supervisor-page-auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -44,17 +48,16 @@ function MenuRow({ href, title, hint }: MenuRowProps) {
 }
 
 export default async function SupervisorAccountPage() {
+  const user = await requireParentSession();
+  const profile = await getUserProfile(user.id);
+
   const sb = createSupabaseServerClient();
   const {
     data: { user: raw },
   } = await sb.auth.getUser();
 
   const meta = raw?.user_metadata as Record<string, unknown> | undefined;
-  const displayNameRaw =
-    (typeof meta?.first_name === "string" && meta.first_name.trim()) ||
-    (typeof meta?.full_name === "string" && meta.full_name.trim()) ||
-    (typeof meta?.firstName === "string" && meta.firstName.trim()) ||
-    "";
+  const displayNameRaw = resolveProfileDisplayName(profile, meta);
 
   const initials = accountInitials(displayNameRaw, raw?.email);
   const greetingName = displayNameRaw || "Supervisor";
@@ -86,6 +89,8 @@ export default async function SupervisorAccountPage() {
             progress, and practice notes.
           </p>
         </div>
+
+        <ProfileEditForm role="parent" initialProfile={profile} email={raw?.email ?? user.email} />
       </section>
 
       <nav

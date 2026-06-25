@@ -32,7 +32,7 @@ export function EmailConfirmedFlow({ signedIn, email, firstName }: Props) {
     return `/login?next=${encodeURIComponent(continuePath)}`;
   }, [continuePath]);
 
-  const [secondsLeft, setSecondsLeft] = useState(5);
+  const [secondsLeft, setSecondsLeft] = useState(1);
 
   useEffect(() => {
     if (!signedIn) return;
@@ -43,7 +43,7 @@ export function EmailConfirmedFlow({ signedIn, email, firstName }: Props) {
 
     const redirect = window.setTimeout(() => {
       router.replace(continueHref);
-    }, 5000);
+    }, 800);
 
     return () => {
       window.clearInterval(tick);

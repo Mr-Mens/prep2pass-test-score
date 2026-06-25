@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { SubscribeFlow } from "@/components/SubscribeFlow";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
-import { getServerAuthUser } from "@/lib/supabase/server";
+import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
 
 export const metadata: Metadata = {
   title: "Start Premium trial · Pass Pilot",
@@ -21,7 +21,7 @@ function SubscribeLoading() {
 }
 
 export default async function SubscribePage() {
-  const user = (await getServerAuthUser())!;
+  const user = await requireAuthenticatedSession("/subscribe");
   const access = await getLearnerAccessStatus(user.id);
   if (access.hasPremiumAccess) redirect("/dashboard");
   if (access.isGraduated) redirect("/graduate");

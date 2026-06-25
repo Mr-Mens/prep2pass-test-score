@@ -3,8 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LearnerSignOutButton } from "@/components/learner/LearnerSignOutButton";
+import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, PRODUCT, SITE, SMART_UI } from "@/lib/constants";
+import { resolveProfileDisplayName } from "@/lib/profile/resolve-display-name";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
+import { getUserProfile } from "@/lib/server/repositories/user-profiles-repository";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -56,6 +59,7 @@ export default async function LearnerAccountPage() {
   if (role === "instructor") redirect("/instructor/settings");
 
   const entitlements = await getEntitlementLookupForUser(user.id);
+  const profile = await getUserProfile(user.id);
 
   const sb = createSupabaseServerClient();
   const {
@@ -63,11 +67,7 @@ export default async function LearnerAccountPage() {
   } = await sb.auth.getUser();
 
   const meta = raw?.user_metadata as Record<string, unknown> | undefined;
-  const displayNameRaw =
-    (typeof meta?.first_name === "string" && meta.first_name.trim()) ||
-    (typeof meta?.full_name === "string" && meta.full_name.trim()) ||
-    (typeof meta?.firstName === "string" && meta.firstName.trim()) ||
-    "";
+  const displayNameRaw = resolveProfileDisplayName(profile, meta);
 
   const initials = accountInitials(displayNameRaw, raw?.email);
   const greetingName = displayNameRaw || "Learner";
@@ -131,6 +131,8 @@ export default async function LearnerAccountPage() {
             </div>
           </div>
         </div>
+
+        <ProfileEditForm role="learner" initialProfile={profile} email={raw?.email ?? user.email} />
       </section>
 
       <nav

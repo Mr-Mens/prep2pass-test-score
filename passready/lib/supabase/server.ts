@@ -37,6 +37,11 @@ export type ServerAuthUser = {
 };
 
 function firstNameFromMetadata(meta: Record<string, unknown> | undefined): string {
+  const full =
+    (typeof meta?.full_name === "string" && meta.full_name.trim()) ||
+    (typeof meta?.fullName === "string" && meta.fullName.trim()) ||
+    "";
+  if (full) return full.split(/\s+/)[0] ?? full;
   return (
     (typeof meta?.first_name === "string" && meta.first_name.trim()) ||
     (typeof meta?.firstName === "string" && meta.firstName.trim()) ||

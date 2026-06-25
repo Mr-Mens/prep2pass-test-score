@@ -27,7 +27,7 @@ export default async function AuthConfirmedPage() {
     <AuthScreenChrome>
       <Suspense fallback={<ConfirmedLoading />}>
         <EmailConfirmedFlow
-          signedIn={Boolean(user?.emailConfirmedAt)}
+          signedIn={Boolean(user)}
           email={user?.email ?? null}
           firstName={user?.firstName ?? null}
         />

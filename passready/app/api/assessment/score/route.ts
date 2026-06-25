@@ -33,6 +33,7 @@ export async function POST(request: Request) {
 
     const parsed = assessmentDataSchema.safeParse(body);
     if (!parsed.success) {
+      console.warn("[assessment:score] validation_failed", parsed.error.flatten());
       return jsonError(400, "VALIDATION_ERROR", "Assessment payload failed validation");
     }
 
@@ -63,12 +64,16 @@ export async function POST(request: Request) {
     });
 
     if (!access.hasPremiumAccess) {
-      await recordFreeAssessmentUsed({
-        userId: auth.userId,
-        score: result.readinessScore,
-        label: result.readinessLabel,
-        assessmentData: parsed.data as Record<string, unknown>,
-      });
+      try {
+        await recordFreeAssessmentUsed({
+          userId: auth.userId,
+          score: result.readinessScore,
+          label: result.readinessLabel,
+          assessmentData: parsed.data as Record<string, unknown>,
+        });
+      } catch (recordError) {
+        console.error("[assessment:score] record_free_assessment_failed", recordError);
+      }
     }
 
     return NextResponse.json({
@@ -76,7 +81,8 @@ export async function POST(request: Request) {
       assessment,
       result,
     });
-  } catch {
+  } catch (error) {
+    console.error("[assessment:score] failed", error);
     return jsonError(500, "INTERNAL_ERROR", "Unable to score assessment right now");
   }
 }

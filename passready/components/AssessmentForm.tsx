@@ -16,7 +16,6 @@ import {
   saveScoredAssessment,
 } from "@/lib/storage";
 import {
-  assessmentDataSchema,
   assessmentSchema,
   type AssessmentFormValues,
   type AssessmentPayload,
@@ -276,7 +275,7 @@ export function AssessmentForm({
     submitLock.current = true;
     setSubmitError(null);
     try {
-      const parsed = assessmentDataSchema.safeParse(values);
+      const parsed = assessmentSchema.safeParse(values);
       if (!parsed.success) {
         setSubmitError("Please review your answers and try again.");
         return;

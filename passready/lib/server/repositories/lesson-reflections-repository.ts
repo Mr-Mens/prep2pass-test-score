@@ -35,7 +35,8 @@ export async function listLessonReflectionsForLearner(
 
   if (error) {
     if (isMissingReflectionTableError(error)) return [];
-    throw new Error(error.message);
+    console.warn("[lesson_reflections] list_for_learner_failed", error.message);
+    return [];
   }
   return (data ?? []).map((row) => mapReflectionRow(row as LessonReflectionRow));
 }

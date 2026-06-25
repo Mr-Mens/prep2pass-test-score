@@ -35,8 +35,12 @@ export async function scoreAssessment(
 ): Promise<ScoreAssessmentResult> {
   let reflectionScoreAdjustment = 0;
   if (options.userId) {
-    const reflections = await listLessonReflectionsForLearner(options.userId, 20);
-    reflectionScoreAdjustment = computeReflectionScoreAdjustment(reflections);
+    try {
+      const reflections = await listLessonReflectionsForLearner(options.userId, 20);
+      reflectionScoreAdjustment = computeReflectionScoreAdjustment(reflections);
+    } catch (error) {
+      console.warn("[assessment] reflection_adjustment_skipped", error);
+    }
   }
 
   const deterministic = computeMockReadiness({

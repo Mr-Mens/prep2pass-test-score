@@ -37,7 +37,7 @@ export async function getLifetimeAccessByUserId(userId: string): Promise<boolean
 
   if (error) {
     console.error("[entitlements] getLifetimeAccessByUserId failed", error.message);
-    throw new Error("Failed to read entitlements");
+    return false;
   }
   const row = data as { lifetime_access: boolean } | null;
   return row?.lifetime_access === true;

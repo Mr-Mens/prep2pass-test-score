@@ -15,8 +15,8 @@ export async function getGraduationByUserId(userId: string): Promise<LearnerGrad
   const { data, error } = await supabase.from("learner_graduations").select("*").eq("user_id", userId).maybeSingle();
   if (error) {
     if (isMissingCommercialTableError(error)) return null;
-    console.error("[graduations] getGraduationByUserId failed", error.message);
-    throw new Error("Failed to read graduation record");
+    console.warn("[graduations] getGraduationByUserId failed", error.message);
+    return null;
   }
   return data as LearnerGraduationRow | null;
 }

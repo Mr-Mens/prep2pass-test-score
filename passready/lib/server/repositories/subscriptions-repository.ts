@@ -22,8 +22,8 @@ export async function getSubscriptionByUserId(userId: string): Promise<UserSubsc
   const { data, error } = await supabase.from("user_subscriptions").select("*").eq("user_id", userId).maybeSingle();
   if (error) {
     if (isMissingCommercialTableError(error)) return null;
-    console.error("[subscriptions] getSubscriptionByUserId failed", error.message);
-    throw new Error("Failed to read subscription");
+    console.warn("[subscriptions] getSubscriptionByUserId failed", error.message);
+    return null;
   }
   return data as UserSubscriptionRow | null;
 }

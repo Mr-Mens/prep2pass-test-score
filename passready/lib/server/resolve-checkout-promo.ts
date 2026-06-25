@@ -5,17 +5,30 @@ import {
   getAdminPremiumInviteByToken,
   getAdminPromoCodeByCode,
   getAdminPromoCodeById,
+  isDiscountPromotion,
   isPromoCodeUsable,
+  isTrialExtensionPromotion,
   resolvePremiumInviteStatus,
 } from "@/lib/server/repositories/admin-promo-repository";
 
-export type ResolvedCheckoutPromo = {
+export type ResolvedDiscountPromo = {
+  type: "discount";
   promoCodeId: string;
   stripePromotionCodeId: string;
   inviteId?: string;
   discountPercent: number;
   code: string;
 };
+
+export type ResolvedTrialPromo = {
+  type: "trial_extension";
+  promoCodeId: string;
+  trialDays: number;
+  inviteId?: string;
+  code: string;
+};
+
+export type ResolvedCheckoutPromo = ResolvedDiscountPromo | ResolvedTrialPromo;
 
 export async function resolveCheckoutPromo(params: {
   email: string;
@@ -51,16 +64,34 @@ export async function resolveCheckoutPromo(params: {
 
     const promo = await getAdminPromoCodeById(invite.promo_code_id);
     if (!promo || !isPromoCodeUsable(promo)) {
-      return { ok: false, message: "The discount on this invite is no longer available." };
+      return { ok: false, message: "The promotion on this invite is no longer available." };
+    }
+
+    if (isTrialExtensionPromotion(promo)) {
+      return {
+        ok: true,
+        promo: {
+          type: "trial_extension",
+          promoCodeId: promo.id,
+          trialDays: promo.trial_days!,
+          inviteId: invite.id,
+          code: promo.code,
+        },
+      };
+    }
+
+    if (!isDiscountPromotion(promo)) {
+      return { ok: false, message: "The promotion on this invite is not valid." };
     }
 
     return {
       ok: true,
       promo: {
+        type: "discount",
         promoCodeId: promo.id,
-        stripePromotionCodeId: promo.stripe_promotion_code_id,
+        stripePromotionCodeId: promo.stripe_promotion_code_id!,
         inviteId: invite.id,
-        discountPercent: promo.discount_percent,
+        discountPercent: promo.discount_percent!,
         code: promo.code,
       },
     };
@@ -77,12 +108,29 @@ export async function resolveCheckoutPromo(params: {
     return { ok: false, message: "This promo code is expired or no longer available." };
   }
 
+  if (isTrialExtensionPromotion(promo)) {
+    return {
+      ok: true,
+      promo: {
+        type: "trial_extension",
+        promoCodeId: promo.id,
+        trialDays: promo.trial_days!,
+        code: promo.code,
+      },
+    };
+  }
+
+  if (!isDiscountPromotion(promo)) {
+    return { ok: false, message: "This promo code is not valid." };
+  }
+
   return {
     ok: true,
     promo: {
+      type: "discount",
       promoCodeId: promo.id,
-      stripePromotionCodeId: promo.stripe_promotion_code_id,
-      discountPercent: promo.discount_percent,
+      stripePromotionCodeId: promo.stripe_promotion_code_id!,
+      discountPercent: promo.discount_percent!,
       code: promo.code,
     },
   };

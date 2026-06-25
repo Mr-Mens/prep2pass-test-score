@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { AdminPayoutRequestsPanel } from "@/components/admin/AdminPayoutRequestsPanel";
 import { AdminPremiumInvitesPanel } from "@/components/admin/AdminPremiumInvitesPanel";
-import { AdminPromoCodesPanel } from "@/components/admin/AdminPromoCodesPanel";
+import { AdminPromotionsPanel } from "@/components/admin/AdminPromotionsPanel";
 import { AdminAnalyticsPanel } from "@/components/admin/AdminAnalyticsPanel";
 import { Button } from "@/components/Button";
 
@@ -12,7 +12,7 @@ type Tab = "analytics" | "promos" | "invites" | "payouts";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "analytics", label: "Analytics" },
-  { id: "promos", label: "Promo codes" },
+  { id: "promos", label: "Promotions" },
   { id: "invites", label: "Premium invites" },
   { id: "payouts", label: "Payout requests" },
 ];
@@ -82,7 +82,7 @@ export function AdminDashboardView() {
           </div>
 
           {tab === "analytics" ? <AdminAnalyticsPanel adminKey={activeKey} onLoadingChange={setLoading} /> : null}
-          {tab === "promos" ? <AdminPromoCodesPanel adminKey={activeKey} /> : null}
+          {tab === "promos" ? <AdminPromotionsPanel adminKey={activeKey} /> : null}
           {tab === "invites" ? <AdminPremiumInvitesPanel adminKey={activeKey} /> : null}
           {tab === "payouts" ? <AdminPayoutRequestsPanel adminKey={activeKey} /> : null}
         </>

@@ -23,8 +23,47 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
   );
 
   const [manualPromo, setManualPromo] = useState(promoCode);
+  const [promoPreview, setPromoPreview] = useState<string | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function validatePromoCode(code: string) {
+    const trimmed = code.trim();
+    if (!trimmed) {
+      setPromoPreview(null);
+      return;
+    }
+    setValidatingPromo(true);
+    try {
+      const res = await fetch("/api/subscription/validate-promo", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ promoCode: trimmed }),
+      });
+      const json = (await res.json()) as {
+        success?: boolean;
+        promotion?: { summary: string; type: string; trialDays?: number | null };
+        error?: { message?: string };
+      };
+      if (!res.ok || !json.success || !json.promotion) {
+        setPromoPreview(null);
+        setError(json.error?.message ?? "Promotion code is not valid.");
+        return;
+      }
+      setError(null);
+      if (json.promotion.type === "trial_extension" && json.promotion.trialDays) {
+        setPromoPreview(`${json.promotion.summary} will be applied at checkout.`);
+      } else {
+        setPromoPreview(`${json.promotion.summary} will be applied at checkout.`);
+      }
+    } catch {
+      setPromoPreview(null);
+    } finally {
+      setValidatingPromo(false);
+    }
+  }
 
   async function startCheckout() {
     setBusy(true);
@@ -75,8 +114,8 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-brand-700">{PRICING.subscription.trialMessage}</p>
         <p className="mt-2 text-xs leading-relaxed text-brand-600">
-          {PRICING.subscription.trialDays}-day free trial, then {PRICING.subscription.display}/month until you pass or
-          cancel. Graduate Mode stops billing when you pass.
+          {PRICING.subscription.trialDays}-day free trial by default, then {PRICING.subscription.display}/month until you
+          pass or cancel. Trial extension codes can give you longer. Graduate Mode stops billing when you pass.
         </p>
 
         {hasInvite ? (
@@ -86,15 +125,24 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
         ) : (
           <div className="mt-4">
             <label className="text-sm font-medium text-brand-900" htmlFor="subscribe-promo">
-              Promo code (optional)
+              Promotion code (optional)
             </label>
             <input
               id="subscribe-promo"
               value={manualPromo}
-              onChange={(e) => setManualPromo(e.target.value.toUpperCase())}
-              placeholder="e.g. PILOT20-ABC123"
+              onChange={(e) => {
+                setManualPromo(e.target.value.toUpperCase());
+                setPromoPreview(null);
+              }}
+              onBlur={() => void validatePromoCode(manualPromo)}
+              placeholder="e.g. PILOT20-ABC123 or TRIAL21-ABC123"
               className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 font-mono text-sm uppercase"
             />
+            {validatingPromo ? (
+              <p className="mt-2 text-xs text-brand-500">Checking code…</p>
+            ) : promoPreview ? (
+              <p className="mt-2 text-xs text-teal-800">{promoPreview}</p>
+            ) : null}
           </div>
         )}
 

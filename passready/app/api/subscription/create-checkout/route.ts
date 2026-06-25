@@ -53,7 +53,15 @@ export async function POST(request: Request) {
     }
 
     let stripePromotionCodeId: string | undefined;
-    let promoMetadata: { adminPromoCodeId?: string; adminPremiumInviteId?: string } | undefined;
+    let trialPeriodDays: number | undefined;
+    let promoMetadata:
+      | {
+          adminPromoCodeId?: string;
+          adminPremiumInviteId?: string;
+          promotionType?: "discount" | "trial_extension";
+          trialDays?: number;
+        }
+      | undefined;
 
     if (promoCode || premiumInviteToken) {
       const resolved = await resolveCheckoutPromo({
@@ -62,11 +70,19 @@ export async function POST(request: Request) {
         premiumInviteToken,
       });
       if (!resolved.ok) return jsonError(400, "INVALID_PROMO", resolved.message);
-      stripePromotionCodeId = resolved.promo.stripePromotionCodeId;
+
       promoMetadata = {
         adminPromoCodeId: resolved.promo.promoCodeId,
         ...(resolved.promo.inviteId ? { adminPremiumInviteId: resolved.promo.inviteId } : {}),
+        promotionType: resolved.promo.type,
       };
+
+      if (resolved.promo.type === "discount") {
+        stripePromotionCodeId = resolved.promo.stripePromotionCodeId;
+      } else {
+        trialPeriodDays = resolved.promo.trialDays;
+        promoMetadata.trialDays = resolved.promo.trialDays;
+      }
     }
 
     const session = await createSubscriptionCheckoutSession({
@@ -75,6 +91,7 @@ export async function POST(request: Request) {
       returnPath,
       cancelPath: "/subscribe",
       stripePromotionCodeId,
+      trialPeriodDays,
       promoMetadata,
     });
     if (!session.url) {

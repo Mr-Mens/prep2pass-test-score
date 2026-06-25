@@ -153,9 +153,12 @@ export async function createSubscriptionCheckoutSession(params: {
   returnPath?: string;
   cancelPath?: string;
   stripePromotionCodeId?: string;
+  trialPeriodDays?: number;
   promoMetadata?: {
     adminPromoCodeId?: string;
     adminPremiumInviteId?: string;
+    promotionType?: "discount" | "trial_extension";
+    trialDays?: number;
   };
 }) {
   await assertSubscriptionPriceAvailable();
@@ -165,6 +168,7 @@ export async function createSubscriptionCheckoutSession(params: {
   const priceId = subscriptionPriceId();
   const returnPath = params.returnPath ?? "/checkout/success";
   const cancelPath = params.cancelPath ?? "/assessment";
+  const trialPeriodDays = params.trialPeriodDays ?? PRICING.subscription.trialDays;
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -176,12 +180,23 @@ export async function createSubscriptionCheckoutSession(params: {
     payment_method_collection: "always",
     ...(params.stripePromotionCodeId
       ? { discounts: [{ promotion_code: params.stripePromotionCodeId }] }
-      : { allow_promotion_codes: true }),
+      : params.promoMetadata?.adminPromoCodeId
+        ? {}
+        : { allow_promotion_codes: true }),
     subscription_data: {
-      trial_period_days: PRICING.subscription.trialDays,
+      trial_period_days: trialPeriodDays,
       description: `${SITE.name}: ${PRICING.subscription.label}`,
       metadata: {
         supabase_user_id: params.userId,
+        ...(params.promoMetadata?.adminPromoCodeId
+          ? { admin_promo_code_id: params.promoMetadata.adminPromoCodeId }
+          : {}),
+        ...(params.promoMetadata?.promotionType
+          ? { promotion_type: params.promoMetadata.promotionType }
+          : {}),
+        ...(params.promoMetadata?.trialDays != null
+          ? { promotion_trial_days: String(params.promoMetadata.trialDays) }
+          : {}),
       },
     },
     metadata: {
@@ -194,6 +209,12 @@ export async function createSubscriptionCheckoutSession(params: {
         : {}),
       ...(params.promoMetadata?.adminPremiumInviteId
         ? { admin_premium_invite_id: params.promoMetadata.adminPremiumInviteId }
+        : {}),
+      ...(params.promoMetadata?.promotionType
+        ? { promotion_type: params.promoMetadata.promotionType }
+        : {}),
+      ...(params.promoMetadata?.trialDays != null
+        ? { promotion_trial_days: String(params.promoMetadata.trialDays) }
         : {}),
     },
   });

@@ -13,6 +13,7 @@ export type UserSubscriptionRow = {
   current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  admin_promo_code_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -36,6 +37,7 @@ export async function upsertSubscription(input: {
   currentPeriodStart: Date | null;
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd?: boolean;
+  adminPromoCodeId?: string | null;
 }): Promise<void> {
   const supabase = getSupabaseServerClient();
   const { error } = await supabase.from("user_subscriptions").upsert(
@@ -47,6 +49,7 @@ export async function upsertSubscription(input: {
       current_period_start: input.currentPeriodStart?.toISOString() ?? null,
       current_period_end: input.currentPeriodEnd?.toISOString() ?? null,
       cancel_at_period_end: input.cancelAtPeriodEnd ?? false,
+      ...(input.adminPromoCodeId !== undefined ? { admin_promo_code_id: input.adminPromoCodeId } : {}),
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" },

@@ -24,7 +24,7 @@ export const COMMISSION_MIGRATION_HINT =
   "Run supabase/migrations/021_instructor_referral_commissions.sql in the Supabase SQL Editor.";
 
 export const PROMO_MIGRATION_HINT =
-  "Run supabase/migrations/014_admin_promo_invites.sql in the Supabase SQL Editor, then reload the API schema cache in Supabase (Settings → API).";
+  "Run supabase/migrations/014_admin_promo_invites.sql and 023_admin_promotions.sql in the Supabase SQL Editor, then reload the API schema cache in Supabase (Settings → API).";
 
 export function isSupabaseNetworkError(error: DbError): boolean {
   if (!error) return false;

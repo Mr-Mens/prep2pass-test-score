@@ -2,12 +2,14 @@ import "server-only";
 
 import type Stripe from "stripe";
 
+import type { AdminPromotionType } from "@/lib/admin/promotions";
 import { sendSubscriptionConfirmationEmail } from "@/lib/email/templates/subscription-confirmation";
 import { lookupUserContact } from "@/lib/server/lookup-user-contact";
 import { recordInstructorCommissionOnInvoicePaid } from "@/lib/server/repositories/instructor-commissions-repository";
 import {
-  incrementAdminPromoRedemption,
   markAdminPremiumInviteRedeemed,
+  markPromotionConverted,
+  recordPromotionRedemption,
 } from "@/lib/server/repositories/admin-promo-repository";
 import {
   markReferralCancelled,
@@ -27,6 +29,15 @@ function metadataUserId(meta: Stripe.Metadata | null | undefined): string | null
   return typeof raw === "string" && raw.trim().length ? raw.trim() : null;
 }
 
+function metadataPromoCodeId(meta: Stripe.Metadata | null | undefined): string | null {
+  const raw = meta?.admin_promo_code_id;
+  return typeof raw === "string" && raw.trim().length ? raw.trim() : null;
+}
+
+function metadataPromotionType(meta: Stripe.Metadata | null | undefined): AdminPromotionType {
+  return meta?.promotion_type === "trial_extension" ? "trial_extension" : "discount";
+}
+
 export async function syncSubscriptionFromStripe(subscription: Stripe.Subscription): Promise<string | null> {
   const userId = metadataUserId(subscription.metadata);
   if (!userId) return null;
@@ -34,6 +45,7 @@ export async function syncSubscriptionFromStripe(subscription: Stripe.Subscripti
   const status = mapStripeSubscriptionStatus(subscription.status);
   const { start, end } = subscriptionPeriodDates(subscription);
   const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id ?? null;
+  const adminPromoCodeId = metadataPromoCodeId(subscription.metadata);
 
   await upsertSubscription({
     userId,
@@ -43,7 +55,12 @@ export async function syncSubscriptionFromStripe(subscription: Stripe.Subscripti
     currentPeriodStart: start,
     currentPeriodEnd: end,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    adminPromoCodeId,
   });
+
+  if (status === "active") {
+    await markPromotionConverted({ userId, stripeSubscriptionId: subscription.id });
+  }
 
   return userId;
 }
@@ -63,9 +80,16 @@ export async function handleSubscriptionCheckoutCompleted(session: Stripe.Checko
     (typeof session.customer_email === "string" && session.customer_email.trim()) || contact.email || undefined;
   await prepareReferralForSubscription(userId, pupilEmail);
 
-  const promoCodeId = session.metadata?.admin_promo_code_id;
+  const promoCodeId = metadataPromoCodeId(session.metadata);
   const inviteId = session.metadata?.admin_premium_invite_id;
-  if (promoCodeId) await incrementAdminPromoRedemption(promoCodeId);
+  if (promoCodeId) {
+    await recordPromotionRedemption({
+      promoCodeId,
+      userId,
+      promotionType: metadataPromotionType(session.metadata),
+      stripeSubscriptionId: subscriptionId,
+    });
+  }
   if (inviteId) await markAdminPremiumInviteRedeemed(inviteId, userId);
 
   const toEmail = pupilEmail;
@@ -103,6 +127,8 @@ export async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Pr
 
   const amountPaid = invoice.amount_paid ?? 0;
   if (amountPaid <= 0) return;
+
+  await markPromotionConverted({ userId, stripeSubscriptionId: subscriptionId });
 
   const paidAtSeconds = invoice.status_transitions?.paid_at ?? invoice.created;
   await recordInstructorCommissionOnInvoicePaid({

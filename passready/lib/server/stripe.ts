@@ -2,6 +2,8 @@ import "server-only";
 
 import Stripe from "stripe";
 
+import { PRODUCT, PRICING, SITE } from "@/lib/constants";
+
 const API_VERSION: Stripe.LatestApiVersion = "2024-06-20";
 
 let cachedStripe: Stripe | null = null;
@@ -57,6 +59,28 @@ function subscriptionPriceId(): string {
   return id;
 }
 
+/** Shown on Checkout (header + line item) — kept in sync with the Stripe Product on checkout. */
+export const STRIPE_SUBSCRIPTION_PRODUCT_NAME = `${PRODUCT.name} Premium`;
+
+function checkoutSessionBranding(): { branding_settings: { display_name: string } } {
+  return { branding_settings: { display_name: SITE.name } };
+}
+
+async function ensureSubscriptionProductBranded(price: Stripe.Price): Promise<void> {
+  const stripe = getStripeServerClient();
+  const productRef = price.product;
+  const productId = typeof productRef === "string" ? productRef : productRef.id;
+  const product =
+    typeof productRef === "object" && productRef !== null && !("deleted" in productRef)
+      ? productRef
+      : await stripe.products.retrieve(productId);
+
+  if ("deleted" in product && product.deleted) return;
+  if (product.name === STRIPE_SUBSCRIPTION_PRODUCT_NAME) return;
+
+  await stripe.products.update(productId, { name: STRIPE_SUBSCRIPTION_PRODUCT_NAME });
+}
+
 /** Confirms the subscription price exists on the same Stripe account/mode as the secret key. */
 export async function assertSubscriptionPriceAvailable(): Promise<void> {
   const stripe = getStripeServerClient();
@@ -65,7 +89,7 @@ export async function assertSubscriptionPriceAvailable(): Promise<void> {
 
   let price: Stripe.Price;
   try {
-    price = await stripe.prices.retrieve(priceId);
+    price = await stripe.prices.retrieve(priceId, { expand: ["product"] });
   } catch (error) {
     if (error instanceof Stripe.errors.StripeError && error.code === "resource_missing") {
       console.error("[checkout] subscription_price_missing", {
@@ -92,6 +116,15 @@ export async function assertSubscriptionPriceAvailable(): Promise<void> {
   if (!price.active) {
     console.error("[checkout] subscription_price_inactive", { priceId, keyMode, priceMode });
     throw new Error("STRIPE_SUBSCRIPTION_PRICE_INACTIVE");
+  }
+
+  try {
+    await ensureSubscriptionProductBranded(price);
+  } catch (error) {
+    console.warn("[checkout] subscription_product_branding_sync_failed", {
+      priceId,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -135,6 +168,7 @@ export async function createSubscriptionCheckoutSession(params: {
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
+    ...checkoutSessionBranding(),
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${config.appUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}&mode=subscription`,
     cancel_url: `${config.appUrl}${cancelPath}`,
@@ -144,7 +178,8 @@ export async function createSubscriptionCheckoutSession(params: {
       ? { discounts: [{ promotion_code: params.stripePromotionCodeId }] }
       : { allow_promotion_codes: true }),
     subscription_data: {
-      trial_period_days: 7,
+      trial_period_days: PRICING.subscription.trialDays,
+      description: `${SITE.name} — ${PRICING.subscription.label}`,
       metadata: {
         supabase_user_id: params.userId,
       },
@@ -199,6 +234,7 @@ export async function createCheckoutSession(params: {
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    ...checkoutSessionBranding(),
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${config.appUrl}/checkout/success?${successQuery}`,
     cancel_url: `${config.appUrl}${cancelPath}`,

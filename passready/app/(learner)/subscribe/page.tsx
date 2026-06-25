@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { SubscribeFlow } from "@/components/SubscribeFlow";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
 import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
+import { syncSubscriptionForUserFromStripe } from "@/lib/server/sync-user-subscription-from-stripe";
 
 export const metadata: Metadata = {
   title: "Start Premium trial · Pass Pilot",
@@ -22,6 +23,11 @@ function SubscribeLoading() {
 
 export default async function SubscribePage() {
   const user = await requireAuthenticatedSession("/subscribe");
+  try {
+    await syncSubscriptionForUserFromStripe(user.id);
+  } catch (error) {
+    console.warn("[subscribe] stripe_sync_failed", error);
+  }
   const access = await getLearnerAccessStatus(user.id);
   if (access.hasPremiumAccess) redirect("/dashboard");
   if (access.isGraduated) redirect("/graduate");

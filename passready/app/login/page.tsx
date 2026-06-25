@@ -14,7 +14,7 @@ function LoginLoading() {
 
 export default function LoginPage() {
   return (
-    <AuthScreenChrome>
+    <AuthScreenChrome showWordmark={false}>
       <Suspense fallback={<LoginLoading />}>
         <LoginFlow />
       </Suspense>

@@ -135,11 +135,7 @@ export function WelcomeLanding() {
               <BrandLogo variant="welcome" />
             </Link>
           </div>
-          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-600">{PRODUCT.tagline}</p>
-          <h1 className="mt-8 font-heading text-[1.65rem] font-semibold leading-snug tracking-tight text-brand-950 sm:text-3xl lg:text-[2.1rem]">
-            Welcome to {PRODUCT.name}
-          </h1>
-          <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-brand-700 sm:text-base">
+          <p className="mt-8 max-w-md text-[0.9375rem] leading-relaxed text-brand-700 sm:text-base">
             {selected ? ROLE_TAGLINE[selected] : DEFAULT_TAGLINE}
           </p>
           <p className="mt-2 text-sm font-medium text-brand-600">

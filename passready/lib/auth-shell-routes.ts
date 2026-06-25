@@ -14,3 +14,8 @@ export function isStandaloneAuthRoute(pathname: string): boolean {
     path.startsWith("/auth/confirmed")
   );
 }
+
+export function isAdminRoute(pathname: string): boolean {
+  const path = pathname.split("?")[0] ?? pathname;
+  return path === "/admin" || path.startsWith("/admin/");
+}

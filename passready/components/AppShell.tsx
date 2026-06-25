@@ -8,7 +8,7 @@ import { LearnerChrome } from "@/components/learner/LearnerChrome";
 import { LearnerSessionProvider } from "@/components/learner/LearnerSessionContext";
 import { Navbar } from "@/components/Navbar";
 
-import { isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
+import { isAdminRoute, isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
 import { isAssessmentRoute, isLearnerAppRoute } from "@/lib/learner-app-routes";
 import { isMarketingRoute } from "@/lib/marketing-routes";
 
@@ -33,6 +33,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isStandaloneAuthRoute(pathname)) {
     return (
       <div className="app-viewport-shell min-h-dvh overflow-x-hidden bg-gradient-to-b from-brand-50 via-white to-teal-50/35">
+        {children}
+      </div>
+    );
+  }
+
+  if (isAdminRoute(pathname)) {
+    return (
+      <div className="app-viewport-shell min-h-dvh overflow-x-hidden bg-brand-50">
         {children}
       </div>
     );

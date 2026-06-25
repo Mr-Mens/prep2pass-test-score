@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AssessmentAppShell } from "@/components/AssessmentAppShell";
 import { Footer } from "@/components/Footer";
 import { LearnerChrome } from "@/components/learner/LearnerChrome";
+import { LearnerSessionProvider } from "@/components/learner/LearnerSessionContext";
 import { Navbar } from "@/components/Navbar";
 
 import { isStandaloneAuthRoute } from "@/lib/auth-shell-routes";
@@ -14,6 +15,7 @@ import { isMarketingRoute } from "@/lib/marketing-routes";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
 
+  const shell = (() => {
   if (pathname === "/welcome") {
     return <div className="min-h-dvh">{children}</div>;
   }
@@ -57,4 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Footer />
     </div>
   );
+  })();
+
+  return <LearnerSessionProvider>{shell}</LearnerSessionProvider>;
 }

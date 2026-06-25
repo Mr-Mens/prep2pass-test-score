@@ -35,7 +35,14 @@ export async function GET() {
     let freeAssessmentScore: number | null = null;
     let freeAssessmentLabel: string | null = null;
     try {
-      const access = await import("@/lib/server/learner-access").then((m) => m.getLearnerAccessStatus(user.id));
+      const learnerAccess = await import("@/lib/server/learner-access");
+      const sync = await import("@/lib/server/sync-user-subscription-from-stripe");
+      try {
+        await sync.syncSubscriptionForUserFromStripe(user.id);
+      } catch (syncError) {
+        console.warn("[api/auth/me] subscription_sync_failed", syncError);
+      }
+      const access = await learnerAccess.getLearnerAccessStatus(user.id);
       lifetimeAccess = access.hasPremiumAccess;
       isGraduated = access.isGraduated;
       subscriptionStatus = access.subscriptionStatus;

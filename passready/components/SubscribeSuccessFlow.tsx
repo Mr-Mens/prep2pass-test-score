@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
+import { useLearnerSession } from "@/components/learner/LearnerSessionContext";
 import { requestConfirmSubscriptionCheckout } from "@/lib/api/confirm-subscription-checkout";
 
 type Status = "loading" | "ready" | "error";
@@ -14,6 +15,7 @@ const confirmPromises = new Map<string, Promise<void>>();
 export function SubscribeSuccessFlow() {
   const params = useSearchParams();
   const router = useRouter();
+  const { refresh } = useLearnerSession();
   const sessionId = useMemo(() => params.get("session_id")?.trim() ?? "", [params]);
 
   const [status, setStatus] = useState<Status>("loading");
@@ -38,6 +40,7 @@ export function SubscribeSuccessFlow() {
         }
         await confirmPromises.get(sessionId);
         if (cancelled) return;
+        await refresh();
         setStatus("ready");
         router.refresh();
       } catch (error) {
@@ -56,7 +59,7 @@ export function SubscribeSuccessFlow() {
     return () => {
       cancelled = true;
     };
-  }, [sessionId, router]);
+  }, [sessionId, router, refresh]);
 
   if (status === "loading") {
     return (

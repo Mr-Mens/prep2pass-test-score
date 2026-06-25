@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { LearnerSignOutButton } from "@/components/learner/LearnerSignOutButton";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
+import { ProfileEmailChangeForm } from "@/components/profile/ProfileEmailChangeForm";
 import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, PRODUCT, SITE, SMART_UI } from "@/lib/constants";
 import { resolveProfileDisplayName } from "@/lib/profile/resolve-display-name";
 import { getEntitlementLookupForUser } from "@/lib/server/repositories/entitlements-repository";
@@ -72,12 +73,23 @@ export default async function LearnerAccountPage() {
   const initials = accountInitials(displayNameRaw, raw?.email);
   const greetingName = displayNameRaw || "Learner";
 
-  const planLabel =
-    entitlements.hasLifetimeAccess
-      ? `${LIFETIME_MEMBER_UI.badge}`
+  const planLabel = entitlements.hasActiveSubscription
+    ? entitlements.subscriptionStatus === "trialing"
+      ? "Premium trial"
+      : "Premium subscription"
+    : entitlements.hasLifetimeAccess
+      ? LIFETIME_MEMBER_UI.badge
       : entitlements.hasUsedFreeAssessment
         ? "Free account · assessment used"
         : "Free account · one assessment included";
+
+  const accessSummary = entitlements.hasActiveSubscription
+    ? entitlements.subscriptionStatus === "trialing"
+      ? PRICING.subscription.trialMessage
+      : "Unlimited scores, dashboard, lessons, reflections and resources."
+    : entitlements.hasLifetimeAccess
+      ? LIFETIME_MEMBER_UI.unlimited
+      : PRICING.subscription.trialMessage;
 
   return (
     <div className="flex flex-col gap-6 pb-8">
@@ -104,9 +116,15 @@ export default async function LearnerAccountPage() {
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <p className="flex-1 text-sm font-semibold leading-snug text-brand-950">{planLabel}</p>
             {entitlements.hasLifetimeAccess ? (
-              <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
-                Lifetime
-              </span>
+              entitlements.hasActiveSubscription ? (
+                <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+                  Premium
+                </span>
+              ) : (
+                <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+                  Lifetime
+                </span>
+              )
             ) : (
               <Link
                 href="/subscribe"
@@ -123,16 +141,13 @@ export default async function LearnerAccountPage() {
             </div>
             <div className="min-w-[12rem] flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Access</p>
-              <p className="mt-1 text-sm leading-relaxed text-brand-700">
-                {entitlements.hasLifetimeAccess
-                  ? LIFETIME_MEMBER_UI.unlimited
-                  : PRICING.subscription.trialMessage}
-              </p>
+              <p className="mt-1 text-sm leading-relaxed text-brand-700">{accessSummary}</p>
             </div>
           </div>
         </div>
 
         <ProfileEditForm role="learner" initialProfile={profile} email={raw?.email ?? user.email} />
+        <ProfileEmailChangeForm currentEmail={raw?.email ?? user.email} />
       </section>
 
       <nav

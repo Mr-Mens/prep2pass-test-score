@@ -112,6 +112,73 @@ export async function listLessonsForInstructor(
   return attachPupilDetails((data ?? []) as InstructorLessonRow[]);
 }
 
+export type LearnerLessonView = {
+  id: string;
+  lesson_date: string;
+  start_time: string;
+  duration_minutes: number;
+  lesson_focus: string[];
+  location: string | null;
+  status: LessonStatus;
+  instructor_name: string;
+};
+
+export async function listLessonsForLearner(learnerUserId: string, limit = 100): Promise<LearnerLessonView[]> {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = getSupabaseServerClient();
+
+  const { data: pupils, error: pupilsError } = await supabase
+    .from("instructor_pupils")
+    .select("id, instructor_user_id")
+    .eq("linked_learner_user_id", learnerUserId)
+    .eq("link_status", "accepted");
+
+  if (pupilsError) throw new Error(pupilsError.message);
+  if (!pupils?.length) return [];
+
+  const pupilIds = pupils.map((row) => row.id as string);
+  const instructorIds = Array.from(new Set(pupils.map((row) => row.instructor_user_id as string)));
+
+  const { data: profiles, error: profilesError } = await supabase
+    .from("instructor_profiles")
+    .select("user_id, display_name")
+    .in("user_id", instructorIds);
+
+  if (profilesError) throw new Error(profilesError.message);
+
+  const instructorNameById = new Map<string, string>(
+    (profiles ?? []).map((profile) => [
+      profile.user_id as string,
+      ((profile.display_name as string | null) ?? "").trim() || "Your instructor",
+    ]),
+  );
+
+  const { data: lessons, error: lessonsError } = await supabase
+    .from(TABLE)
+    .select("id, instructor_user_id, lesson_date, start_time, duration_minutes, lesson_focus, location, status")
+    .in("pupil_id", pupilIds)
+    .neq("status", "cancelled")
+    .order("lesson_date", { ascending: false })
+    .order("start_time", { ascending: false })
+    .limit(limit);
+
+  if (lessonsError) {
+    if (isMissingLessonsTableError(lessonsError)) return [];
+    throw new Error(lessonsError.message);
+  }
+
+  return (lessons ?? []).map((lesson) => ({
+    id: lesson.id as string,
+    lesson_date: lesson.lesson_date as string,
+    start_time: (lesson.start_time as string).slice(0, 5),
+    duration_minutes: lesson.duration_minutes as number,
+    lesson_focus: (lesson.lesson_focus as string[]) ?? [],
+    location: (lesson.location as string | null) ?? null,
+    status: lesson.status as LessonStatus,
+    instructor_name: instructorNameById.get(lesson.instructor_user_id as string) ?? "Your instructor",
+  }));
+}
+
 export async function listLessonsForPupil(
   pupilId: string,
   instructorUserId: string,

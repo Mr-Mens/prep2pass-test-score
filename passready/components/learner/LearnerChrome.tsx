@@ -2,34 +2,60 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import { BrandLogo } from "@/components/BrandLogo";
-import { BRAND_CTA, PRICING, PRODUCT } from "@/lib/constants";
+import { useLearnerSession } from "@/components/learner/LearnerSessionContext";
+import { PRICING, PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-type NavMatch = "home" | "assessment" | "journey" | "reflections" | "resources" | "subscribe" | "account";
+type NavMatch =
+  | "home"
+  | "assessment"
+  | "journey"
+  | "lessons"
+  | "reflections"
+  | "resources"
+  | "subscribe"
+  | "account";
 
-const railNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+const premiumRailNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
   { href: "/dashboard", label: "Dashboard", match: "home" },
   { href: "/assessment", label: PRODUCT.score, match: "assessment" },
   { href: "/progress", label: "Learning Journey", match: "journey" },
+  { href: "/dashboard/lessons", label: "Lessons", match: "lessons" },
   { href: "/dashboard/reflections", label: "Lesson Reflections", match: "reflections" },
   { href: "/dashboard/resources", label: "Resources", match: "resources" },
+  { href: "/account", label: "Account", match: "account" },
 ];
 
-const dockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/dashboard", label: "Dashboard", match: "home" },
+const premiumDockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
   { href: "/assessment", label: "Score", match: "assessment" },
   { href: "/progress", label: "Journey", match: "journey" },
-  { href: "/dashboard/reflections", label: "Reflections", match: "reflections" },
+  { href: "/dashboard/lessons", label: "Lessons", match: "lessons" },
+  { href: "/dashboard/reflections", label: "Reflect", match: "reflections" },
   { href: "/dashboard/resources", label: "Resources", match: "resources" },
+  { href: "/account", label: "Account", match: "account" },
+];
+
+const freeRailNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/assessment", label: PRODUCT.score, match: "assessment" },
+  { href: "/subscribe", label: "Premium trial", match: "subscribe" },
+  { href: "/account", label: "Account", match: "account" },
+];
+
+const freeDockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/assessment", label: "Score", match: "assessment" },
+  { href: "/subscribe", label: "Trial", match: "subscribe" },
+  { href: "/account", label: "Account", match: "account" },
 ];
 
 function activeFor(pathname: string, match: NavMatch): boolean {
   if (match === "home") return pathname === "/dashboard";
   if (match === "assessment") return pathname === "/assessment" || pathname.startsWith("/assessment/");
   if (match === "journey") return pathname === "/progress" || pathname.startsWith("/progress/");
+  if (match === "lessons") {
+    return pathname === "/dashboard/lessons" || pathname.startsWith("/dashboard/lessons/");
+  }
   if (match === "reflections") {
     return pathname === "/dashboard/reflections" || pathname.startsWith("/dashboard/reflections/");
   }
@@ -106,6 +132,32 @@ function IconReflect({ stroke }: { stroke: string }) {
   );
 }
 
+function IconLessons({ stroke }: { stroke: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="4" y="5" width="16" height="15" rx="2" stroke={stroke} strokeWidth="2" />
+      <path d="M8 3v4M16 3v4M4 10h16" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconAccount({ stroke }: { stroke: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="8" r="4" stroke={stroke} strokeWidth="2" />
+      <path d="M5 20c1.5-3 4-4.5 7-4.5s5.5 1.5 7 4.5" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconTrial({ stroke }: { stroke: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7L12 3z" stroke={stroke} strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function iconForMatch(match: NavMatch, stroke: string) {
   switch (match) {
     case "home":
@@ -114,10 +166,16 @@ function iconForMatch(match: NavMatch, stroke: string) {
       return <IconChart stroke={stroke} />;
     case "assessment":
       return <IconTarget stroke={stroke} />;
+    case "lessons":
+      return <IconLessons stroke={stroke} />;
     case "reflections":
       return <IconReflect stroke={stroke} />;
     case "resources":
       return <IconBook stroke={stroke} />;
+    case "account":
+      return <IconAccount stroke={stroke} />;
+    case "subscribe":
+      return <IconTrial stroke={stroke} />;
     default:
       return <IconHome stroke={stroke} />;
   }
@@ -131,113 +189,95 @@ function strokeDock(active: boolean) {
   return active ? "#ffffff" : "#435a7d";
 }
 
-type MeBrief = {
-  email: string;
-  firstName: string;
-  lifetimeAccess: boolean;
-};
-
-const premiumRailNavItems = railNavItems;
-const premiumDockNavItems = dockNavItems;
-
-const freeRailNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/assessment", label: PRODUCT.score, match: "assessment" },
-  { href: "/subscribe", label: "Premium trial", match: "subscribe" },
-];
-
-const freeDockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
-  { href: "/assessment", label: "Score", match: "assessment" },
-  { href: "/subscribe", label: "Trial", match: "subscribe" },
-  { href: "/account", label: "Account", match: "account" },
-];
-
-function initialsFromMe(me: MeBrief): string {
-  const parts = me.firstName.split(/\s+/).filter(Boolean);
+function initialsFromSession(session: { email: string; firstName: string }): string {
+  const parts = session.firstName.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
   }
   if (parts.length === 1 && parts[0]!.length >= 2) {
     return parts[0]!.slice(0, 2).toUpperCase();
   }
-  const fromEmail = me.email.split("@")[0]?.replace(/[^a-zA-Z]/g, "") ?? "";
+  const fromEmail = session.email.split("@")[0]?.replace(/[^a-zA-Z]/g, "") ?? "";
   if (fromEmail.length >= 2) return fromEmail.slice(0, 2).toUpperCase();
   if (fromEmail.length === 1) return `${fromEmail}X`.toUpperCase();
   return "ME";
 }
 
+function NavDockSkeleton() {
+  return (
+    <nav
+      className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      aria-hidden
+    >
+      <ul className="mx-auto grid max-w-xl grid-cols-5 gap-0 px-1 pt-1">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <li key={index} className="flex min-h-[56px] justify-center px-1 py-1.5">
+            <div className="h-10 w-full max-w-[4.5rem] animate-pulse rounded-xl bg-brand-100" />
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export function LearnerChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
-  const [me, setMe] = useState<MeBrief | null>(null);
-  const isPremium = me?.lifetimeAccess ?? false;
+  const { session, status } = useLearnerSession();
+  const accessReady = status !== "loading";
+  const isPremium = session?.hasPremiumAccess ?? false;
   const railLinks = isPremium ? premiumRailNavItems : freeRailNavItems;
   const dockLinks = isPremium ? premiumDockNavItems : freeDockNavItems;
   const homeHref = isPremium ? "/dashboard" : "/assessment";
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        const raw = (await res.json()) as {
-          user?: {
-            email?: string;
-            emailConfirmedAt?: string | null;
-            firstName?: string;
-            lifetimeAccess?: boolean;
-          } | null;
-        };
-        const u = raw.user;
-        if (cancelled || !u?.emailConfirmedAt || !u.email) return;
-        setMe({
-          email: u.email,
-          firstName: u.firstName?.trim() ?? "",
-          lifetimeAccess: Boolean(u.lifetimeAccess),
-        });
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const dockColumns = isPremium ? "grid-cols-6" : "grid-cols-3";
 
   function NavRail() {
-    return (
-      <>
-        <nav className="flex flex-col gap-0.5 px-3 pb-4" aria-label="Learner app">
-          {railLinks.map((item) => {
-            const active = activeFor(pathname, item.match);
-            const stroke = strokeRail(active);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                  active ? "bg-teal-600 text-white shadow-sm" : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
-                }`}
-                aria-current={active ? "page" : undefined}
-              >
-                <span className={active ? "text-white/95" : "text-teal-400/95"} aria-hidden>
-                  {iconForMatch(item.match, stroke)}
-                </span>
-                {item.label}
-              </Link>
-            );
-          })}
+    if (!accessReady) {
+      return (
+        <nav className="flex flex-col gap-2 px-3 pb-4" aria-hidden>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-11 animate-pulse rounded-xl bg-slate-800/60" />
+          ))}
         </nav>
-      </>
+      );
+    }
+
+    return (
+      <nav className="flex flex-col gap-0.5 px-3 pb-4" aria-label="Learner app">
+        {railLinks.map((item) => {
+          const active = activeFor(pathname, item.match);
+          const stroke = strokeRail(active);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                active ? "bg-teal-600 text-white shadow-sm" : "text-slate-300 hover:bg-slate-800/90 hover:text-white"
+              }`}
+              aria-current={active ? "page" : undefined}
+            >
+              <span className={active ? "text-white/95" : "text-teal-400/95"} aria-hidden>
+                {iconForMatch(item.match, stroke)}
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
     );
   }
 
   function NavDock() {
+    if (!accessReady) {
+      return <NavDockSkeleton />;
+    }
+
     return (
       <nav
         className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
-        <ul className={`mx-auto grid max-w-xl gap-0 px-1 pt-1 ${isPremium ? "grid-cols-5" : "grid-cols-3"}`}>
+        <ul className={`mx-auto grid max-w-xl gap-0 px-0.5 pt-1 ${dockColumns}`}>
           {dockLinks.map((item) => {
             const active = activeFor(pathname, item.match);
             const stroke = strokeDock(active);
@@ -246,7 +286,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
                 <Link
                   href={item.href}
                   prefetch
-                  className={`flex min-h-[56px] w-full flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[10px] font-semibold tracking-tight transition-colors sm:text-[11px] ${
+                  className={`flex min-h-[56px] w-full flex-col items-center justify-center gap-1 rounded-xl px-0.5 py-1.5 text-[9px] font-semibold tracking-tight transition-colors sm:text-[10px] ${
                     active ? "bg-teal-600 text-white shadow-sm" : "text-brand-700 hover:bg-brand-50 hover:text-brand-950"
                   }`}
                   aria-current={active ? "page" : undefined}
@@ -262,7 +302,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const initials = me ? initialsFromMe(me) : "…";
+  const initials = session ? initialsFromSession(session) : "…";
 
   async function signOut() {
     const supabase = createSupabaseBrowserClient();
@@ -283,7 +323,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
           <NavRail />
         </div>
 
-        {me && !me.lifetimeAccess ? (
+        {accessReady && session && !session.hasPremiumAccess ? (
           <div className="border-t border-slate-700/80 px-4 pb-5 pt-4">
             <Link
               href="/subscribe"
@@ -305,8 +345,8 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
               {initials}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">{me?.firstName?.trim() || "Learner"}</p>
-              <p className="truncate text-xs text-slate-400">{me?.email ?? "Signed in"}</p>
+              <p className="truncate text-sm font-semibold text-white">{session?.firstName?.trim() || "Learner"}</p>
+              <p className="truncate text-xs text-slate-400">{session?.email ?? "Signed in"}</p>
             </div>
           </Link>
           <button
@@ -332,9 +372,29 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
             <div className="min-w-0 flex-1">
               <p className="font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>
               <p className="truncate text-[11px] font-medium leading-tight text-teal-800">
-                {isPremium ? `${PRODUCT.name} dashboard` : PRODUCT.score}
+                {!accessReady
+                  ? "Loading…"
+                  : isPremium
+                    ? `${PRODUCT.name} dashboard`
+                    : PRODUCT.score}
               </p>
             </div>
+            {accessReady && session ? (
+              <Link
+                href="/account"
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition ${
+                  activeFor(pathname, "account")
+                    ? "bg-teal-600 text-white ring-2 ring-teal-200"
+                    : "bg-teal-50 text-teal-900 ring-1 ring-teal-200 hover:bg-teal-100"
+                }`}
+                aria-label="Account and profile settings"
+                aria-current={activeFor(pathname, "account") ? "page" : undefined}
+              >
+                {initials}
+              </Link>
+            ) : (
+              <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-brand-100" aria-hidden />
+            )}
           </div>
         </header>
 

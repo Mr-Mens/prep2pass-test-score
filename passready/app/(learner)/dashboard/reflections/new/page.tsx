@@ -54,7 +54,7 @@ export default async function NewLearnerReflectionPage({ searchParams }: Props) 
             {PRICING.subscription.display}/month until you pass or cancel
           </p>
           <p className="mt-2 text-sm text-brand-700">
-            Your instructor can mark lessons complete — you&apos;ll be prompted to reflect once you have premium access.
+            Your instructor can mark lessons complete. You&apos;ll be prompted to reflect once you have premium access.
           </p>
           <Button href="/subscribe" variant="conversion" className="mt-4 min-h-[48px]">
             {PRICING.subscription.trialCta}
@@ -76,7 +76,7 @@ export default async function NewLearnerReflectionPage({ searchParams }: Props) 
         <h1 className="mt-4 font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">
           New reflection
         </h1>
-        <p className="mt-2 text-sm text-brand-600">Takes under two minutes. Be honest — it helps your progress insights.</p>
+        <p className="mt-2 text-sm text-brand-600">Takes under two minutes. Be honest. It helps your progress insights.</p>
       </header>
       <ReflectionForm
         cancelHref="/dashboard/reflections"

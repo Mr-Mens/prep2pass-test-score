@@ -57,7 +57,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
+    <div className="app-viewport-shell flex min-h-dvh min-w-0 flex-col bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
       <aside className="hidden w-[17rem] shrink-0 flex-col border-r border-brand-100 bg-white md:flex">
         <div className="flex h-full flex-col px-4 py-6">
           <BrandLogo variant="compact" />
@@ -102,8 +102,8 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+        <header className="sticky top-0 z-30 flex min-w-0 items-center justify-between border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <div>
             <p className="font-heading text-sm font-semibold text-brand-950">Parent workspace</p>
             <p className="text-xs text-brand-500">Pass Pilot</p>
@@ -117,31 +117,33 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
           </button>
         </header>
 
-        <main className="flex-1 px-4 py-6 pb-28 sm:px-6 md:px-10 md:py-8 md:pb-8 lg:px-12">{children}</main>
+        <main className="app-main-scroll flex-1 px-4 py-6 pb-28 sm:px-6 md:px-10 md:py-8 md:pb-8 lg:px-12">
+          <div className="mx-auto w-full min-w-0 max-w-4xl">{children}</div>
+        </main>
 
         <nav
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-100 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-100 bg-white/95 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden"
           aria-label="Supervisor mobile"
         >
-          <ul className="grid grid-cols-5 gap-1">
+          <ul className="mx-auto flex w-full min-w-0 max-w-full gap-0">
             {dockNav.map((item) => {
               const active =
                 item.href === "/supervisor"
                   ? pathname === "/supervisor"
                   : pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
-                <li key={item.href}>
+                <li key={item.href} className="min-w-0 flex-1">
                   <Link
                     href={item.href}
                     prefetch
-                    className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition ${
+                    className={`flex min-h-[56px] w-full min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 text-[9px] font-semibold leading-tight transition sm:text-[10px] ${
                       active ? "bg-teal-50 text-teal-800" : "text-brand-600 hover:bg-brand-50"
                     }`}
                   >
-                    <span aria-hidden className="text-base leading-none">
+                    <span aria-hidden className="shrink-0 text-base leading-none">
                       {item.icon}
                     </span>
-                    {item.label}
+                    <span className="w-full truncate text-center">{item.label}</span>
                   </Link>
                 </li>
               );

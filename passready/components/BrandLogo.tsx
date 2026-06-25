@@ -17,42 +17,42 @@ const VARIANT: Record<
 > = {
   navbar: {
     imgClass:
-      "h-14 w-auto max-h-16 min-w-[3.25rem] object-contain object-left sm:h-16 sm:min-w-[3.75rem] md:h-[4.75rem] md:min-w-[4.25rem] lg:h-[5.25rem] lg:min-w-[4.75rem]",
+      "h-14 w-auto max-h-16 max-w-[5.5rem] min-w-0 object-contain object-left sm:h-16 sm:max-w-[6rem] md:h-[4.75rem] md:max-w-[7rem] lg:h-[5.25rem] lg:max-w-[7.5rem]",
     sizes: "(max-width: 768px) 64px, (max-width: 1280px) 76px, 84px",
     quality: 100,
     priority: true,
   },
   compact: {
-    imgClass: "h-11 w-auto min-w-[2.75rem] object-contain object-left sm:h-12 sm:min-w-[3rem]",
+    imgClass: "h-11 w-auto max-w-full min-w-0 object-contain object-left sm:h-12",
     sizes: "48px",
     quality: 100,
   },
   footer: {
     imgClass:
-      "h-32 w-auto min-w-[7rem] object-contain object-left sm:h-36 sm:min-w-[8rem] md:h-40 md:min-w-[9rem]",
+      "h-32 w-auto max-w-full min-w-0 object-contain object-left sm:h-36 md:h-40",
     sizes: "(max-width: 768px) 128px, 160px",
     quality: 100,
   },
   welcome: {
     imgClass:
-      "mx-auto h-36 w-auto min-w-[9rem] object-contain object-center sm:h-40 sm:min-w-[10rem] md:h-44 md:min-w-[11rem] lg:h-48 lg:min-w-[12rem]",
+      "mx-auto h-36 w-auto max-w-full min-w-0 object-contain object-center sm:h-40 md:h-44 lg:h-48",
     sizes: "(max-width: 768px) 144px, (max-width: 1024px) 176px, 192px",
     quality: 100,
     priority: true,
   },
   auth: {
-    imgClass: "mx-auto h-24 w-auto min-w-[6rem] object-contain object-center sm:h-28 sm:min-w-[7rem]",
+    imgClass: "mx-auto h-24 w-auto max-w-full min-w-0 object-contain object-center sm:h-28",
     sizes: "112px",
     quality: 100,
     priority: true,
   },
   learnerRail: {
-    imgClass: "h-14 w-auto min-w-[3.25rem] object-contain object-left",
+    imgClass: "h-14 w-auto max-w-full min-w-0 object-contain object-left",
     sizes: "56px",
     quality: 100,
   },
   learnerMobile: {
-    imgClass: "h-11 w-auto min-w-[2.75rem] object-contain object-left sm:h-12 sm:min-w-[3rem]",
+    imgClass: "h-11 w-auto max-w-[3.25rem] min-w-0 object-contain object-left sm:h-12 sm:max-w-[3.5rem]",
     sizes: "48px",
     quality: 100,
   },

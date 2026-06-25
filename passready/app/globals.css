@@ -6,13 +6,22 @@
 
 @layer base {
   html {
-    @apply scroll-smooth;
+    @apply scroll-smooth overflow-x-hidden;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply min-h-dvh overflow-x-hidden text-brand-900 antialiased;
+    width: 100%;
+    max-width: 100%;
     text-rendering: optimizeLegibility;
     background-color: #e8ecf3;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
   }
 
   @media (min-width: 640px) {
@@ -98,6 +107,16 @@
 
   .mock-sheet-row-label {
     @apply min-w-0 text-sm font-normal leading-snug text-brand-800;
+  }
+}
+
+@layer utilities {
+  .app-viewport-shell {
+    @apply w-full max-w-full overflow-x-hidden;
+  }
+
+  .app-main-scroll {
+    @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto;
   }
 }
 

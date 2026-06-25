@@ -8,9 +8,9 @@ import { Navbar } from "@/components/Navbar";
 
 function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="app-viewport-shell flex min-h-dvh flex-col">
       <Navbar />
-      <main className="relative flex-1 max-md:overflow-x-hidden">{children}</main>
+      <main className="app-main-scroll relative flex-1">{children}</main>
       <Footer />
     </div>
   );

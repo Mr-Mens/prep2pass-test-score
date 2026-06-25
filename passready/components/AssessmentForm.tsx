@@ -61,7 +61,7 @@ const CHECKOUT_VALUE_BULLETS = [
   `${SMART_UI.report}, explained in plain English`,
   "A roadmap of syllabus topics touched versus still to practise",
   "A breakdown of your highest-priority driving skills",
-  `A focused action plan — your ${SMART_UI.recommendations.toLowerCase()}`,
+  `A focused action plan with your ${SMART_UI.recommendations.toLowerCase()}`,
   `An instructor-style ${SMART_UI.debrief.toLowerCase()}`,
   "A realistic band for how many more lesson hours you may need across your Learning Journey",
 ] as const;
@@ -390,7 +390,7 @@ export function AssessmentForm({
         className={
           stackAboveMobileNav
             ? "shrink-0 border-t border-brand-200/90 bg-white pt-3 md:hidden"
-            : `fixed inset-x-0 z-40 border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`
+            : `fixed inset-x-0 z-40 max-w-full overflow-x-hidden border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`
         }
         style={{
           paddingBottom: stackAboveMobileNav
@@ -530,7 +530,7 @@ export function AssessmentForm({
     <form
       id="pass-pilot-assessment"
       onSubmit={handleSubmit(onSubmit)}
-      className={`sm:space-y-10 md:pb-0 ${mobileFormShellClass} ${stackAboveMobileNav ? "" : `space-y-6 ${mobileScrollPadClass}`}`}
+      className={`min-w-0 overflow-x-hidden sm:space-y-10 md:pb-0 ${mobileFormShellClass} ${stackAboveMobileNav ? "" : `space-y-6 ${mobileScrollPadClass}`}`}
     >
       <div className={mobileFieldsScrollClass}>
       <fieldset className={sectionBox}>

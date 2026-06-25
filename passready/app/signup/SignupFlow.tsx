@@ -36,11 +36,11 @@ const ROLE_LABELS: Record<UserAppRole, string> = {
 
 const SIGNUP_INTRO: Record<UserAppRole, string> = {
   learner:
-    "Create your account to track your progress, view scheduled lessons, unlock personalised Smart Reports, and continue your learning journey—all in one place.",
+    "Create your account to track your progress, view scheduled lessons, unlock personalised Smart Reports, and continue your learning journey, all in one place.",
   instructor:
-    "Create your free instructor account for mock tests, pupil tracking, and teaching tools. We email a verification link — open it to enter Pass Pilot. Pass Pilot never asks for your password by email.",
+    "Create your free instructor account for mock tests, pupil tracking, and teaching tools. We email a verification link. Open it to enter Pass Pilot. Pass Pilot never asks for your password by email.",
   parent:
-    "Create your parent account to link to your learner and view their progress. We email a verification link — open it to enter Pass Pilot. Pass Pilot never asks for your password by email.",
+    "Create your parent account to link to your learner and view their progress. We email a verification link. Open it to enter Pass Pilot. Pass Pilot never asks for your password by email.",
 };
 
 const inputClassName =

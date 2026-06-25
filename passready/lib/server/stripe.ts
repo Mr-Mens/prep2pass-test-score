@@ -179,7 +179,7 @@ export async function createSubscriptionCheckoutSession(params: {
       : { allow_promotion_codes: true }),
     subscription_data: {
       trial_period_days: PRICING.subscription.trialDays,
-      description: `${SITE.name} — ${PRICING.subscription.label}`,
+      description: `${SITE.name}: ${PRICING.subscription.label}`,
       metadata: {
         supabase_user_id: params.userId,
       },

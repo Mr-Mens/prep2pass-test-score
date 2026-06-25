@@ -58,7 +58,7 @@ export async function createLessonReflectionRequestNotification(input: {
   const supabase = getSupabaseServerClient();
   const instructorLabel = input.instructorName.trim() || "Your instructor";
   const title = "Log your lesson reflection";
-  const body = `${instructorLabel} marked your lesson on ${input.lessonDate} as complete. Take two minutes to log how it went — this helps your Pass Pilot progress.`;
+  const body = `${instructorLabel} marked your lesson on ${input.lessonDate} as complete. Take two minutes to log how it went. This helps your Pass Pilot progress.`;
 
   const { data, error } = await supabase
     .from("app_notifications")

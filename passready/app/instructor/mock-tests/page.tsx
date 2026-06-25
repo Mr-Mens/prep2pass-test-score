@@ -17,7 +17,7 @@ export default async function InstructorMockTestsListPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">Mock test reports</h1>
           <p className="mt-2 text-sm text-brand-600">
-            Grouped by pupil with search and filters — find the right mock quickly, even with a large history.
+            Grouped by pupil with search and filters so you can find the right mock quickly, even with a large history.
           </p>
         </div>
         <Link

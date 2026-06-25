@@ -37,8 +37,8 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Aggregated analytics do not identify you personally. We do not sell your personal data. We do not share your
-          postcode with third parties for marketing. If we introduce new uses that need separate consent — such as
-          insurance partnerships — we will ask explicitly before enabling them.
+          postcode with third parties for marketing. If we introduce new uses that need separate consent, such as
+          insurance partnerships, we will ask explicitly before enabling them.
         </p>
         <p>
           By creating an account, you agree to our{" "}

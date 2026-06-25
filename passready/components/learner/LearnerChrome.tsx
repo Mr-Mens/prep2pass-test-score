@@ -33,7 +33,7 @@ const premiumDockNavItems: readonly { href: string; label: string; match: NavMat
   { href: "/progress", label: "Journey", match: "journey" },
   { href: "/dashboard/lessons", label: "Lessons", match: "lessons" },
   { href: "/dashboard/reflections", label: "Reflect", match: "reflections" },
-  { href: "/dashboard/resources", label: "Resources", match: "resources" },
+  { href: "/dashboard/resources", label: "Library", match: "resources" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
@@ -209,9 +209,9 @@ function NavDockSkeleton() {
       className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       aria-hidden
     >
-      <ul className="mx-auto grid max-w-xl grid-cols-5 gap-0 px-1 pt-1">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <li key={index} className="flex min-h-[56px] justify-center px-1 py-1.5">
+      <ul className="mx-auto flex w-full min-w-0 gap-0 px-0.5 pt-1">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <li key={index} className="flex min-h-[56px] min-w-0 flex-1 justify-center px-0.5 py-1.5">
             <div className="h-10 w-full max-w-[4.5rem] animate-pulse rounded-xl bg-brand-100" />
           </li>
         ))}
@@ -228,7 +228,6 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
   const railLinks = isPremium ? premiumRailNavItems : freeRailNavItems;
   const dockLinks = isPremium ? premiumDockNavItems : freeDockNavItems;
   const homeHref = isPremium ? "/dashboard" : "/assessment";
-  const dockColumns = isPremium ? "grid-cols-6" : "grid-cols-3";
 
   function NavRail() {
     if (!accessReady) {
@@ -277,22 +276,22 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
-        <ul className={`mx-auto grid max-w-xl gap-0 px-0.5 pt-1 ${dockColumns}`}>
+        <ul className="mx-auto flex w-full min-w-0 max-w-full gap-0 px-0.5 pt-1">
           {dockLinks.map((item) => {
             const active = activeFor(pathname, item.match);
             const stroke = strokeDock(active);
             return (
-              <li key={item.href} className="flex min-h-0 justify-center">
+              <li key={item.href} className="flex min-h-0 min-w-0 flex-1 justify-center">
                 <Link
                   href={item.href}
                   prefetch
-                  className={`flex min-h-[56px] w-full flex-col items-center justify-center gap-1 rounded-xl px-0.5 py-1.5 text-[9px] font-semibold tracking-tight transition-colors sm:text-[10px] ${
+                  className={`flex min-h-[56px] w-full min-w-0 max-w-full flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-[9px] font-semibold leading-tight tracking-tight transition-colors sm:text-[10px] ${
                     active ? "bg-teal-600 text-white shadow-sm" : "text-brand-700 hover:bg-brand-50 hover:text-brand-950"
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
-                  {iconForMatch(item.match, stroke)}
-                  {item.label}
+                  <span className="shrink-0">{iconForMatch(item.match, stroke)}</span>
+                  <span className="w-full truncate text-center">{item.label}</span>
                 </Link>
               </li>
             );
@@ -311,7 +310,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-dvh bg-[#f0f2f5] max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:overflow-hidden md:flex-row">
+    <div className="app-viewport-shell flex min-h-dvh min-w-0 bg-[#f0f2f5] max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:overflow-hidden md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
           <Link href={homeHref} className="block" aria-label={`${PRODUCT.name} home`}>
@@ -361,16 +360,16 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col max-md:overflow-hidden">
         <header className="z-40 shrink-0 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
-          <div className="mx-auto flex min-h-[52px] w-full max-w-xl items-center gap-3 px-4 py-3 sm:min-h-[3.25rem]">
+          <div className="mx-auto flex min-h-[52px] w-full min-w-0 max-w-full items-center gap-2 px-3 py-3 sm:min-h-[3.25rem] sm:gap-3 sm:px-4">
             <Link
               href={homeHref}
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-3 py-2 shadow-sm"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-2.5 py-2 shadow-sm sm:px-3"
               aria-label={`${PRODUCT.name} home`}
             >
               <BrandLogo variant="learnerMobile" />
             </Link>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <p className="truncate font-heading text-sm font-semibold tracking-tight text-brand-950">Learner workspace</p>
               <p className="truncate text-[11px] font-medium leading-tight text-teal-800">
                 {!accessReady
                   ? "Loading…"
@@ -400,9 +399,9 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
         <main
           id="main"
-          className="relative mx-auto w-full min-h-0 max-w-4xl flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 pb-4 pt-6 [-webkit-overflow-scrolling:touch] sm:px-6 sm:pt-8 md:max-w-none md:flex-none md:overflow-visible md:px-8 md:pb-10 md:pt-10 lg:px-10"
+          className="app-main-scroll relative mx-auto w-full min-h-0 max-w-4xl px-4 pb-4 pt-6 [-webkit-overflow-scrolling:touch] sm:px-6 sm:pt-8 md:max-w-none md:flex-none md:px-8 md:pb-10 md:pt-10 lg:px-10"
         >
-          <div className="mx-auto w-full max-w-4xl">{children}</div>
+          <div className="mx-auto w-full min-w-0 max-w-4xl">{children}</div>
         </main>
 
         <NavDock />

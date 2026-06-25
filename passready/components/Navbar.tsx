@@ -169,8 +169,8 @@ export function Navbar() {
   const navLinks = navAuth.phase === "member" ? memberPrimaryLinks : guestLinks;
 
   return (
-    <header className={`sticky top-0 z-40 transition-all duration-300 ${headerClass}`}>
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-6 lg:px-8">
+    <header className={`sticky top-0 z-40 overflow-x-hidden transition-all duration-300 ${headerClass}`}>
+      <div className="mx-auto flex w-full min-w-0 max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="flex min-h-[48px] min-w-0 shrink-0 items-center rounded-xl py-1 pr-2"

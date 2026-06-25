@@ -139,7 +139,7 @@ export default async function LearnerAccountPage() {
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Saved reports</p>
               <p className="mt-1 font-heading text-2xl font-semibold tabular-nums text-brand-950">{entitlements.reportCount}</p>
             </div>
-            <div className="min-w-[12rem] flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Access</p>
               <p className="mt-1 text-sm leading-relaxed text-brand-700">{accessSummary}</p>
             </div>

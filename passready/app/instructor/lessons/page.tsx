@@ -21,7 +21,7 @@ export default async function InstructorLessonsPage() {
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">Lessons</h1>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
-            See booked lessons, find gaps, and book new pupils — your week at a glance.
+            See booked lessons, find gaps, and book new pupils. Your week at a glance.
           </p>
         </div>
         <Link

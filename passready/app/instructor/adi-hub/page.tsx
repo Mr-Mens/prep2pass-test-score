@@ -5,7 +5,7 @@ import { comingSoonModulesForAudience } from "@/lib/platform-navigation";
 
 export const metadata: Metadata = {
   title: "ADI Hub · Instructor",
-  description: "Part 3 and Standards Check preparation hubs — coming soon on Pass Pilot.",
+  description: "Part 3 and Standards Check preparation hubs, coming soon on Pass Pilot.",
 };
 
 export default function InstructorAdiHubPage() {
@@ -19,7 +19,7 @@ export default function InstructorAdiHubPage() {
           Professional development
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-brand-700">
-          Structured preparation for your Part 3 and Standards Check — launching soon, built alongside your everyday
+          Structured preparation for your Part 3 and Standards Check, launching soon, built alongside your everyday
           teaching tools on Pass Pilot.
         </p>
       </header>

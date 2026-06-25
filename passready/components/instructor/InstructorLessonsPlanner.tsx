@@ -151,7 +151,9 @@ function MonthView({
   return (
     <div className="space-y-4">
       <p className="text-center font-heading text-lg font-semibold text-brand-950">{monthLabel}</p>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-wide text-brand-500">
+      <div className="min-w-0 overflow-x-auto">
+        <div className="min-w-[17.5rem]">
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-wide text-brand-500">
         {weekdays.map((day) => (
           <div key={day} className="py-1">
             {day}
@@ -187,6 +189,8 @@ function MonthView({
             </div>
           </button>
         ))}
+      </div>
+        </div>
       </div>
     </div>
   );

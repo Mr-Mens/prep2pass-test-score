@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Standards Check Hub · Instructor",
-  description: "Standards Check preparation resources — coming soon on Pass Pilot.",
+  description: "Standards Check preparation resources, coming soon on Pass Pilot.",
 };
 
 export default function InstructorStandardsCheckHubPage() {
@@ -18,7 +18,7 @@ export default function InstructorStandardsCheckHubPage() {
           Standards Check preparation
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-brand-700">
-          Reflective coaching prompts, competency checklists, and structured prep for your Standards Check — launching
+          Reflective coaching prompts, competency checklists, and structured prep for your Standards Check, launching
           soon on Pass Pilot.
         </p>
       </header>

@@ -75,13 +75,13 @@ export function buildReflectionInsights(reflections: LessonReflectionRow[]): Ref
 
   const highlights: string[] = [];
   if (repeatedWeaknesses[0]) {
-    highlights.push(`${repeatedWeaknesses[0].label} keeps appearing as a difficulty — worth a focused repeat.`);
+    highlights.push(`${repeatedWeaknesses[0].label} keeps appearing as a difficulty. Worth a focused repeat.`);
   }
   if (improvingTopics[0]) {
     highlights.push(`${improvingTopics[0].label} is showing up in what went well.`);
   }
   if (underPractisedTopics[0]) {
-    highlights.push(`${underPractisedTopics[0].label} has not been logged recently — consider covering it soon.`);
+    highlights.push(`${underPractisedTopics[0].label} has not been logged recently. Consider covering it soon.`);
   }
   if (recent.filter((row) => row.lesson_type === "private_practice").length >= 2) {
     highlights.push("Private practice is building consistency between paid lessons.");

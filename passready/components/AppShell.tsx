@@ -17,14 +17,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const shell = (() => {
   if (pathname === "/welcome") {
-    return <div className="min-h-dvh">{children}</div>;
+    return <div className="app-viewport-shell min-h-dvh">{children}</div>;
   }
 
   if (isMarketingRoute(pathname)) {
     return (
-      <div className="flex min-h-dvh flex-col">
+      <div className="app-viewport-shell flex min-h-dvh flex-col">
         <Navbar />
-        <main className="relative flex-1 max-md:overflow-x-hidden">{children}</main>
+        <main className="app-main-scroll relative flex-1">{children}</main>
         <Footer />
       </div>
     );
@@ -32,16 +32,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isStandaloneAuthRoute(pathname)) {
     return (
-      <div className="min-h-dvh bg-gradient-to-b from-brand-50 via-white to-teal-50/35">{children}</div>
+      <div className="app-viewport-shell min-h-dvh overflow-x-hidden bg-gradient-to-b from-brand-50 via-white to-teal-50/35">
+        {children}
+      </div>
     );
   }
 
   if (pathname.startsWith("/instructor")) {
-    return <div className="flex min-h-dvh flex-col">{children}</div>;
+    return <div className="app-viewport-shell flex min-h-dvh flex-col">{children}</div>;
   }
 
   if (pathname.startsWith("/supervisor")) {
-    return <div className="flex min-h-dvh flex-col">{children}</div>;
+    return <div className="app-viewport-shell flex min-h-dvh flex-col">{children}</div>;
   }
 
   if (isAssessmentRoute(pathname)) {
@@ -53,9 +55,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="app-viewport-shell flex min-h-dvh flex-col">
       <Navbar />
-      <main className="relative flex-1 max-md:overflow-x-hidden">{children}</main>
+      <main className="app-main-scroll relative flex-1">{children}</main>
       <Footer />
     </div>
   );

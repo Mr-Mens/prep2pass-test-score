@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Part 3 Hub · Instructor",
-  description: "ADI Part 3 preparation resources — coming soon on Pass Pilot.",
+  description: "ADI Part 3 preparation resources, coming soon on Pass Pilot.",
 };
 
 export default function InstructorPart3HubPage() {
@@ -18,7 +18,7 @@ export default function InstructorPart3HubPage() {
           ADI Part 3 preparation
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-brand-700">
-          Structured teaching scenarios, competency checklists, and reflection prompts for your Part 3 journey — launching
+          Structured teaching scenarios, competency checklists, and reflection prompts for your Part 3 journey, launching
           soon on Pass Pilot.
         </p>
       </header>

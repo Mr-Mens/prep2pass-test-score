@@ -16,7 +16,7 @@ const VERIFY_HEADING = "Check your inbox";
 
 const VERIFY_INTRO: Record<UserAppRole, string> = {
   learner:
-    "We sent a confirmation link to your email. Open it and you'll go straight into Pass Pilot — no need to sign in again.",
+    "We sent a confirmation link to your email. Open it and you'll go straight into Pass Pilot. No need to sign in again.",
   instructor:
     "We sent a confirmation link to your email. Open it to finish setting up your instructor account.",
   parent:

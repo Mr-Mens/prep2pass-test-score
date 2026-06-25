@@ -19,7 +19,7 @@ export default async function LearnerLessonsPage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-teal-800">Instructor lessons</p>
         <h1 className="mt-2 font-heading text-2xl font-semibold text-brand-950 sm:text-3xl">Your lessons</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-brand-600">
-          See what your instructor has planned — date, time, focus topics and meeting point — all in one place between
+          See what your instructor has planned: date, time, focus topics and meeting point, all in one place between
           lessons.
         </p>
       </header>

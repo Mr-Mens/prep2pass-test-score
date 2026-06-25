@@ -112,7 +112,7 @@ export default async function AssessmentPage() {
   const valueBullets = hasLifetimeAccess ? PREMIUM_VALUE_BULLETS : FREE_VALUE_BULLETS;
 
   return (
-    <section className="overflow-x-hidden pb-4">
+    <section className="min-w-0 overflow-x-hidden pb-4">
       <div className="mx-auto w-full max-w-3xl">
         {isConfirmedLearner ? <LearnerNotificationsPanel /> : null}
 

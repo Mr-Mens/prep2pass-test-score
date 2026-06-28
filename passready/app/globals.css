@@ -122,6 +122,15 @@
   .app-main-scroll {
     @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain;
   }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .px-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
 }
 
 @keyframes welcome-auth-step {
@@ -155,5 +164,12 @@
   body {
     height: 100%;
     overflow: hidden;
+  }
+
+  /* Installed PWA: keep headers and nav below the status bar / notch. */
+  .app-viewport-shell {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 }

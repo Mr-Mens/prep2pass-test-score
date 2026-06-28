@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: PWA.shortName,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
   manifest: "/manifest.webmanifest",
   other: {

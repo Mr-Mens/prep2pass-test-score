@@ -2,56 +2,89 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import type { UserAppRole } from "@/lib/instructor/types";
+
 export type LearnerSession = {
   email: string;
   firstName: string;
   hasPremiumAccess: boolean;
 };
 
-type LearnerSessionStatus = "loading" | "signed_out" | "ready";
+export type AppSessionUser = {
+  email: string;
+  firstName: string;
+  emailConfirmedAt: string;
+  role: UserAppRole;
+  hasPremiumAccess: boolean;
+};
 
-type LearnerSessionContextValue = {
+type AppSessionStatus = "loading" | "signed_out" | "ready";
+
+type AppSessionContextValue = {
+  /** Confirmed learner session for in-app chrome; null when guest or non-learner. */
   session: LearnerSession | null;
-  status: LearnerSessionStatus;
+  /** Full signed-in user when email is confirmed; null when guest. */
+  user: AppSessionUser | null;
+  status: AppSessionStatus;
   refresh: () => Promise<void>;
 };
 
-const LearnerSessionContext = createContext<LearnerSessionContextValue | null>(null);
+const AppSessionContext = createContext<AppSessionContextValue | null>(null);
 
-async function fetchLearnerSession(): Promise<LearnerSession | null> {
-  const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
-  const raw = (await res.json()) as {
-    user?: {
-      email?: string;
-      emailConfirmedAt?: string | null;
-      firstName?: string;
-      lifetimeAccess?: boolean;
-      role?: string;
-    } | null;
-  };
+let inflightSessionFetch: Promise<AppSessionUser | null> | null = null;
 
-  const user = raw.user;
-  if (!user?.emailConfirmedAt || !user.email) return null;
-  if (user.role && user.role !== "learner") return null;
+async function fetchAppSession(): Promise<AppSessionUser | null> {
+  if (!inflightSessionFetch) {
+    inflightSessionFetch = (async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+      const raw = (await res.json()) as {
+        user?: {
+          email?: string;
+          emailConfirmedAt?: string | null;
+          firstName?: string;
+          lifetimeAccess?: boolean;
+          role?: UserAppRole;
+        } | null;
+      };
 
+      const user = raw.user;
+      if (!user?.emailConfirmedAt || !user.email) return null;
+
+      return {
+        email: user.email,
+        firstName: user.firstName?.trim() ?? "",
+        emailConfirmedAt: user.emailConfirmedAt,
+        role: user.role ?? "learner",
+        hasPremiumAccess: Boolean(user.lifetimeAccess),
+      };
+    })().finally(() => {
+      inflightSessionFetch = null;
+    });
+  }
+
+  return inflightSessionFetch;
+}
+
+function toLearnerSession(user: AppSessionUser | null): LearnerSession | null {
+  if (!user || user.role !== "learner") return null;
   return {
     email: user.email,
-    firstName: user.firstName?.trim() ?? "",
-    hasPremiumAccess: Boolean(user.lifetimeAccess),
+    firstName: user.firstName,
+    hasPremiumAccess: user.hasPremiumAccess,
   };
 }
 
 export function LearnerSessionProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<LearnerSession | null>(null);
-  const [status, setStatus] = useState<LearnerSessionStatus>("loading");
+  const [user, setUser] = useState<AppSessionUser | null>(null);
+  const [status, setStatus] = useState<AppSessionStatus>("loading");
 
   const refresh = useCallback(async () => {
     try {
-      const next = await fetchLearnerSession();
-      setSession(next);
+      const next = await fetchAppSession();
+      setUser(next);
       setStatus(next ? "ready" : "signed_out");
     } catch {
-      setSession(null);
+      setUser(null);
       setStatus("signed_out");
     }
   }, []);
@@ -60,27 +93,43 @@ export function LearnerSessionProvider({ children }: { children: React.ReactNode
     void refresh();
   }, [refresh]);
 
+  const session = useMemo(() => toLearnerSession(user), [user]);
+
   const value = useMemo(
     () => ({
       session,
+      user,
       status,
       refresh,
     }),
-    [session, status, refresh],
+    [session, user, status, refresh],
   );
 
-  return <LearnerSessionContext.Provider value={value}>{children}</LearnerSessionContext.Provider>;
+  return <AppSessionContext.Provider value={value}>{children}</AppSessionContext.Provider>;
 }
 
-export function useLearnerSession(): LearnerSessionContextValue {
-  const ctx = useContext(LearnerSessionContext);
+function useAppSessionContext(): AppSessionContextValue {
+  const ctx = useContext(AppSessionContext);
   if (!ctx) {
-    throw new Error("useLearnerSession must be used within LearnerSessionProvider");
+    throw new Error("useAppSession must be used within LearnerSessionProvider");
   }
   return ctx;
 }
 
+export function useLearnerSession(): {
+  session: LearnerSession | null;
+  status: AppSessionStatus;
+  refresh: () => Promise<void>;
+} {
+  const { session, status, refresh } = useAppSessionContext();
+  return { session, status, refresh };
+}
+
+export function useAppSession(): AppSessionContextValue {
+  return useAppSessionContext();
+}
+
 /** Safe hook for chrome that may render outside the provider during marketing routes. */
-export function useOptionalLearnerSession(): LearnerSessionContextValue | null {
-  return useContext(LearnerSessionContext);
+export function useOptionalAppSession(): AppSessionContextValue | null {
+  return useContext(AppSessionContext);
 }

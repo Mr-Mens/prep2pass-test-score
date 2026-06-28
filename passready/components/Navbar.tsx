@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { BrandLogo } from "@/components/BrandLogo";
+import { useAppSession } from "@/components/learner/LearnerSessionContext";
 import { isMarketingRoute } from "@/lib/marketing-routes";
 import { BRAND_CTA, PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -45,15 +46,6 @@ function mobileNavCtaClass(active: boolean) {
   }`;
 }
 
-type MePayload = {
-  user: {
-    email: string;
-    emailConfirmedAt: string | null;
-    lifetimeAccess?: boolean;
-    role?: string;
-  } | null;
-};
-
 type NavAuth =
   | { phase: "loading" }
   | { phase: "guest" }
@@ -61,31 +53,17 @@ type NavAuth =
 
 export function Navbar() {
   const pathname = usePathname() ?? "";
+  const { user, status } = useAppSession();
   const [open, setOpen] = useState(false);
-  const [navAuth, setNavAuth] = useState<NavAuth>({ phase: "loading" });
   const [scrolled, setScrolled] = useState(false);
 
+  const navAuth: NavAuth = useMemo(() => {
+    if (status === "loading") return { phase: "loading" };
+    if (!user) return { phase: "guest" };
+    return { phase: "member", lifetime: user.hasPremiumAccess, role: user.role };
+  }, [status, user]);
   const onMarketing = isMarketingRoute(pathname);
   const useTransparentHeader = onMarketing && !scrolled && !open;
-
-  const refresh = useCallback(async () => {
-    try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      const raw = (await res.json()) as MePayload;
-      const u = raw.user;
-      if (!u?.emailConfirmedAt) {
-        setNavAuth({ phase: "guest" });
-        return;
-      }
-      setNavAuth({ phase: "member", lifetime: Boolean(u.lifetimeAccess), role: u.role });
-    } catch {
-      setNavAuth({ phase: "guest" });
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-  }, [pathname, refresh]);
 
   useEffect(() => {
     if (!onMarketing) {
@@ -101,7 +79,6 @@ export function Navbar() {
   async function signOut() {
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
-    setNavAuth({ phase: "guest" });
     setOpen(false);
     window.location.assign("/");
   }

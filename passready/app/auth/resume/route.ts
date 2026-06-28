@@ -38,18 +38,9 @@ export async function GET(request: NextRequest) {
     return redirect(origin, `/verify-email?next=${encodeURIComponent("/auth/resume")}`);
   }
 
-  try {
-    const supabase = createSupabaseServerClient();
-    const {
-      data: { user: raw },
-    } = await supabase.auth.getUser();
-    await syncUserProfileFromSignupMetadata(
-      user.id,
-      raw?.user_metadata as Record<string, unknown> | undefined,
-    );
-  } catch (e) {
+  void syncUserProfileFromSignupMetadata(user.id, user.userMetadata).catch((e) => {
     console.warn("[auth/resume] profile_sync_failed", e);
-  }
+  });
 
   const continueRaw = request.nextUrl.searchParams.get("continue");
   const role = await getUserAppRole(user.id);

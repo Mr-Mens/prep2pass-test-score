@@ -34,6 +34,7 @@ export type ServerAuthUser = {
   /** ISO timestamp when email was confirmed */
   emailConfirmedAt: string | null;
   firstName: string;
+  userMetadata?: Record<string, unknown>;
 };
 
 function firstNameFromMetadata(meta: Record<string, unknown> | undefined): string {
@@ -61,6 +62,7 @@ function mapServerAuthUser(user: {
     email: user.email.trim().toLowerCase(),
     emailConfirmedAt: user.email_confirmed_at ?? null,
     firstName: firstNameFromMetadata(user.user_metadata),
+    userMetadata: user.user_metadata,
   };
 }
 

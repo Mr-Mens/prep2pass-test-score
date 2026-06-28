@@ -12,11 +12,13 @@ import {
   subscriptionGrantsPremium,
   type SubscriptionStatus,
 } from "@/lib/server/repositories/subscriptions-repository";
+import type { UserAppRole } from "@/lib/instructor/types";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 
 export type LearnerAccessSource = "none" | "subscription" | "legacy_lifetime" | "instructor" | "parent";
 
 export type LearnerAccessStatus = {
+  role: UserAppRole;
   hasPremiumAccess: boolean;
   canStartAssessment: boolean;
   hasUsedFreeAssessment: boolean;
@@ -41,6 +43,7 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
 
   if (role === "instructor") {
     return {
+      role,
       hasPremiumAccess: true,
       canStartAssessment: true,
       hasUsedFreeAssessment: false,
@@ -56,6 +59,7 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
 
   if (role === "parent") {
     return {
+      role,
       hasPremiumAccess: false,
       canStartAssessment: false,
       hasUsedFreeAssessment: false,
@@ -92,6 +96,7 @@ export async function getLearnerAccessStatus(userId: string): Promise<LearnerAcc
   const canStartAssessment = !isGraduated && (hasPremiumAccess || !hasUsedFreeAssessment);
 
   return {
+    role,
     hasPremiumAccess,
     canStartAssessment,
     hasUsedFreeAssessment,

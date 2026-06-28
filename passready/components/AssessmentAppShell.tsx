@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { Footer } from "@/components/Footer";
 import { LearnerChrome } from "@/components/learner/LearnerChrome";
+import { useAppSession } from "@/components/learner/LearnerSessionContext";
 import { Navbar } from "@/components/Navbar";
 
 function MarketingShell({ children }: { children: React.ReactNode }) {
@@ -20,31 +19,15 @@ function MarketingShell({ children }: { children: React.ReactNode }) {
 
 /** Guests see marketing chrome; confirmed learners keep the in-app shell. */
 export function AssessmentAppShell({ children }: { children: React.ReactNode }) {
-  const [useLearnerChrome, setUseLearnerChrome] = useState<boolean | null>(null);
+  const { user, status } = useAppSession();
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
-        const raw = (await res.json()) as {
-          user?: { emailConfirmedAt?: string | null; role?: string } | null;
-        };
-        if (cancelled) return;
-        const user = raw.user;
-        const confirmed = Boolean(user?.emailConfirmedAt);
-        const learnerWorkspace = !user?.role || user.role === "learner";
-        setUseLearnerChrome(confirmed && learnerWorkspace);
-      } catch {
-        if (!cancelled) setUseLearnerChrome(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  if (status === "loading") {
+    return <MarketingShell>{children}</MarketingShell>;
+  }
 
-  if (useLearnerChrome === true) {
+  const useLearnerChrome = Boolean(user && (user.role === "learner" || !user.role));
+
+  if (useLearnerChrome) {
     return <LearnerChrome>{children}</LearnerChrome>;
   }
 

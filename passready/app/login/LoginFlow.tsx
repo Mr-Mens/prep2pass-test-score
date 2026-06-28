@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/Button";
@@ -18,7 +18,6 @@ import { PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function LoginFlow() {
-  const router = useRouter();
   const params = useSearchParams();
   const nextRaw = params.get("next");
   const roleMismatch = params.get("error") === "role_mismatch";
@@ -65,8 +64,7 @@ export function LoginFlow() {
         }
         return;
       }
-      router.replace(postLoginHref);
-      router.refresh();
+      window.location.assign(postLoginHref);
     } finally {
       setBusy(false);
     }

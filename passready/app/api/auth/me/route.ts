@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getUserAppRole } from "@/lib/server/user-app-role";
+import { getCachedLearnerAccessStatus } from "@/lib/server/learner-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
 
@@ -27,34 +27,7 @@ export async function GET() {
       (typeof meta?.firstName === "string" && meta.firstName.trim()) ||
       "";
 
-    let lifetimeAccess = false;
-    let isGraduated = false;
-    let subscriptionStatus: string | null = null;
-    let hasUsedFreeAssessment = false;
-    let canStartAssessment = true;
-    let freeAssessmentScore: number | null = null;
-    let freeAssessmentLabel: string | null = null;
-    try {
-      const learnerAccess = await import("@/lib/server/learner-access");
-      const sync = await import("@/lib/server/sync-user-subscription-from-stripe");
-      try {
-        await sync.syncSubscriptionForUserFromStripe(user.id);
-      } catch (syncError) {
-        console.warn("[api/auth/me] subscription_sync_failed", syncError);
-      }
-      const access = await learnerAccess.getLearnerAccessStatus(user.id);
-      lifetimeAccess = access.hasPremiumAccess;
-      isGraduated = access.isGraduated;
-      subscriptionStatus = access.subscriptionStatus;
-      hasUsedFreeAssessment = access.hasUsedFreeAssessment;
-      canStartAssessment = access.canStartAssessment;
-      freeAssessmentScore = access.freeAssessmentScore;
-      freeAssessmentLabel = access.freeAssessmentLabel;
-    } catch {
-      lifetimeAccess = false;
-    }
-
-    const role = await getUserAppRole(user.id);
+    const access = await getCachedLearnerAccessStatus(user.id);
 
     return NextResponse.json(
       {
@@ -63,14 +36,14 @@ export async function GET() {
           email: user.email.trim().toLowerCase(),
           emailConfirmedAt: user.email_confirmed_at ?? null,
           firstName,
-          lifetimeAccess,
-          isGraduated,
-          subscriptionStatus,
-          role,
-          hasUsedFreeAssessment,
-          canStartAssessment,
-          freeAssessmentScore,
-          freeAssessmentLabel,
+          lifetimeAccess: access.lifetimeAccess,
+          isGraduated: access.isGraduated,
+          subscriptionStatus: access.subscriptionStatus,
+          role: access.role,
+          hasUsedFreeAssessment: access.hasUsedFreeAssessment,
+          canStartAssessment: access.canStartAssessment,
+          freeAssessmentScore: access.freeAssessmentScore,
+          freeAssessmentLabel: access.freeAssessmentLabel,
         },
       },
       noStore,

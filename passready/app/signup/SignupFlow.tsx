@@ -7,6 +7,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { PasswordRevealField } from "@/components/PasswordRevealField";
 import { describeAuthEmailError } from "@/lib/auth/format-auth-email-error";
+import {
+  classifySignupResult,
+  SIGNUP_EMAIL_TAKEN_MESSAGE,
+} from "@/lib/auth/classify-signup-result";
 import { getPublicAppOrigin } from "@/lib/auth/public-app-origin";
 import { authCallbackRedirectUrl, authResumePath } from "@/lib/auth/post-auth-destination";
 import { appRoleFromDestination } from "@/lib/auth/role-from-destination";
@@ -92,6 +96,7 @@ export function SignupFlow() {
   const [terms, setTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [emailTaken, setEmailTaken] = useState(false);
 
   useEffect(() => {
     if (prefilledEmail) setEmail(prefilledEmail);
@@ -100,6 +105,7 @@ export function SignupFlow() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+    setEmailTaken(false);
     if (!terms) {
       setMsg("By creating an account, you agree to our Terms and Privacy Policy.");
       return;
@@ -191,7 +197,17 @@ export function SignupFlow() {
         },
       });
       if (error) {
+        if (classifySignupResult(null, error).kind === "duplicate_email") {
+          setEmailTaken(true);
+          setMsg(SIGNUP_EMAIL_TAKEN_MESSAGE);
+          return;
+        }
         setMsg(describeAuthEmailError(error, "signup_verify"));
+        return;
+      }
+      if (classifySignupResult(data, null).kind === "duplicate_email") {
+        setEmailTaken(true);
+        setMsg(SIGNUP_EMAIL_TAKEN_MESSAGE);
         return;
       }
       if (data.session) {
@@ -382,9 +398,28 @@ export function SignupFlow() {
         </label>
 
         {msg ? (
-          <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            {msg}
-          </p>
+          <div
+            role="alert"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+          >
+            <p>{msg}</p>
+            {emailTaken ? (
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <Link
+                  href={loginHref}
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-amber-300/80 bg-white px-4 text-sm font-semibold text-brand-900 transition hover:border-teal-300 hover:bg-teal-50/50"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/forgot-password"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 text-sm font-semibold text-teal-900 underline-offset-4 hover:underline"
+                >
+                  Forgot password
+                </Link>
+              </div>
+            ) : null}
+          </div>
         ) : null}
 
         <Button type="submit" variant="conversion" className="w-full" disabled={busy}>

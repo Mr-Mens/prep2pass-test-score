@@ -44,6 +44,7 @@ export function LoginFlow() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setIssue(null);
 
     setBusy(true);
@@ -62,10 +63,12 @@ export function LoginFlow() {
         } else {
           setIssue({ kind: "other", detail: c.detail });
         }
+        setBusy(false);
         return;
       }
       window.location.assign(postLoginHref);
-    } finally {
+    } catch {
+      setIssue({ kind: "other", detail: "Something went wrong. Please try again." });
       setBusy(false);
     }
   }
@@ -112,7 +115,12 @@ export function LoginFlow() {
         </div>
       ) : null}
 
-      <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-4">
+      <form
+        onSubmit={(e) => void onSubmit(e)}
+        className="mt-8 space-y-4"
+        aria-busy={busy}
+        aria-live="polite"
+      >
         <div>
           <label className="text-sm font-medium text-brand-900" htmlFor="li-email">
             Email
@@ -121,9 +129,10 @@ export function LoginFlow() {
             id="li-email"
             type="email"
             autoComplete="email"
-            className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 text-sm"
+            className="mt-1 block min-h-[48px] w-full rounded-xl border border-brand-200 px-4 py-3 text-sm disabled:cursor-not-allowed disabled:bg-brand-50 disabled:text-brand-500"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={busy}
             required
           />
         </div>
@@ -133,13 +142,18 @@ export function LoginFlow() {
           autoComplete="current-password"
           value={password}
           onChange={setPassword}
+          disabled={busy}
           required
         />
 
         <div className="flex justify-end text-xs">
-          <Link href="/forgot-password" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-            Forgot password?
-          </Link>
+          {busy ? (
+            <span className="font-medium text-brand-500">Please wait…</span>
+          ) : (
+            <Link href="/forgot-password" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+              Forgot password?
+            </Link>
+          )}
         </div>
 
         {issue?.kind === "verify" ? (
@@ -169,22 +183,45 @@ export function LoginFlow() {
           </p>
         ) : null}
 
-        <Button type="submit" variant="conversion" className="w-full" disabled={busy}>
-          {busy ? "Signing in…" : signingInAs ? `Sign in as ${ROLE_SIGN_IN_LABEL[signingInAs]}` : "Sign in"}
+        <Button type="submit" variant="conversion" className="w-full" disabled={busy} aria-disabled={busy}>
+          {busy ? (
+            <>
+              <span
+                className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white/35 border-t-white"
+                aria-hidden
+              />
+              Signing you in…
+            </>
+          ) : signingInAs ? (
+            `Sign in as ${ROLE_SIGN_IN_LABEL[signingInAs]}`
+          ) : (
+            "Sign in"
+          )}
         </Button>
 
-        <p className="text-center text-xs text-brand-500">
+        {busy ? (
+          <p className="text-center text-sm text-brand-600" role="status">
+            Opening your workspace — this can take a few seconds.
+          </p>
+        ) : null}
+
+        <p className={`text-center text-xs text-brand-500 ${busy ? "pointer-events-none opacity-50" : ""}`}>
           New here?{" "}
           <Link
             href={nextResolved ? `/signup?next=${encodeURIComponent(nextResolved)}` : "/signup"}
             className="font-semibold text-teal-800 underline-offset-4 hover:underline"
+            tabIndex={busy ? -1 : undefined}
           >
             Create an account
           </Link>
         </p>
 
-        <p className="text-center text-[11px] text-brand-500">
-          <Link href="/welcome" className="font-semibold text-teal-800 underline-offset-4 hover:underline">
+        <p className={`text-center text-[11px] text-brand-500 ${busy ? "pointer-events-none opacity-50" : ""}`}>
+          <Link
+            href="/welcome"
+            className="font-semibold text-teal-800 underline-offset-4 hover:underline"
+            tabIndex={busy ? -1 : undefined}
+          >
             ← Back to welcome
           </Link>
         </p>

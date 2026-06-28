@@ -27,7 +27,9 @@ export const BRAND_LOGO = {
 export const BRAND_ICONS = {
   favicon32: "/brand/pass-pilot-favicon-32.png",
   icon192: "/brand/pass-pilot-icon-192.png",
+  icon192Maskable: "/brand/pass-pilot-icon-192-maskable.png",
   icon512: "/brand/pass-pilot-icon-512.png",
+  icon512Maskable: "/brand/pass-pilot-icon-512-maskable.png",
   apple180: "/brand/pass-pilot-icon-180.png",
 } as const;
 

@@ -17,12 +17,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const shell = (() => {
   if (pathname === "/welcome") {
-    return <div className="app-viewport-shell min-h-dvh">{children}</div>;
+    return <div className="app-viewport-shell h-dvh max-h-dvh overflow-x-hidden overflow-y-auto">{children}</div>;
   }
 
   if (isMarketingRoute(pathname)) {
     return (
-      <div className="app-viewport-shell flex min-h-dvh flex-col">
+      <div className="app-viewport-shell app-viewport-shell-app flex-col">
         <Navbar />
         <main className="app-main-scroll relative flex-1">{children}</main>
         <Footer />
@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isStandaloneAuthRoute(pathname)) {
     return (
-      <div className="app-viewport-shell min-h-dvh overflow-x-hidden bg-gradient-to-b from-brand-50 via-white to-teal-50/35">
+      <div className="app-viewport-shell h-dvh max-h-dvh overflow-x-hidden overflow-y-auto bg-gradient-to-b from-brand-50 via-white to-teal-50/35">
         {children}
       </div>
     );
@@ -40,18 +40,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAdminRoute(pathname)) {
     return (
-      <div className="app-viewport-shell min-h-dvh overflow-x-hidden bg-brand-50">
+      <div className="app-viewport-shell h-dvh max-h-dvh overflow-x-hidden overflow-y-auto bg-brand-50">
         {children}
       </div>
     );
   }
 
   if (pathname.startsWith("/instructor")) {
-    return <div className="app-viewport-shell flex min-h-dvh flex-col">{children}</div>;
+    return <div className="app-viewport-shell app-viewport-shell-app flex-col">{children}</div>;
   }
 
   if (pathname.startsWith("/supervisor")) {
-    return <div className="app-viewport-shell flex min-h-dvh flex-col">{children}</div>;
+    return <div className="app-viewport-shell app-viewport-shell-app flex-col">{children}</div>;
   }
 
   if (isAssessmentRoute(pathname)) {
@@ -63,7 +63,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="app-viewport-shell flex min-h-dvh flex-col">
+    <div className="app-viewport-shell app-viewport-shell-app flex-col">
       <Navbar />
       <main className="app-main-scroll relative flex-1">{children}</main>
       <Footer />

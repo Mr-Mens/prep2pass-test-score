@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 
 import { AppShell } from "@/components/AppShell";
+import { PwaRootEffects } from "@/components/pwa/PwaProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BRAND_ICONS } from "@/lib/constants";
+import { PWA } from "@/lib/pwa/config";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { buildRootMetadata } from "@/lib/seo/metadata";
 
@@ -33,13 +35,20 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Pass Pilot",
-    statusBarStyle: "default",
+    title: PWA.shortName,
+    statusBarStyle: "black-translucent",
+  },
+  manifest: "/manifest.webmanifest",
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-title": PWA.shortName,
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1c2230",
+  themeColor: PWA.themeColor,
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -50,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en-GB" className={`${inter.variable} ${interTight.variable}`}>
       <body className="font-sans">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+        <PwaRootEffects />
         <AppShell>{children}</AppShell>
       </body>
     </html>

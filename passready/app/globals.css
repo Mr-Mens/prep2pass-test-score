@@ -115,8 +115,12 @@
     @apply w-full max-w-full overflow-x-hidden;
   }
 
+  .app-viewport-shell-app {
+    @apply flex h-dvh max-h-dvh overflow-hidden;
+  }
+
   .app-main-scroll {
-    @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto;
+    @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain;
   }
 }
 
@@ -143,5 +147,13 @@
 
   main {
     padding: 0 !important;
+  }
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
   }
 }

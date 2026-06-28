@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1c2230" />
+    <title>Pass Pilot — offline</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        background: linear-gradient(180deg, #f4f7fb 0%, #ffffff 55%, #eefaf8 100%);
+        color: #1c2230;
+      }
+      .card {
+        width: min(100%, 26rem);
+        border: 1px solid rgba(28, 34, 48, 0.08);
+        border-radius: 1.25rem;
+        background: #fff;
+        padding: 1.75rem 1.5rem;
+        box-shadow: 0 12px 40px rgba(28, 34, 48, 0.08);
+        text-align: center;
+      }
+      .logo {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 1rem;
+        margin: 0 auto 1rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.35rem;
+        line-height: 1.3;
+      }
+      p {
+        margin: 0.75rem 0 0;
+        color: #4b5563;
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+      button {
+        margin-top: 1.25rem;
+        width: 100%;
+        min-height: 3rem;
+        border: 0;
+        border-radius: 0.85rem;
+        background: #0f766e;
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:active {
+        transform: translateY(1px);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <img class="logo" src="/brand/pass-pilot-icon-192.png" width="64" height="64" alt="" />
+      <h1>You are offline</h1>
+      <p>Pass Pilot needs a connection for live scores, reports and account features. Cached pages may still open when you reconnect.</p>
+      <button type="button" onclick="window.location.reload()">Try again</button>
+    </main>
+  </body>
+</html>

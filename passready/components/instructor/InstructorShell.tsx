@@ -90,7 +90,7 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
   }
 
   return (
-    <div className="app-viewport-shell flex min-h-[calc(100dvh-0px)] min-w-0 flex-col bg-[#f0f2f5] md:flex-row">
+    <div className="app-viewport-shell app-viewport-shell-app min-w-0 bg-[#f0f2f5] md:flex-row">
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,90vw)] transform border-r border-slate-800 bg-[#0f172a] shadow-xl transition-transform md:static md:z-0 md:w-[17.5rem] md:translate-x-0 md:shadow-none ${
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
@@ -141,7 +141,7 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
         />
       ) : null}
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-30 flex min-w-0 items-center gap-3 border-b border-brand-200/80 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <button
             type="button"

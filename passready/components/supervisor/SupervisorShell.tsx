@@ -57,7 +57,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
   }
 
   return (
-    <div className="app-viewport-shell flex min-h-dvh min-w-0 flex-col bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
+    <div className="app-viewport-shell app-viewport-shell-app min-w-0 bg-gradient-to-b from-brand-50/40 via-white to-teal-50/20 md:flex-row">
       <aside className="hidden w-[17rem] shrink-0 flex-col border-r border-brand-100 bg-white md:flex">
         <div className="flex h-full flex-col px-4 py-6">
           <BrandLogo variant="compact" />
@@ -102,7 +102,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
         </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-30 flex min-w-0 items-center justify-between border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <div>
             <p className="font-heading text-sm font-semibold text-brand-950">Parent workspace</p>

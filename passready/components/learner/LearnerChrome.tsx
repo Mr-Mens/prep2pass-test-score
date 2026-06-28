@@ -310,7 +310,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="app-viewport-shell flex min-h-dvh min-w-0 bg-[#f0f2f5] max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:overflow-hidden md:flex-row">
+    <div className="app-viewport-shell app-viewport-shell-app min-w-0 bg-[#f0f2f5] md:flex-row">
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
           <Link href={homeHref} className="block" aria-label={`${PRODUCT.name} home`}>
@@ -358,7 +358,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col max-md:overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="z-40 shrink-0 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
           <div className="mx-auto flex min-h-[52px] w-full min-w-0 max-w-full items-center gap-2 px-3 py-3 sm:min-h-[3.25rem] sm:gap-3 sm:px-4">
             <Link
@@ -399,7 +399,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
         <main
           id="main"
-          className="app-main-scroll relative mx-auto w-full min-h-0 max-w-4xl px-4 pb-4 pt-6 [-webkit-overflow-scrolling:touch] sm:px-6 sm:pt-8 md:max-w-none md:flex-none md:px-8 md:pb-10 md:pt-10 lg:px-10"
+          className="app-main-scroll relative mx-auto w-full min-h-0 flex-1 max-w-4xl px-4 pb-4 pt-6 [-webkit-overflow-scrolling:touch] sm:px-6 sm:pt-8 md:max-w-none md:px-8 md:pb-10 md:pt-10 lg:px-10"
         >
           <div className="mx-auto w-full min-w-0 max-w-4xl">{children}</div>
         </main>

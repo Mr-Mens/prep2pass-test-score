@@ -10,8 +10,10 @@ function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-viewport-shell app-viewport-shell-app flex-col">
       <Navbar />
-      <main className="app-main-scroll relative flex-1">{children}</main>
-      <Footer />
+      <main className="app-main-scroll relative min-h-0 flex-1">
+        {children}
+        <Footer />
+      </main>
     </div>
   );
 }

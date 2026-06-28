@@ -17,22 +17,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const shell = (() => {
   if (pathname === "/welcome") {
-    return <div className="app-viewport-shell h-dvh max-h-dvh overflow-x-hidden overflow-y-auto">{children}</div>;
+    return <div className="app-viewport-shell app-viewport-shell-scroll">{children}</div>;
   }
 
   if (isMarketingRoute(pathname)) {
     return (
       <div className="app-viewport-shell app-viewport-shell-app flex-col">
         <Navbar />
-        <main className="app-main-scroll relative flex-1">{children}</main>
-        <Footer />
+        <main className="app-main-scroll relative min-h-0 flex-1">
+          {children}
+          <Footer />
+        </main>
       </div>
     );
   }
 
   if (isStandaloneAuthRoute(pathname)) {
     return (
-      <div className="app-viewport-shell h-dvh max-h-dvh overflow-x-hidden overflow-y-auto bg-gradient-to-b from-brand-50 via-white to-teal-50/35">
+      <div className="app-viewport-shell app-viewport-shell-scroll bg-gradient-to-b from-brand-50 via-white to-teal-50/35">
         {children}
       </div>
     );
@@ -40,7 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAdminRoute(pathname)) {
     return (
-      <div className="app-viewport-shell h-dvh max-h-dvh overflow-x-hidden overflow-y-auto bg-brand-50">
+      <div className="app-viewport-shell app-viewport-shell-scroll bg-brand-50">
         {children}
       </div>
     );
@@ -65,8 +67,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-viewport-shell app-viewport-shell-app flex-col">
       <Navbar />
-      <main className="app-main-scroll relative flex-1">{children}</main>
-      <Footer />
+      <main className="app-main-scroll relative min-h-0 flex-1">
+        {children}
+        <Footer />
+      </main>
     </div>
   );
   })();

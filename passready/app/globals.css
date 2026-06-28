@@ -121,6 +121,7 @@
 
   .app-main-scroll {
     @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .pt-safe {
@@ -130,6 +131,21 @@
   .px-safe {
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /** Top chrome (nav bars): safe inset + base padding — not the whole viewport shell. */
+  .app-chrome-top {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  }
+
+  /** Fixed / docked bottom UI only — not scroll footers. */
+  .pb-safe-fixed {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .app-viewport-shell-scroll {
+    @apply h-dvh max-h-dvh overflow-x-hidden overflow-y-auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -160,16 +176,45 @@
 }
 
 @media (display-mode: standalone) {
-  html,
-  body {
+  html {
     height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     overflow: hidden;
   }
 
-  /* Installed PWA: keep headers and nav below the status bar / notch. */
+  body {
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    max-height: 100dvh;
+    max-height: -webkit-fill-available;
+    overflow: hidden;
+    /* Match app chrome so letterboxing never shows grey margins. */
+    background-color: #ffffff;
+  }
+
+  /*
+   * Fill the installed window exactly (100% chain beats dvh/body mismatch on iOS).
+   * Top safe area lives on .app-chrome-top headers, not the shell.
+   */
   .app-viewport-shell {
-    padding-top: env(safe-area-inset-top, 0px);
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .app-viewport-shell-app {
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+  }
+
+  .app-viewport-shell-scroll {
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
   }
 }

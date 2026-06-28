@@ -103,7 +103,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="sticky top-0 z-30 flex min-w-0 items-center justify-between border-b border-brand-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+        <header className="app-chrome-top sticky top-0 z-30 flex min-w-0 items-center justify-between border-b border-brand-100 bg-white/95 px-4 pb-3 backdrop-blur md:hidden md:pt-0">
           <div>
             <p className="font-heading text-sm font-semibold text-brand-950">Parent workspace</p>
             <p className="text-xs text-brand-500">Pass Pilot</p>
@@ -122,7 +122,7 @@ export function SupervisorShell({ children, supervisorEmail, displayName }: Prop
         </main>
 
         <nav
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-100 bg-white/95 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-100 bg-white/95 px-1 pb-safe-fixed pt-2 backdrop-blur md:hidden"
           aria-label="Supervisor mobile"
         >
           <ul className="mx-auto flex w-full min-w-0 max-w-full gap-0">

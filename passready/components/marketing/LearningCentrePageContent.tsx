@@ -57,6 +57,14 @@ export function LearningCentrePageContent() {
     <>
       <Section className="border-b border-brand-100/80 bg-gradient-to-b from-teal-50/30 to-white py-12 sm:py-16">
         <div className="mx-auto max-w-3xl text-center">
+          <p className="mb-4">
+            <Link
+              href="/"
+              className="inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-800 underline-offset-4 hover:underline"
+            >
+              ← Back to home
+            </Link>
+          </p>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
             {PLATFORM_TERMS.learningCentre}
           </p>

@@ -206,7 +206,7 @@ function initialsFromSession(session: { email: string; firstName: string }): str
 function NavDockSkeleton() {
   return (
     <nav
-      className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-safe-fixed backdrop-blur md:hidden"
       aria-hidden
     >
       <ul className="mx-auto flex w-full min-w-0 gap-0 px-0.5 pt-1">
@@ -273,7 +273,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
     return (
       <nav
-        className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
+        className="z-50 shrink-0 border-t border-brand-200/80 bg-white/95 pb-safe-fixed backdrop-blur supports-[backdrop-filter]:bg-white/90 md:hidden"
         aria-label="Primary app navigation"
       >
         <ul className="mx-auto flex w-full min-w-0 max-w-full gap-0 px-0.5 pt-1">
@@ -359,8 +359,8 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="z-40 shrink-0 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden">
-          <div className="mx-auto flex min-h-[52px] w-full min-w-0 max-w-full items-center gap-2 px-3 py-3 sm:min-h-[3.25rem] sm:gap-3 sm:px-4">
+        <header className="app-chrome-top z-40 shrink-0 border-b border-brand-200/80 bg-white/95 backdrop-blur md:hidden md:pt-0">
+          <div className="mx-auto flex min-h-[52px] w-full min-w-0 max-w-full items-center gap-2 px-3 pb-3 sm:min-h-[3.25rem] sm:gap-3 sm:px-4">
             <Link
               href={homeHref}
               className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-white px-2.5 py-2 shadow-sm sm:px-3"

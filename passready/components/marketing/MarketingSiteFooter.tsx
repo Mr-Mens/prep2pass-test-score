@@ -18,7 +18,7 @@ const footerLinks = [
 
 export function MarketingSiteFooter() {
   return (
-    <footer className="border-t border-brand-100 bg-white pb-[env(safe-area-inset-bottom)]">
+    <footer className="border-t border-brand-100 bg-white">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-md">

@@ -14,7 +14,7 @@ type Props = {
 
 export function AuthScreenChrome({ children, showWordmark = true }: Props) {
   return (
-    <div className="app-viewport-shell flex flex-col overflow-x-hidden px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-12">
+    <div className="app-chrome-top app-viewport-shell flex flex-col overflow-x-hidden px-4 pb-12 sm:px-6 sm:pb-16 sm:pt-12">
       <div className="mx-auto w-full min-w-0 max-w-lg">
         <Link
           href="/welcome"

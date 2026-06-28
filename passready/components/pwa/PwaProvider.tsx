@@ -77,7 +77,7 @@ export function PwaProvider() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] px-3 pb-safe-fixed pt-3 sm:px-4"
       role="region"
       aria-label="Install Pass Pilot"
     >

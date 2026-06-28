@@ -178,7 +178,7 @@ export async function MarketingHomePage() {
   const hideLearnerPricing = Boolean(sessionUser?.emailConfirmedAt && hasPremiumAccess);
 
   return (
-    <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
+    <div className="pb-[5.5rem] md:pb-0">
       {/* Hero */}
       <section className="relative isolate overflow-hidden border-b border-brand-200/40">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-50/90 via-white to-teal-50/35" aria-hidden />

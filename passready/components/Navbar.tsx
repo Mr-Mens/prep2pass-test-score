@@ -169,8 +169,10 @@ export function Navbar() {
   const navLinks = navAuth.phase === "member" ? memberPrimaryLinks : guestLinks;
 
   return (
-    <header className={`sticky top-0 z-40 overflow-x-hidden transition-all duration-300 ${headerClass}`}>
-      <div className="mx-auto flex w-full min-w-0 max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6 lg:px-8">
+    <header
+      className={`app-chrome-top sticky top-0 z-40 shrink-0 overflow-x-hidden transition-all duration-300 ${headerClass}`}
+    >
+      <div className="mx-auto flex w-full min-w-0 max-w-6xl items-center justify-between gap-2 px-3 pb-3 sm:gap-3 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="flex min-h-[48px] min-w-0 shrink-0 items-center rounded-xl py-1 pr-2"
@@ -237,8 +239,7 @@ export function Navbar() {
       {open ? (
         <div
           id="mobile-nav"
-          className="border-t border-brand-100 bg-white/98 shadow-inner md:hidden"
-          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+          className="border-t border-brand-100 bg-white/98 pb-3 shadow-inner md:hidden"
         >
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-3 py-3 sm:px-6" aria-label="Mobile primary">
             {navAuth.phase === "loading" ? (
@@ -291,6 +292,13 @@ export function Navbar() {
               </>
             ) : (
               <>
+                <Link
+                  href="/"
+                  className={mobileNavLinkClass(pathname === "/")}
+                  onClick={() => setOpen(false)}
+                >
+                  Home
+                </Link>
                 {guestLinks.map((l) => (
                   <Link
                     key={l.href}

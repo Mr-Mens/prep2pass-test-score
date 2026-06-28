@@ -114,7 +114,7 @@ export function WelcomeLanding() {
   const signupHref = `/signup?next=${encodeURIComponent(dest)}`;
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-gradient-to-b from-slate-50 via-white to-teal-50/30 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="app-chrome-top relative min-h-dvh overflow-x-hidden bg-gradient-to-b from-slate-50 via-white to-teal-50/30 pb-6">
       <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,rgba(45,212,191,0.16),transparent_55%)]"
         aria-hidden

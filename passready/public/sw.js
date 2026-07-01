@@ -5,7 +5,7 @@ const IS_DEV =
   self.location.hostname === "127.0.0.1" ||
   self.location.hostname.endsWith(".local");
 
-const CACHE_VERSION = IS_DEV ? "pass-pilot-pwa-dev" : "pass-pilot-pwa-v4";
+const CACHE_VERSION = IS_DEV ? "pass-pilot-pwa-dev" : "pass-pilot-pwa-v5";
 
 const PRECACHE_URLS = IS_DEV
   ? ["/offline.html", "/manifest.webmanifest"]

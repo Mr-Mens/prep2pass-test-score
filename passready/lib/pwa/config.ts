@@ -17,7 +17,7 @@ export const PWA = {
   swPath: "/sw.js",
   swScope: "/",
   offlinePath: "/offline.html",
-  cacheVersion: "pass-pilot-pwa-v4",
+  cacheVersion: "pass-pilot-pwa-v5",
   installDismissKey: "passready_pwa_install_dismissed",
 } as const;
 

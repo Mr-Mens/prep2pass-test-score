@@ -19,13 +19,13 @@ const appDir = path.join(root, "app");
 /** Emblem height as a fraction of the trimmed full lockup (fallback only). */
 const EMBLEM_HEIGHT_RATIO = 0.56;
 /** Symbol size on canvas for standard icons when composing from a trimmed symbol. */
-const SYMBOL_ICON_SCALE = 0.92;
+const SYMBOL_ICON_SCALE = 0.84;
 /**
  * Maskable safe zone: critical artwork must fit in the centre 80% diameter circle.
  * @see https://w3c.github.io/manifest/#icon-masks
  */
 const MASKABLE_SAFE_ZONE_DIAMETER = 0.8;
-const MASKABLE_SYMBOL_SCALE = 0.72;
+const MASKABLE_SYMBOL_SCALE = 0.64;
 const MASKABLE_ICON_SIZES = [512, 192];
 const ICON_BACKGROUND = { r: 255, g: 255, b: 255, alpha: 1 };
 

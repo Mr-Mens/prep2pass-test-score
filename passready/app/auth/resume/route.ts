@@ -3,8 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { detectLoginIntentMismatch, loginIntentRoleFromContinue } from "@/lib/auth/login-intent";
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
 import { resolvePostAuthDestination } from "@/lib/auth/resolve-post-auth-destination";
+import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
 import { syncUserProfileFromSignupMetadata } from "@/lib/server/repositories/user-profiles-repository";
-import { getUserAppRole } from "@/lib/server/user-app-role";
+import { ensureUserAppRoleFromIntent, getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
 function redirect(origin: string, path: string) {
@@ -36,6 +37,12 @@ export async function GET(request: NextRequest) {
 
   if (!user.emailConfirmedAt) {
     return redirect(origin, `/verify-email?next=${encodeURIComponent("/auth/resume")}`);
+  }
+
+  try {
+    await ensureUserAppRoleFromIntent(user.id, selfServiceRoleFromSignupMetadata(user.userMetadata));
+  } catch (e) {
+    console.warn("[auth/resume] role_assignment_failed", e);
   }
 
   void syncUserProfileFromSignupMetadata(user.id, user.userMetadata).catch((e) => {

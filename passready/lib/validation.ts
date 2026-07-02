@@ -137,40 +137,55 @@ function normalizeSyllabusOutput<T extends { syllabusCaptureVersion?: 1; topicsC
   };
 }
 
+function normaliseRequiredCountInput(v: unknown): string {
+  if (typeof v === "number") return Number.isFinite(v) ? String(v) : "";
+  if (v == null) return "";
+  return String(v).trim();
+}
+
+function normaliseOptionalCountInput(v: unknown): string {
+  if (typeof v === "number") return Number.isFinite(v) ? String(v) : "";
+  if (v == null) return "";
+  return String(v).trim();
+}
+
 const countedField = (label: string, max: number) =>
-  z
-    .string({ required_error: label })
-    .trim()
-    .min(1, label)
-    .refine((v) => Number.isFinite(Number(v)), { message: label })
-    .transform((v) => Number.parseInt(v, 10))
-    .pipe(
-      z
-        .number({ invalid_type_error: label })
-        .int("Use a whole number")
-        .min(0, "Cannot be negative")
-        .max(max, "Enter a realistic value"),
-    );
+  z.preprocess(
+    normaliseRequiredCountInput,
+    z
+      .string({ required_error: label })
+      .min(1, label)
+      .refine((v) => Number.isFinite(Number(v)), { message: label })
+      .transform((v) => Number.parseInt(v, 10))
+      .pipe(
+        z
+          .number({ invalid_type_error: label })
+          .int("Use a whole number")
+          .min(0, "Cannot be negative")
+          .max(max, "Enter a realistic value"),
+      ),
+  );
 
 /** Blank or missing counts as 0 so fault fields stay optional for learners who do not have session data. */
 const optionalNonNegativeIntStringField = (label: string, max: number) =>
-  z
-    .string()
-    .optional()
-    .transform((v) => (v == null ? "" : v).trim())
-    .superRefine((s, ctx) => {
-      if (s === "") return;
-      if (!/^\d+$/.test(s)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Use a whole number for ${label}, or leave blank` });
-        return;
-      }
-      const n = Number.parseInt(s, 10);
-      if (n > max) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Enter a realistic value for ${label} (max ${max})` });
-      }
-    })
-    .transform((s) => (s === "" ? 0 : Number.parseInt(s, 10)))
-    .pipe(z.number().int().min(0).max(max));
+  z.preprocess(
+    normaliseOptionalCountInput,
+    z
+      .string()
+      .superRefine((s, ctx) => {
+        if (s === "") return;
+        if (!/^\d+$/.test(s)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Use a whole number for ${label}, or leave blank` });
+          return;
+        }
+        const n = Number.parseInt(s, 10);
+        if (n > max) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Enter a realistic value for ${label} (max ${max})` });
+        }
+      })
+      .transform((s) => (s === "" ? 0 : Number.parseInt(s, 10)))
+      .pipe(z.number().int().min(0).max(max)),
+  );
 
 export const assessmentSchema = z
   .object({
@@ -287,6 +302,25 @@ export const assessmentSchema = z
 export type AssessmentFormValues = z.input<typeof assessmentSchema>;
 export type AssessmentPayload = z.output<typeof assessmentSchema>;
 
+/** Accept raw form values or resolver-transformed payloads on submit. */
+export function parseAssessmentSubmitValues(
+  values: unknown,
+): { success: true; data: AssessmentPayload } | { success: false; message: string } {
+  const fromForm = assessmentSchema.safeParse(values);
+  if (fromForm.success) {
+    return { success: true, data: fromForm.data };
+  }
+
+  const fromPayload = assessmentDataSchema.safeParse(values);
+  if (fromPayload.success) {
+    return { success: true, data: fromPayload.data };
+  }
+
+  const issue = fromForm.error.issues[0] ?? fromPayload.error.issues[0];
+  const message = issue?.message?.trim() || "Please review your answers and try again.";
+  return { success: false, message };
+}
+
 /** Normalised assessment as persisted (localStorage / future API). */
 export const assessmentDataSchema = z.object({
   fullName: z.string().min(1),
@@ -382,6 +416,9 @@ export const syllabusProgressSnapshotSchema = z.object({
   weightedCoverageRatio: z.number().min(0).max(1),
   categoryProgress: z.array(syllabusProgressCategorySchema),
   uncoveredPriorityLabels: z.array(z.string()),
+  uncoveredTeachingOrderLabels: z.array(z.string()).optional(),
+  /** Persisted covered topic IDs so saved reports can rebuild the full gap list. */
+  topicsCoveredIds: z.array(z.string()).optional(),
   nextLessonFocus: z.array(z.string()),
 });
 export type SyllabusProgressSnapshot = z.infer<typeof syllabusProgressSnapshotSchema>;
@@ -408,6 +445,7 @@ export const reportMetadataSchema = z.object({
   generatedAt: z.string(),
   syllabus: syllabusProgressSnapshotSchema.optional(),
   weakAreaDetails: z.array(weakAreaDetailEntrySchema).optional(),
+  topicsCovered: z.array(z.string()).optional(),
 });
 export type ReportMetadata = z.infer<typeof reportMetadataSchema>;
 

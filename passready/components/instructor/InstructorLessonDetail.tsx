@@ -64,7 +64,7 @@ export function InstructorLessonDetail({ lesson }: Props) {
         <div className="mt-4 flex flex-wrap gap-2">
           {lesson.pass_pilot_score != null ? (
             <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-900">
-              Pass Pilot Score {lesson.pass_pilot_score}
+              Test Ready Score {lesson.pass_pilot_score}
             </span>
           ) : null}
           {lesson.status === "reflection_pending" ? (

@@ -8,7 +8,7 @@ import {
   type RiskEvidenceSource,
 } from "@/lib/report-reasoning";
 import { applyRoadmapReadinessScoreCeiling } from "@/lib/readiness-calibration";
-import { syllabusLayerActive } from "@/lib/syllabus-coverage";
+import { resolveUncoveredTopicLabels, syllabusLayerActive } from "@/lib/syllabus-coverage";
 import type {
   AssessmentPayload,
   ReadinessLabel,
@@ -25,10 +25,13 @@ export type TestPassRiskItem = {
   source?: RiskEvidenceSource;
 };
 
+export type ReportPriorityKind = "struggle" | "syllabus";
+
 export type ReportPriority = {
-  rank: 1 | 2 | 3;
+  rank: number;
   title: string;
   detail: string;
+  kind: ReportPriorityKind;
 };
 
 function tierScore(tier: RiskTier): number {
@@ -37,6 +40,39 @@ function tierScore(tier: RiskTier): number {
 
 function rankWeakAreas(ids: WeakAreaId[]): WeakAreaId[] {
   return Array.from(new Set(ids)).sort((a, b) => tierScore(productMeta(b).riskTier) - tierScore(productMeta(a).riskTier));
+}
+
+
+function buildSyllabusSummaryPriority(uncovered: string[]): ReportPriority | null {
+  if (uncovered.length === 0) return null;
+
+  const count = uncovered.length;
+  const examples = uncovered
+    .slice(0, 3)
+    .map((label) => label.toLowerCase())
+    .join(", ");
+
+  if (count === 1) {
+    const topic = uncovered[0]!;
+    return {
+      rank: 0,
+      title: `Cover ${topic.toLowerCase()}`,
+      detail: `${topic} is not yet marked as practised. Build it into upcoming lessons with your instructor.`,
+      kind: "syllabus",
+    };
+  }
+
+  const detail =
+    count <= 3
+      ? `${count} syllabus topics are still to cover for test readiness: ${examples}. Work through them in the usual teaching order with your instructor. Your learning roadmap lists the full checklist.`
+      : `${count} syllabus topics are still to cover for test readiness. Start with ${examples}, then continue in the usual teaching order. Your learning roadmap lists the full checklist.`;
+
+  return {
+    rank: 0,
+    title: "Build remaining syllabus breadth",
+    detail,
+    kind: "syllabus",
+  };
 }
 
 function faultFromWeakArea(
@@ -189,116 +225,50 @@ export function buildTestPassRisks(input: {
   return items.slice(0, 5);
 }
 
-function testDatePriority(
-  testBooked: AssessmentPayload["testBooked"],
-  testDate: AssessmentPayload["testDate"],
-  mockTestTaken: AssessmentPayload["mockTestTaken"],
-): ReportPriority | null {
-  if (testBooked !== "yes" || !testDate) return null;
-  if (mockTestTaken === "yes") {
-    return {
-      rank: 3,
-      title: "Polish before test day",
-      detail:
-        "Work backwards from your test date: tackle weaker areas first, then use the final lessons to maintain standard on familiar test routes.",
-    };
-  }
-  return {
-    rank: 3,
-    title: "Add mock-test pressure",
-    detail:
-      "Once your main behaviours are steadier, complete a mock-test style drive before your test date so exam pressure is not a surprise.",
-  };
-}
-
 export function buildTopPriorities(input: {
   weakAreas: WeakAreaId[];
   weakAreaDetails?: WeakAreaDetailEntry[];
   syllabus?: SyllabusProgressSnapshot | null;
+  topicsCovered?: string[];
   testBooked: AssessmentPayload["testBooked"];
   testDate: AssessmentPayload["testDate"];
   mockTestTaken: AssessmentPayload["mockTestTaken"];
   nextSteps: string[];
 }): ReportPriority[] {
   const priorities: ReportPriority[] = [];
-  const ranked = rankWeakAreas(input.weakAreas);
+  let rank = 1;
 
-  if (ranked[0]) {
-    const copy = buildFaithfulPriorityCopy(ranked[0], input.weakAreaDetails);
-    priorities.push({ rank: 1, title: copy.title, detail: copy.detail });
-  } else {
+  for (const id of rankWeakAreas(input.weakAreas)) {
+    const copy = buildFaithfulPriorityCopy(id, input.weakAreaDetails);
+    priorities.push({
+      rank: rank++,
+      title: copy.title,
+      detail: copy.detail,
+      kind: "struggle",
+    });
+  }
+
+  const uncovered = resolveUncoveredTopicLabels({
+    syllabus: input.syllabus,
+    topicsCovered: input.topicsCovered,
+  });
+
+  const syllabusSummary = buildSyllabusSummaryPriority(uncovered);
+  if (syllabusSummary) {
+    priorities.push({ ...syllabusSummary, rank: rank++ });
+  }
+
+  if (priorities.length === 0) {
     priorities.push({
       rank: 1,
       title: "Build consistent routines",
       detail:
         "Keep observations and decision-making steady on familiar routes before stretching onto harder junctions.",
+      kind: "struggle",
     });
   }
 
-  const indCat = input.syllabus?.categoryProgress.find((c) => c.key === "independent_driving");
-  const manCat = input.syllabus?.categoryProgress.find((c) => c.key === "manoeuvres");
-  const syllabusFocus = input.syllabus?.nextLessonFocus[0];
-
-  if (indCat && indCat.covered === 0) {
-    priorities.push({
-      rank: 2,
-      title: "Build independent driving",
-      detail:
-        "Independent driving is a major gap before test readiness. Start adding sat nav and road-sign following into normal lessons with planning ahead built in.",
-    });
-  } else if (manCat && manCat.covered <= 2) {
-    priorities.push({
-      rank: 2,
-      title: "Complete manoeuvre coverage",
-      detail:
-        "Several manoeuvres still need more practice. Cover the remaining manoeuvres in short, repeated sessions before mock-test style drives.",
-    });
-  } else if (indCat && indCat.covered < indCat.total) {
-    priorities.push({
-      rank: 2,
-      title: "Build independent driving",
-      detail: "Start adding sat nav and road-sign following into normal lessons, with planning ahead built in.",
-    });
-  } else if (syllabusFocus) {
-    priorities.push({
-      rank: 2,
-      title: `Cover ${syllabusFocus.toLowerCase()}`,
-      detail:
-        "This is a main recap area still to build into practice. Short, repeated practice is usually more useful than trying to cram everything.",
-    });
-  } else if (ranked[1] && !isManoeuvreWeakArea(ranked[1])) {
-    const copy = buildFaithfulPriorityCopy(ranked[1], input.weakAreaDetails);
-    priorities.push({ rank: 2, title: copy.title, detail: copy.detail });
-  } else {
-    priorities.push({
-      rank: 2,
-      title: "Stretch your road experience",
-      detail: "Add one road type or manoeuvre you avoid, then repeat it until the routine feels calm.",
-    });
-  }
-
-  const testPriority = testDatePriority(input.testBooked, input.testDate, input.mockTestTaken);
-  if (testPriority) {
-    priorities.push(testPriority);
-  } else if (input.mockTestTaken !== "yes") {
-    priorities.push({
-      rank: 3,
-      title: "Book a mock when ready",
-      detail:
-        "A mock will be useful once the basics are consistent, because it shows how you cope under pressure.",
-    });
-  } else {
-    const fallback = input.nextSteps[input.nextSteps.length - 1];
-    priorities.push({
-      rank: 3,
-      title: "Take this to your next lesson",
-      detail:
-        fallback ??
-        "Agree one observable target with your instructor for the next session and repeat it on two familiar routes.",
-    });
-  }
-
-  return priorities.slice(0, 3) as ReportPriority[];
+  return priorities;
 }
 
 export function roadmapStatusLabel(syllabus: SyllabusProgressSnapshot): string {

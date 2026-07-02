@@ -1,4 +1,5 @@
 import { computeEstimatedLessonHours } from "../lib/estimated-lesson-hours";
+import { buildReportViewModel, buildReportViewModelFromAssessment } from "../lib/report-view-model";
 import { computeMockReadiness } from "../lib/scoring";
 import { buildTestPassRisks, buildTopPriorities } from "../lib/report-insights";
 import { buildFaithfulWeakAreaRiskCopy, evidenceBasedStrengthClause } from "../lib/report-reasoning";
@@ -96,6 +97,29 @@ const bPriority = buildTopPriorities({
   nextSteps: [],
 });
 assert(bPriority[0]?.title === "Improve right-turn positioning", "specific priority title");
+assert(bPriority[0]?.kind === "struggle", "struggle listed first in action plan");
+
+console.log("\nScenario B2: action plan summarises uncovered syllabus topics");
+const emptyRoadmap = computeMockReadiness({
+  ...base,
+  topicsCovered: [],
+  weakAreas: ["junctions"],
+  weakAreaDetails: bDetails,
+});
+const bFullPlan = buildTopPriorities({
+  weakAreas: ["junctions"],
+  weakAreaDetails: bDetails,
+  syllabus: emptyRoadmap.syllabusProgress ?? null,
+  topicsCovered: [],
+  testBooked: "no",
+  testDate: undefined,
+  mockTestTaken: "no",
+  nextSteps: [],
+});
+assert(bFullPlan.length === 2, `action plan stays concise (${bFullPlan.length})`);
+assert(bFullPlan[1]?.kind === "syllabus", "syllabus summary follows struggles");
+assert(bFullPlan[1]?.title === "Build remaining syllabus breadth", "syllabus gaps are summarised");
+assert(bFullPlan[1]?.detail.includes("cockpit drill"), "summary names first teaching-order examples");
 
 console.log("\nScenario C: roadmap gaps align score, band, and hours");
 const cAssessment: AssessmentPayload = {
@@ -202,6 +226,94 @@ const fReconciled = reconcileReadinessOutcome({
 });
 assert(fReconciled.label !== "Nearly Test Ready", "high hours prevent Nearly Test Ready");
 assert(fReconciled.score <= 74, "score capped with high hours");
+
+console.log("\nScenario G: live result keeps syllabus action plan without metadata");
+const gAssessment: AssessmentPayload = {
+  ...base,
+  weakAreas: ["lanePositioning"],
+  topicsCovered: [],
+  syllabusCaptureVersion: 1,
+};
+const gModel = buildReportViewModelFromAssessment(gAssessment, {
+  readinessScore: 44,
+  readinessLabel: "Needs More Time",
+  summary: "Test summary",
+  nextSteps: [],
+  riskAreas: [],
+});
+assert(gModel.topPriorities[0]?.title === "Clarify lane positioning difficulties", "lane positioning priority first");
+assert(
+  gModel.topPriorities[0]?.detail.includes("lane positioning is currently your weakest area"),
+  "lane positioning uses singular grammar",
+);
+assert(gModel.topPriorities[1]?.title === "Build remaining syllabus breadth", "syllabus gaps summarised without metadata");
+assert(gModel.topPriorities.length === 2, "live result keeps concise action plan");
+
+console.log("\nScenario H: saved report rebuilds action plan from legacy syllabus metadata");
+const hModel = buildReportViewModel({
+  readinessScore: 44,
+  readinessLabel: "Needs More Time",
+  summary: "x",
+  nextSteps: [],
+  riskAreasRaw: [],
+  weakAreasRaw: ["lanePositioning"],
+  lessonsTaken: 20,
+  mockTestTaken: false,
+  mockTestResult: "not_taken",
+  seriousFaults: 0,
+  drivingFaults: 0,
+  confidenceLevel: 6,
+  testBooked: "no",
+  testDate: undefined,
+  rawMetadata: {
+    syllabus: {
+      captureVersion: 1,
+      topicsCoveredCount: 5,
+      totalTopics: 36,
+      completionPercent: 14,
+      weightedCoverageRatio: 0.2,
+      categoryProgress: [],
+      uncoveredPriorityLabels: ["Roundabouts", "Dual carriageways", "Sat nav driving"],
+      nextLessonFocus: ["Roundabouts"],
+    },
+  },
+});
+assert(hModel.topPriorities.length === 2, "legacy saved report keeps concise action plan");
+assert(hModel.topPriorities[1]?.kind === "syllabus", "legacy saved report includes syllabus summary");
+assert(hModel.topPriorities[1]?.title === "Build remaining syllabus breadth", "legacy saved report summarises gaps");
+
+console.log("\nScenario I: saved report uses topicsCoveredIds from syllabus snapshot");
+const iModel = buildReportViewModel({
+  readinessScore: 44,
+  readinessLabel: "Needs More Time",
+  summary: "x",
+  nextSteps: [],
+  riskAreasRaw: [],
+  weakAreasRaw: ["lanePositioning"],
+  lessonsTaken: 20,
+  mockTestTaken: false,
+  mockTestResult: "not_taken",
+  seriousFaults: 0,
+  drivingFaults: 0,
+  confidenceLevel: 6,
+  testBooked: "no",
+  testDate: undefined,
+  rawMetadata: {
+    syllabus: {
+      captureVersion: 1,
+      topicsCoveredCount: 2,
+      totalTopics: 36,
+      completionPercent: 6,
+      weightedCoverageRatio: 0.1,
+      categoryProgress: [],
+      uncoveredPriorityLabels: ["Roundabouts"],
+      nextLessonFocus: ["Roundabouts"],
+      topicsCoveredIds: ["cockpit_drill", "moving_off_safely"],
+    },
+  },
+});
+assert(iModel.topPriorities[1]?.title === "Build remaining syllabus breadth", "topicsCoveredIds rebuild syllabus summary");
+assert(iModel.topPriorities.length === 2, "topicsCoveredIds keep action plan concise");
 
 if (process.exitCode === 1) {
   console.error("\nReport reasoning tests failed.");

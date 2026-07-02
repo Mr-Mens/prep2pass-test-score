@@ -8,7 +8,7 @@ import { redirectIfAuthenticated } from "@/lib/server/redirect-if-authenticated"
 export const metadata: Metadata = buildPageMetadata({
   title: PLATFORM_TERMS.learningCentre,
   description:
-    "Explore Pass Pilot modules: Pass Pilot Score, Coaching Tools, Teaching Diagrams, and upcoming Resources including Theory Hub and Driving Routes.",
+    "Explore Pass Pilot modules: Test Ready Score, Coaching Tools, Teaching Diagrams, and upcoming Resources including Theory Hub and Driving Routes.",
   path: "/learning-centre",
 });
 

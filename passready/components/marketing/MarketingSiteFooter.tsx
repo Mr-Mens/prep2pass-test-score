@@ -7,7 +7,7 @@ const year = new Date().getFullYear();
 
 const footerLinks = [
   { href: "/learning-centre", label: "Learning Centre" },
-  { href: "/assessment", label: "Pass Pilot Score" },
+  { href: "/assessment", label: "Test Ready Score" },
   { href: "/sample-report", label: "Sample report" },
   { href: "/pricing", label: "Pricing" },
   { href: "/faq", label: "FAQ" },

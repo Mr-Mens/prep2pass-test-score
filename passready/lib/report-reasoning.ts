@@ -1,7 +1,7 @@
 import { WEAK_AREA_OPTIONS, type WeakAreaId } from "@/lib/constants";
 import { MOCK_REFLECTION_SUB_OPTIONS } from "@/lib/mock-reflection";
 import { isManoeuvreWeakArea } from "@/lib/product-skill-map";
-import { syllabusLayerActive } from "@/lib/syllabus-coverage";
+import { buildSyllabusProgressSnapshot, resolveUncoveredTopicLabels, syllabusLayerActive } from "@/lib/syllabus-coverage";
 import type { AssessmentPayload, SyllabusProgressSnapshot, WeakAreaDetailEntry } from "@/lib/validation";
 import {
   labelForFollowUpSubtopic,
@@ -52,6 +52,19 @@ function weakAreaLabel(id: WeakAreaId): string {
   return WEAK_AREA_OPTIONS.find((o) => o.id === id)?.label ?? id;
 }
 
+function weakAreaVerb(id: WeakAreaId): "is" | "are" {
+  return [
+    "junctions",
+    "roundabouts",
+    "countryRoads",
+    "dualCarriageways",
+    "motorways",
+    "weatherConditions",
+  ].includes(id)
+    ? "are"
+    : "is";
+}
+
 function subtopicLabels(entry: WeakAreaDetailEntry): string[] {
   return entry.subtopics
     .map((id) => labelForFollowUpSubtopic(id))
@@ -70,7 +83,7 @@ function broadWeakAreaRiskCopy(weakAreaId: WeakAreaId): FaithfulRiskCopy {
   const label = weakAreaLabel(weakAreaId).toLowerCase();
   return {
     faultArea: `${weakAreaLabel(weakAreaId)} consistency`,
-    whyItMatters: `The assessment suggests ${label} are currently your weakest area. The exact cause may be observations, positioning, speed, hesitation or decision-making, which your instructor can confirm on the road.`,
+    whyItMatters: `The assessment suggests ${label} ${weakAreaVerb(weakAreaId)} currently your weakest area. The exact cause may be observations, positioning, speed, hesitation or decision-making, which your instructor can confirm on the road.`,
     practiceNext: `Use your next lesson to identify the main cause with your instructor before drilling one type at a time.`,
     source: "learner_broad",
   };
@@ -262,7 +275,7 @@ export function buildFaithfulPriorityCopy(
   if (!hasSpecificLearnerDetail(entry)) {
     return {
       title: `Clarify ${label} difficulties`,
-      detail: `The assessment suggests ${label} are currently your weakest area. Work with your instructor to identify whether observations, positioning, speed or decision-making are causing the most difficulty.`,
+      detail: `The assessment suggests ${label} ${weakAreaVerb(weakAreaId)} currently your weakest area. Work with your instructor to identify whether observations, positioning, speed or decision-making are causing the most difficulty.`,
     };
   }
 
@@ -439,6 +452,33 @@ export function buildFaithfulHoldingBackClause(
   const labels = subtopicLabels(entry!);
   const focus = labels.slice(0, 2).join(" and ").toLowerCase();
   return `The main issue you identified is ${label}, particularly ${focus}.`;
+}
+
+export function buildSyllabusTestReadinessClause(
+  assessment: AssessmentPayload,
+  maxExamples = 4,
+): string {
+  if (!syllabusLayerActive(assessment)) return "";
+  const snap = buildSyllabusProgressSnapshot(assessment);
+  if (!snap) return "";
+
+  const uncovered = resolveUncoveredTopicLabels({
+    syllabus: snap,
+    topicsCovered: assessment.topicsCovered,
+  });
+  if (uncovered.length === 0) return "";
+
+  const examples = uncovered
+    .slice(0, maxExamples)
+    .map((label) => label.toLowerCase())
+    .join(", ");
+  const remaining = uncovered.length - maxExamples;
+
+  if (remaining > 0) {
+    return `For test readiness, ${uncovered.length} syllabus topics still need covering, including ${examples}, and others in the usual teaching order.`;
+  }
+
+  return `For test readiness, work through the remaining syllabus topics in order, including ${examples}.`;
 }
 
 export function buildFaithfulNextStepClause(

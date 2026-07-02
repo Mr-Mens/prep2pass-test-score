@@ -374,7 +374,7 @@ export function ResultsView() {
               <span className="font-semibold text-brand-700" aria-hidden>
                 ·
               </span>
-              <span>Use your top three priorities above as a checklist and revisit them after a couple of sessions.</span>
+              <span>Use your action plan for this week&apos;s focus. Your learning roadmap has the full syllabus checklist.</span>
             </li>
           </ul>
         </div>

@@ -1,7 +1,8 @@
 import { pickCopyVariant } from "@/lib/deterministic-report-copy";
-import type { AssessmentPayload, EstimatedLessonHours } from "@/lib/validation";
+import type { AssessmentPayload, EstimatedLessonHours, SyllabusProgressSnapshot } from "@/lib/validation";
 
 import {
+  orderedUncoveredTopicLabels,
   SYLLABUS_TOPIC_CATALOG,
   SYLLABUS_TOTAL_TOPIC_COUNT,
   syllabusTopicLabel,
@@ -73,17 +74,6 @@ export type SyllabusCategoryProgress = {
   completionPercent: number;
 };
 
-export type SyllabusProgressSnapshot = {
-  captureVersion: 1;
-  topicsCoveredCount: number;
-  totalTopics: number;
-  completionPercent: number;
-  weightedCoverageRatio: number;
-  categoryProgress: SyllabusCategoryProgress[];
-  uncoveredPriorityLabels: string[];
-  nextLessonFocus: string[];
-};
-
 function categoryProgressSnapshot(covered: Set<string>): SyllabusCategoryProgress[] {
   return SYLLABUS_TOPIC_CATALOG.map((cat) => {
     const items = [...cat.items];
@@ -127,7 +117,8 @@ export function buildSyllabusProgressSnapshot(assessment: AssessmentPayload): Sy
     SYLLABUS_TOTAL_TOPIC_COUNT > 0 ? Math.round((coveredArr.length / SYLLABUS_TOTAL_TOPIC_COUNT) * 100) : 0;
 
   const priority = pickUncoveredPriority(coveredSet, 11);
-  const nextFocus = priority.slice(0, 6);
+  const teachingOrder = orderedUncoveredTopicLabels(coveredArr);
+  const nextFocus = teachingOrder.slice(0, 6);
 
   return {
     captureVersion: 1,
@@ -137,8 +128,53 @@ export function buildSyllabusProgressSnapshot(assessment: AssessmentPayload): Sy
     weightedCoverageRatio: weighted,
     categoryProgress: catSnap,
     uncoveredPriorityLabels: priority,
+    uncoveredTeachingOrderLabels: teachingOrder,
+    topicsCoveredIds: coveredArr,
     nextLessonFocus: nextFocus,
   };
+}
+
+function sortLabelsInTeachingOrder(labels: readonly string[]): string[] {
+  const wanted = new Set(labels.map((label) => label.toLowerCase()));
+  const ordered: string[] = [];
+  for (const cat of SYLLABUS_TOPIC_CATALOG) {
+    for (const item of cat.items) {
+      if (wanted.has(item.label.toLowerCase())) ordered.push(item.label);
+    }
+  }
+  return ordered;
+}
+
+/** Resolve every uncovered syllabus topic for action plans and debriefs. */
+export function resolveUncoveredTopicLabels(input: {
+  syllabus?: SyllabusProgressSnapshot | null;
+  topicsCovered?: string[];
+}): string[] {
+  const coveredIds = Array.isArray(input.topicsCovered)
+    ? input.topicsCovered
+    : Array.isArray(input.syllabus?.topicsCoveredIds)
+      ? input.syllabus.topicsCoveredIds
+      : undefined;
+
+  if (Array.isArray(coveredIds)) {
+    return orderedUncoveredTopicLabels(coveredIds);
+  }
+
+  const teachingOrder = input.syllabus?.uncoveredTeachingOrderLabels;
+  if (teachingOrder && teachingOrder.length > 0) {
+    return teachingOrder;
+  }
+
+  const syllabus = input.syllabus;
+  if (
+    syllabus &&
+    syllabus.topicsCoveredCount < syllabus.totalTopics &&
+    syllabus.uncoveredPriorityLabels.length > 0
+  ) {
+    return sortLabelsInTeachingOrder(syllabus.uncoveredPriorityLabels);
+  }
+
+  return [];
 }
 
 /** Short deterministic steps syllable-matched for prompts (prepended ahead of richer steps). */

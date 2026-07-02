@@ -3,7 +3,7 @@ import { PRICING, BRAND_CTA, SMART_UI } from "@/lib/constants";
 import { PricingTrustBadges } from "@/components/marketing/PricingTrustBadges";
 
 const learnerIncludes = [
-  "Unlimited Pass Pilot Score assessments",
+  "Unlimited Test Ready Score assessments",
   `${SMART_UI.reports} and ${SMART_UI.insights}`,
   "Learning Journey tracking",
   "Structured coaching guidance",

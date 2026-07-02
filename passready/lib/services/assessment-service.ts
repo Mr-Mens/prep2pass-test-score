@@ -72,6 +72,7 @@ export async function scoreAssessment(
         model: aiReport.model,
         generatedAt: new Date().toISOString(),
         ...(deterministic.syllabusProgress ? { syllabus: deterministic.syllabusProgress } : {}),
+        ...(assessment.syllabusCaptureVersion === 1 ? { topicsCovered: assessment.topicsCovered ?? [] } : {}),
         ...weakAreaDetailsForMetadata(assessment),
       },
     };

@@ -17,6 +17,7 @@ import {
 } from "@/lib/storage";
 import {
   assessmentSchema,
+  parseAssessmentSubmitValues,
   type AssessmentFormValues,
   type AssessmentPayload,
   type CheckoutPriceTier,
@@ -275,19 +276,20 @@ export function AssessmentForm({
     submitLock.current = true;
     setSubmitError(null);
     try {
-      const parsed = assessmentSchema.safeParse(values);
+      const parsed = parseAssessmentSubmitValues(values);
       if (!parsed.success) {
-        setSubmitError("Please review your answers and try again.");
+        setSubmitError(parsed.message);
         return;
       }
+      const assessment = parsed.data;
 
       savePendingAssessment({
         version: 1,
         createdAt: new Date().toISOString(),
-        assessment: parsed.data,
+        assessment,
       });
 
-      const scored = await requestAssessmentScore(parsed.data);
+      const scored = await requestAssessmentScore(assessment);
 
       let hasUnlimitedReports = Boolean(hasLifetimeAccess);
       if (lockedAccountEmail && !hasUnlimitedReports) {
@@ -298,7 +300,7 @@ export function AssessmentForm({
       if (lockedAccountEmail && hasUnlimitedReports) {
         setPremiumBuild(true);
         try {
-          const out = await runCheckoutOrFinalise(parsed.data, "single");
+          const out = await runCheckoutOrFinalise(assessment, "single");
           if (out.kind === "finalised") {
             return;
           }
@@ -316,7 +318,7 @@ export function AssessmentForm({
       }
 
       setPreview({
-        assessment: parsed.data,
+        assessment,
         readinessScore: scored.result.readinessScore,
         readinessLabel: scored.result.readinessLabel,
       });
@@ -529,7 +531,9 @@ export function AssessmentForm({
   return (
     <form
       id="pass-pilot-assessment"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, () => {
+        setSubmitError("Please check the highlighted fields above and try again.");
+      })}
       className={`min-w-0 overflow-x-hidden sm:space-y-10 md:pb-0 ${mobileFormShellClass} ${stackAboveMobileNav ? "" : `space-y-6 ${mobileScrollPadClass}`}`}
     >
       <div className={mobileFieldsScrollClass}>
@@ -583,9 +587,9 @@ export function AssessmentForm({
             </label>
             <input
               id="lessonsTaken"
-              type="number"
-              min={0}
+              type="text"
               inputMode="numeric"
+              pattern="[0-9]*"
               className={fieldClass}
               {...register("lessonsTaken")}
             />

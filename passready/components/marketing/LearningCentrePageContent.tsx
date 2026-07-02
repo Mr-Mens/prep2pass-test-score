@@ -109,7 +109,7 @@ export function LearningCentrePageContent() {
       </Section>
 
       <Section className="text-center">
-        <h2 className="font-heading text-2xl font-semibold text-brand-950">Start with your Pass Pilot Score</h2>
+        <h2 className="font-heading text-2xl font-semibold text-brand-950">Start with your Test Ready Score</h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-brand-600">
           Your {PLATFORM_TERMS.learningJourney} begins with structured assessment, {SMART_UI.personalisedReports.toLowerCase()} and{" "}
           {SMART_UI.insights.toLowerCase()}.

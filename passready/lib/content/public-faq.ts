@@ -8,7 +8,7 @@ export const PUBLIC_FAQ: PublicFaqItem[] = [
   },
   {
     q: "What is Pass Pilot?",
-    a: "Pass Pilot is a driving education platform for learners, instructors and supervisors. It includes Pass Pilot Score assessments, Progress Insights, Coaching Tools and growing Learning Centre resources.",
+    a: "Pass Pilot is a driving education platform for learners, instructors and supervisors. It includes Test Ready Score assessments, Progress Insights, Coaching Tools and growing Learning Centre resources.",
   },
   {
     q: "Is this official DVSA guidance?",
@@ -20,7 +20,7 @@ export const PUBLIC_FAQ: PublicFaqItem[] = [
   },
   {
     q: "Can I use Pass Pilot with my instructor?",
-    a: "Yes. Many learners bring their Pass Pilot Score, reports and Progress Insights into lessons to agree focused practice.",
+    a: "Yes. Many learners bring their Test Ready Score, reports and Progress Insights into lessons to agree focused practice.",
   },
   {
     q: "Can supervisors use Pass Pilot?",

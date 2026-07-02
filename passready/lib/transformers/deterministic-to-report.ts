@@ -29,6 +29,7 @@ export function deterministicToReport(
       model: options.model,
       generatedAt,
       ...(deterministic.syllabusProgress ? { syllabus: deterministic.syllabusProgress } : {}),
+      ...(assessment.syllabusCaptureVersion === 1 ? { topicsCovered: assessment.topicsCovered ?? [] } : {}),
       ...weakAreaDetailsForMetadata(assessment),
     },
   };

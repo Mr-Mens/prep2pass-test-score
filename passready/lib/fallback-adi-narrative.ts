@@ -8,40 +8,19 @@ import {
   buildFaithfulHoldingBackClause,
   buildFaithfulNextStepClause,
   buildFaithfulPriorityCopy,
+  buildSyllabusTestReadinessClause,
   evidenceBasedStrengthClause,
 } from "@/lib/report-reasoning";
 import { readinessVerdictForScore } from "@/lib/readiness-calibration";
-import { buildSyllabusProgressSnapshot } from "@/lib/syllabus-coverage";
 import type { AssessmentPayload, DeterministicReadinessResult } from "@/lib/validation";
 
 function syllabusGapClause(assessment: AssessmentPayload, salt: number): string {
-  const snap = buildSyllabusProgressSnapshot(assessment);
-  if (!snap) return "";
+  const clause = buildSyllabusTestReadinessClause(assessment, 4);
+  if (!clause) return "";
 
-  const ind = snap.categoryProgress.find((c) => c.key === "independent_driving");
-  const man = snap.categoryProgress.find((c) => c.key === "manoeuvres");
-  const parts: string[] = [];
-
-  if (ind && ind.covered === 0) {
-    parts.push("independent driving");
-  }
-  if (man && man.covered <= 2) {
-    parts.push("some manoeuvres");
-  }
-
-  if (parts.length === 0 && snap.uncoveredPriorityLabels.length > 0) {
-    return pickCopyVariant(salt, "fb:syll", [
-      ` You still have syllabus topics to cover, including ${snap.uncoveredPriorityLabels.slice(0, 2).join(" and ").toLowerCase()}.`,
-      ` Keep building breadth on ${snap.uncoveredPriorityLabels.slice(0, 2).join(" and ").toLowerCase()} alongside your weak areas.`,
-    ]);
-  }
-
-  if (parts.length === 0) return "";
-
-  const joined = parts.join(" and ");
-  return pickCopyVariant(salt, "fb:syllGap", [
-    ` ${joined.charAt(0).toUpperCase()}${joined.slice(1)} also still need building into normal lessons, so the next few sessions should prioritise those gaps before moving into full mock-test style drives.`,
-    ` ${joined.charAt(0).toUpperCase()}${joined.slice(1)} are still major roadmap gaps, so build them into normal lessons before adding test-style pressure.`,
+  return pickCopyVariant(salt, "fb:syll", [
+    ` ${clause}`,
+    ` Alongside your weak areas, ${clause.charAt(0).toLowerCase()}${clause.slice(1)}`,
   ]);
 }
 

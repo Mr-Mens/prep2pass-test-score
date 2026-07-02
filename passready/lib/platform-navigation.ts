@@ -13,7 +13,7 @@ export type PlatformModule = {
 export const PLATFORM_MODULES: PlatformModule[] = [
   {
     id: "pass-pilot-score",
-    label: "Pass Pilot Score",
+    label: "Test Ready Score",
     description: "Structured assessments, Smart Reports and Smart Insights for your Learning Journey.",
     status: "live",
     href: "/assessment",

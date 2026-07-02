@@ -63,6 +63,20 @@ export function syllabusFromRawMetadata(raw: unknown): SyllabusProgressSnapshot 
   return p.success ? p.data : null;
 }
 
+export function topicsCoveredFromRawMetadata(raw: unknown): string[] | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const topics = "topicsCovered" in raw ? (raw as { topicsCovered: unknown }).topicsCovered : undefined;
+  if (!Array.isArray(topics)) return undefined;
+  return topics.filter((t): t is string => typeof t === "string");
+}
+
+function topicsCoveredForPriorities(rawMetadata: unknown, syllabus: SyllabusProgressSnapshot | null): string[] | undefined {
+  const fromMetadata = topicsCoveredFromRawMetadata(rawMetadata);
+  if (Array.isArray(fromMetadata)) return fromMetadata;
+  if (Array.isArray(syllabus?.topicsCoveredIds)) return syllabus.topicsCoveredIds;
+  return undefined;
+}
+
 export function weakAreaDetailsFromDb(raw: unknown, metadata?: unknown): WeakAreaDetailEntry[] {
   const fromColumn = weakAreaDetailsFromRawMetadata(Array.isArray(raw) ? { weakAreaDetails: raw } : null);
   if (fromColumn.length > 0) return fromColumn;
@@ -113,6 +127,7 @@ export function buildReportViewModel(args: BuildArgs): ReportViewModel {
     weakAreas,
     weakAreaDetails,
     syllabus,
+    topicsCovered: topicsCoveredForPriorities(args.rawMetadata, syllabus),
     testBooked: args.testBooked ?? "no",
     testDate: args.testDate ?? undefined,
     mockTestTaken: args.mockTestTaken ? "yes" : "no",
@@ -160,6 +175,11 @@ export function buildReportViewModelFromAssessment(
     metadata?: { syllabus?: SyllabusProgressSnapshot };
   },
 ): ReportViewModel {
+  const rawMetadata = {
+    ...(result.metadata ?? {}),
+    topicsCovered: assessment.topicsCovered ?? [],
+  };
+
   return buildReportViewModel({
     readinessScore: result.readinessScore,
     readinessLabel: result.readinessLabel,
@@ -175,7 +195,7 @@ export function buildReportViewModelFromAssessment(
     confidenceLevel: assessment.confidenceLevel,
     testBooked: assessment.testBooked,
     testDate: assessment.testDate,
-    rawMetadata: result.metadata ? { syllabus: result.metadata.syllabus } : undefined,
+    rawMetadata,
     weakAreaDetailsRaw: assessment.weakAreaDetails,
   });
 }

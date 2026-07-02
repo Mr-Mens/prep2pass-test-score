@@ -61,11 +61,11 @@ export const BRAND_CTA = {
   viewMyScore: "View My Test Ready Score",
   viewSampleReport: "View Sample Report",
   invitePupil: "Invite Pupil to Get Their Test Ready Score",
-  sendScoreInvite: "Pass Pilot invite",
+  sendScoreInvite: "Test Ready Score invite",
   helpLearnerGetScore: "Help Your Learner Get Their Test Ready Score",
   takesFiveMinutes: "Takes around 5 minutes",
   entrySubtext:
-    "Answer a few questions and receive your Pass Pilot Score, Progress Insights and a personalised action plan.",
+    "Answer a few questions and receive your Test Ready Score, Progress Insights and a personalised action plan.",
 } as const;
 
 /** Proprietary Smart intelligence branding for learner-facing copy (not generic "AI"). */

@@ -145,3 +145,15 @@ export function syllabusUrgencyScore(id: string): number {
   const idx = URGENCY_IDS.indexOf(id);
   return idx >= 0 ? URGENCY_IDS.length - idx : 0;
 }
+
+/** Uncovered syllabus topics in catalog order (typical UK teaching progression). */
+export function orderedUncoveredTopicLabels(coveredIds: readonly string[]): string[] {
+  const covered = new Set(coveredIds);
+  const labels: string[] = [];
+  for (const cat of SYLLABUS_TOPIC_CATALOG) {
+    for (const it of cat.items) {
+      if (!covered.has(it.id)) labels.push(it.label);
+    }
+  }
+  return labels;
+}

@@ -11,6 +11,7 @@ import {
   type FaultSectionDef,
   type FaultSectionKey,
 } from "@/lib/instructor/mock-test-rows";
+import { useCabFullscreen } from "@/lib/instructor/use-cab-fullscreen";
 import { WEATHER_SHEET_OPTIONS } from "@/lib/instructor/mock-test-weather";
 import {
   aggregateFaultCounts,
@@ -22,6 +23,7 @@ import type { MockTestFormPayload } from "@/lib/instructor/mock-test-schemas";
 import type { FaultMarks } from "@/lib/instructor/types";
 
 import { MockTestFaultControls } from "./MockTestFaultControls";
+import { MockTestLiveStatsBar } from "./MockTestLiveStatsBar";
 
 type PupilRow = {
   id: string;
@@ -31,6 +33,7 @@ type PupilRow = {
 
 type Props = {
   initialMockTestId?: string;
+  autoStartCab?: boolean;
 };
 
 function patchFaultRow(
@@ -49,8 +52,9 @@ function patchFaultRow(
   };
 }
 
-export function InstructorMockTestForm({ initialMockTestId }: Props) {
+export function InstructorMockTestForm({ initialMockTestId, autoStartCab = false }: Props) {
   const router = useRouter();
+  const cab = useCabFullscreen();
   const [form, setForm] = useState<MockTestFormPayload>(() => buildDefaultMockTestForm());
   const [pupils, setPupils] = useState<PupilRow[]>([]);
   const [pupilId, setPupilId] = useState<string | null>(null);
@@ -112,6 +116,11 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
       }
     })();
   }, [initialMockTestId]);
+
+  useEffect(() => {
+    if (!autoStartCab || loading) return;
+    void cab.open();
+  }, [autoStartCab, loading, cab.open]);
 
   const live = useMemo(() => {
     const counts = aggregateFaultCounts(form);
@@ -229,81 +238,117 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
   const [col1, col2, col3] = FAULT_GRID_COLUMNS;
 
   return (
-    <div className="mock-sheet space-y-4 pb-16">
-      <section className="sticky top-0 z-20 space-y-3 border-b border-brand-200/80 bg-[#f0f2f5]/98 pb-3 pt-1 backdrop-blur md:rounded-2xl md:border md:border-brand-100 md:bg-white md:p-4 md:shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="mock-sheet-eyebrow">Pass Pilot · Instructor</p>
-            <h1 className="mt-1 mock-sheet-hero-title">Mock test sheet</h1>
-            <p className="mt-1 mock-sheet-hero-sub">DVSA-style mock test report · Not affiliated with DVSA</p>
+    <div
+      ref={cab.containerRef}
+      className={`mock-sheet min-w-0 max-w-full overflow-x-hidden ${
+        cab.isOpen
+          ? `flex h-dvh max-h-dvh flex-col bg-[#f0f2f5] ${
+              cab.mode === "overlay"
+                ? "fixed inset-0 z-[200] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+                : ""
+            }`
+          : "space-y-4 pb-16"
+      }`}
+    >
+      <header
+        className={`shrink-0 space-y-2 border-b border-brand-200/80 bg-[#f0f2f5]/98 px-1 pb-2 pt-1 backdrop-blur sm:px-0 ${
+          cab.isOpen ? "" : "sticky top-0 z-20 md:rounded-2xl md:border md:border-brand-100 md:bg-white md:p-4 md:shadow-sm"
+        }`}
+      >
+        {cab.isOpen ? (
+          <div className="flex items-center justify-between gap-2 px-1 sm:px-0">
+            <div className="min-w-0">
+              <p className="mock-sheet-eyebrow">Mock test in progress</p>
+              <p className="truncate font-heading text-base font-semibold text-brand-950">
+                {pupilNameSnapshot.trim() || "Candidate"}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void save("draft")}
+                className="min-h-[36px] rounded-md bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void save("completed")}
+                className="min-h-[36px] rounded-md border border-brand-200 bg-white px-3 py-1.5 text-xs font-semibold text-brand-900 hover:bg-brand-50 disabled:opacity-50"
+              >
+                Finish
+              </button>
+              <button
+                type="button"
+                aria-label="Exit fullscreen mock test"
+                onClick={() => void cab.close()}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-brand-200 bg-white text-lg font-semibold text-brand-800 hover:bg-brand-50"
+              >
+                ×
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void save("draft")}
-              className="min-h-[40px] rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 disabled:opacity-50"
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void save("completed")}
-              className="min-h-[40px] rounded-md border-2 border-brand-200 bg-white px-3 py-2 text-sm font-semibold text-brand-900 hover:bg-brand-50 disabled:opacity-50"
-            >
-              Save &amp; finish
-            </button>
+        ) : (
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="mock-sheet-eyebrow">Pass Pilot · Instructor</p>
+              <h1 className="mt-1 mock-sheet-hero-title">Mock test sheet</h1>
+              <p className="mt-1 mock-sheet-hero-sub">DVSA-style mock test report · Not affiliated with DVSA</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void cab.open()}
+                className="min-h-[40px] rounded-md bg-brand-950 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-900 disabled:opacity-50"
+              >
+                Start mock test
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void save("draft")}
+                className="min-h-[40px] rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 disabled:opacity-50"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => void save("completed")}
+                className="min-h-[40px] rounded-md border-2 border-brand-200 bg-white px-3 py-2 text-sm font-semibold text-brand-900 hover:bg-brand-50 disabled:opacity-50"
+              >
+                Save &amp; finish
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="grid gap-2 rounded-xl border border-brand-100 bg-white p-3 shadow-card sm:grid-cols-2 md:grid-cols-4">
-          <div>
-            <p className="mock-sheet-eyebrow">Driving faults</p>
-            <p className="mock-sheet-stat-value">
-              {live.counts.minorFaultCount}
-            </p>
-          </div>
-          <div>
-            <p className="mock-sheet-eyebrow">S / D</p>
-            <p className="mock-sheet-stat-value">
-              {live.counts.seriousFaultCount} / {live.counts.dangerousFaultCount}
-            </p>
-          </div>
-          <div>
-            <p className="mock-sheet-eyebrow">Minor threshold</p>
-            <input
-              type="number"
-              min={1}
-              max={50}
-              value={minorThreshold}
-              onChange={(e) => setMinorThreshold(Math.min(50, Math.max(1, Number(e.target.value) || 15)))}
-              className="mock-sheet-control-threshold"
-            />
-          </div>
-          <div
-            className={`rounded-lg px-2 py-1.5 text-sm font-semibold capitalize ${
-              live.outcome === "pass"
-                ? "bg-emerald-50 text-emerald-950 ring-1 ring-emerald-200"
-                : live.outcome === "fail"
-                  ? "bg-red-50 text-red-950 ring-1 ring-red-200"
-                  : "bg-amber-50 text-amber-950 ring-1 ring-amber-200"
-            }`}
-          >
-            <span className="font-heading tracking-tight">{live.outcome}</span>
-            {live.failReason ? (
-              <span className="mt-1 block font-sans text-xs font-normal leading-relaxed text-brand-600">{live.failReason}</span>
-            ) : null}
-          </div>
-        </div>
+        <MockTestLiveStatsBar
+          live={live}
+          minorThreshold={minorThreshold}
+          onMinorThresholdChange={setMinorThreshold}
+          compact={cab.isOpen}
+        />
+
         {error ? (
           <p className="rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-sm text-red-900" role="alert">
             {error}
           </p>
         ) : null}
-      </section>
+      </header>
 
+      <div
+        className={
+          cab.isOpen
+            ? "min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden overscroll-y-contain px-1 py-3 sm:px-0"
+            : "space-y-4"
+        }
+      >
       {/* Top band, candidate · test · declaration · vehicle (reference sheet order) */}
+      {!cab.isOpen ? (
       <section className="rounded-2xl border border-brand-200 bg-white shadow-sm">
         <div className="border-b border-brand-100 bg-brand-50/80 px-4 py-3">
           <h2 className="mock-sheet-h2">Candidate &amp; test</h2>
@@ -570,6 +615,7 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* Fault recording, three columns matching reference bands */}
       <section className="overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-sm">
@@ -1015,6 +1061,8 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
         </div>
       </section>
 
+      {!cab.isOpen ? (
+      <>
       <section className="overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-sm">
         <div className="border-b border-brand-100 bg-brand-50/80 px-4 py-3">
           <h2 className="mock-sheet-h2">Instructor notes</h2>
@@ -1087,6 +1135,9 @@ export function InstructorMockTestForm({ initialMockTestId }: Props) {
         </Link>
         {testId ? <span className="ml-2 font-mono text-brand-400">id {testId}</span> : null}
       </section>
+      </>
+      ) : null}
+      </div>
     </div>
   );
 }

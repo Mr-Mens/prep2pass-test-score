@@ -155,7 +155,13 @@ export function InstructorShell({ children, instructorEmail, displayName, adiPla
           <p className="font-heading text-sm font-semibold text-brand-900">Instructor workspace</p>
         </header>
         <div className="app-main-scroll flex-1 px-4 py-8 sm:px-6 lg:px-10">
-          <div className="mx-auto w-full min-w-0 max-w-6xl">{children}</div>
+          <div
+            className={`mx-auto w-full min-w-0 ${
+              pathname.startsWith("/instructor/mock-test") ? "max-w-none" : "max-w-6xl"
+            }`}
+          >
+            {children}
+          </div>
         </div>
       </div>
     </div>

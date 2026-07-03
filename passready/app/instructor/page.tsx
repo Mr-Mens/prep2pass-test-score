@@ -209,10 +209,10 @@ export default async function InstructorDashboardPage() {
           </p>
           <div className="mt-8">
             <Link
-              href="/instructor/mock-test/new?cab=1"
+              href="/instructor/mock-test/new"
               className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 px-6 text-sm font-semibold text-white shadow-md transition hover:from-teal-700 hover:to-teal-800 hover:shadow-lg"
             >
-              Start mock test
+              New mock test
             </Link>
           </div>
         </div>
@@ -242,7 +242,7 @@ export default async function InstructorDashboardPage() {
           tint="from-slate-700 to-brand-950"
         />
         <ActionTile
-          href="/instructor/mock-test/new?cab=1"
+          href="/instructor/mock-test/new"
           kicker="Mock test"
           title="Create mock test"
           body="Structured form with live pass or fail verdict, configurable fault thresholds, and quick fault chips for the drive."

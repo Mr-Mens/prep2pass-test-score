@@ -1,5 +1,6 @@
 import "server-only";
 
+import { normalizeAccountStatus, type AccountStatus } from "@/lib/account/account-status";
 import { parseAppRole } from "@/lib/auth/role-from-destination";
 import type { SelfServiceAppRole } from "@/lib/auth/self-service-roles";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/server/supabase";
@@ -11,11 +12,29 @@ function normalizeRole(value: string): UserAppRole {
   return "learner";
 }
 
-async function fetchStoredRole(userId: string): Promise<UserAppRole | null> {
+type StoredProfile = {
+  role: UserAppRole;
+  accountStatus: AccountStatus;
+};
+
+async function fetchStoredProfile(userId: string): Promise<StoredProfile | null> {
   const supabase = getSupabaseServerClient();
-  const { data, error } = await supabase.from("user_app_profiles").select("role").eq("user_id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("user_app_profiles")
+    .select("role, account_status")
+    .eq("user_id", userId)
+    .maybeSingle();
   if (error || !data) return null;
-  return normalizeRole((data as { role: string }).role);
+  const row = data as { role: string; account_status?: string };
+  return {
+    role: normalizeRole(row.role),
+    accountStatus: normalizeAccountStatus(row.account_status),
+  };
+}
+
+async function fetchStoredRole(userId: string): Promise<UserAppRole | null> {
+  const profile = await fetchStoredProfile(userId);
+  return profile?.role ?? null;
 }
 
 async function ensureInstructorProfileRow(userId: string): Promise<void> {
@@ -65,4 +84,52 @@ export async function ensureUserAppRoleFromIntent(userId: string, intent: SelfSe
 
 export function appRoleFromUserMetadata(metadata: Record<string, unknown> | undefined): UserAppRole | null {
   return parseAppRole(metadata?.app_role);
+}
+
+/** Admin-only: overwrite role and ensure instructor sidecar when needed. */
+export async function adminSetUserAppRole(userId: string, role: UserAppRole): Promise<UserAppRole> {
+  const supabase = getSupabaseServerClient();
+  const { error } = await supabase.from("user_app_profiles").upsert(
+    {
+      user_id: userId,
+      role,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    console.error("[adminSetUserAppRole]", error.message);
+    throw new Error("Could not update role.");
+  }
+
+  if (role === "instructor") {
+    await ensureInstructorProfileRow(userId);
+  }
+
+  return role;
+}
+
+/** Admin-only: pause or reinstate an account. */
+export async function adminSetAccountStatus(userId: string, accountStatus: AccountStatus): Promise<AccountStatus> {
+  const supabase = getSupabaseServerClient();
+  const existing = await fetchStoredProfile(userId);
+  const role = existing?.role ?? "learner";
+
+  const { error } = await supabase.from("user_app_profiles").upsert(
+    {
+      user_id: userId,
+      role,
+      account_status: accountStatus,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (error) {
+    console.error("[adminSetAccountStatus]", error.message);
+    throw new Error("Could not update account status.");
+  }
+
+  return accountStatus;
 }

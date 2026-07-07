@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
+import { redirectIfAccountPaused } from "@/lib/server/paused-account-guard";
 import { getUserAppRole } from "@/lib/server/user-app-role";
 import {
   getActiveLearnerLinkForParent,
@@ -20,6 +21,7 @@ export async function requireParentSession() {
   if (!user.emailConfirmedAt) {
     redirect(`/verify-email?next=${encodeURIComponent("/supervisor")}`);
   }
+  await redirectIfAccountPaused(user.id, "/supervisor");
   const role = await getUserAppRole(user.id);
   if (role !== "parent") {
     redirect(dashboardPathForAppRole(role));

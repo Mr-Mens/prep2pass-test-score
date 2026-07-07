@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { AdminAccountsPanel } from "@/components/admin/AdminAccountsPanel";
 import { AdminPayoutRequestsPanel } from "@/components/admin/AdminPayoutRequestsPanel";
 import { AdminPremiumInvitesPanel } from "@/components/admin/AdminPremiumInvitesPanel";
 import { AdminPromotionsPanel } from "@/components/admin/AdminPromotionsPanel";
@@ -11,10 +12,11 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/Button";
 import { ADMIN_SESSION_KEY, validateAdminAccessKey } from "@/lib/admin/session";
 
-type Tab = "analytics" | "promos" | "invites" | "payouts";
+type Tab = "analytics" | "promos" | "invites" | "payouts" | "accounts";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "analytics", label: "Analytics" },
+  { id: "accounts", label: "Accounts" },
   { id: "promos", label: "Promotions" },
   { id: "invites", label: "Premium invites" },
   { id: "payouts", label: "Payout requests" },
@@ -103,7 +105,7 @@ export function AdminDashboardView() {
             </Link>
             <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-950">Admin access</h1>
             <p className="mt-2 text-sm text-brand-600">
-              Enter your admin access key to manage promotions, invites, and analytics.
+              Enter your admin access key to manage accounts, promotions, invites, and analytics.
             </p>
           </div>
 
@@ -177,6 +179,7 @@ export function AdminDashboardView() {
         </div>
 
         {tab === "analytics" ? <AdminAnalyticsPanel adminKey={activeKey} onLoadingChange={setLoading} /> : null}
+        {tab === "accounts" ? <AdminAccountsPanel adminKey={activeKey} /> : null}
         {tab === "promos" ? <AdminPromotionsPanel adminKey={activeKey} /> : null}
         {tab === "invites" ? <AdminPremiumInvitesPanel adminKey={activeKey} /> : null}
         {tab === "payouts" ? <AdminPayoutRequestsPanel adminKey={activeKey} /> : null}

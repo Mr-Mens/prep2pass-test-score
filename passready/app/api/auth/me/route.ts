@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCachedLearnerAccessStatus } from "@/lib/server/learner-access";
+import { isAccountPaused } from "@/lib/server/account-status";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupabaseClientEnvConfigured } from "@/lib/supabase/url";
 
@@ -19,6 +20,12 @@ export async function GET() {
 
     if (!user?.email?.trim()) {
       return NextResponse.json({ user: null }, noStore);
+    }
+
+    if (await isAccountPaused(user.id)) {
+      const supabase = createSupabaseServerClient();
+      await supabase.auth.signOut();
+      return NextResponse.json({ user: null, accountPaused: true }, noStore);
     }
 
     const meta = user.user_metadata as Record<string, unknown> | undefined;

@@ -5,6 +5,7 @@ import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
 import { resolvePostAuthDestination } from "@/lib/auth/resolve-post-auth-destination";
 import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
 import { syncUserProfileFromSignupMetadata } from "@/lib/server/repositories/user-profiles-repository";
+import { redirectIfAccountPaused } from "@/lib/server/paused-account-guard";
 import { ensureUserAppRoleFromIntent, getUserAppRole } from "@/lib/server/user-app-role";
 import { createSupabaseServerClient, getServerAuthUser } from "@/lib/supabase/server";
 
@@ -39,6 +40,9 @@ export async function GET(request: NextRequest) {
     return redirect(origin, `/verify-email?next=${encodeURIComponent("/auth/resume")}`);
   }
 
+  const continueRaw = request.nextUrl.searchParams.get("continue");
+  await redirectIfAccountPaused(user.id, continueRaw ?? undefined);
+
   try {
     await ensureUserAppRoleFromIntent(user.id, selfServiceRoleFromSignupMetadata(user.userMetadata));
   } catch (e) {
@@ -49,7 +53,6 @@ export async function GET(request: NextRequest) {
     console.warn("[auth/resume] profile_sync_failed", e);
   });
 
-  const continueRaw = request.nextUrl.searchParams.get("continue");
   const role = await getUserAppRole(user.id);
   const intent = loginIntentRoleFromContinue(continueRaw);
 

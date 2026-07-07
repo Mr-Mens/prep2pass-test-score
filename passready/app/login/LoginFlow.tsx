@@ -21,6 +21,7 @@ export function LoginFlow() {
   const params = useSearchParams();
   const nextRaw = params.get("next");
   const roleMismatch = params.get("error") === "role_mismatch";
+  const accountPaused = params.get("error") === "account_paused";
 
   const nextResolved = useMemo(() => {
     if (!nextRaw?.startsWith("/") || nextRaw.startsWith("//")) return null;
@@ -87,6 +88,18 @@ export function LoginFlow() {
           <>Use your {PRODUCT.name} email and password. We&apos;ll open the workspace for your account.</>
         )}
       </p>
+
+      {accountPaused ? (
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-950"
+        >
+          <p className="font-semibold">This account is paused.</p>
+          <p className="mt-2 text-brand-800">
+            Contact Pass Pilot support if you think this is a mistake.
+          </p>
+        </div>
+      ) : null}
 
       {roleMismatch && signingInAs ? (
         <div

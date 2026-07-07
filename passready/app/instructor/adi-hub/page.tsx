@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function InstructorAdiHubPage() {
-  const hubs = comingSoonModulesForAudience("instructor").filter((module) => module.audience === "instructor");
+  const hubs = comingSoonModulesForAudience("instructor");
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-4">

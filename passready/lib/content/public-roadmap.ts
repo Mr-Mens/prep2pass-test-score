@@ -124,11 +124,11 @@ export const PUBLIC_ROADMAP: RoadmapItem[] = [
   },
   {
     id: "driving-routes",
-    title: "Driving Routes",
+    title: "Driving Test Routes",
     description:
-      "Curated practice routes for learners and supervisors, mapped to common test-centre areas and skill themes.",
+      "Curated test-centre practice routes for learners, instructors and supervisors, mapped to common test-centre areas and skill themes.",
     status: "in_progress",
-    audiences: ["learner", "supervisor"],
+    audiences: ["learner", "instructor", "supervisor"],
     timeframe: "Q3 2026",
   },
   {

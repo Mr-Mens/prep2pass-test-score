@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Product roadmap",
-  description: `See what is live, in build and planned for ${PRODUCT.name}: Test Ready Score, Coaching Tools, Theory Hub, Driving Routes and more for learners, instructors and supervisors.`,
+  description: `See what is live, in build and planned for ${PRODUCT.name}: Test Ready Score, Coaching Tools, Theory Hub, Driving Test Routes and more for learners, instructors and supervisors.`,
   path: "/roadmap",
   index: false,
 });

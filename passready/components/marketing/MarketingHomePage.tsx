@@ -378,7 +378,7 @@ export async function MarketingHomePage() {
         subtitle="Pass Pilot is expanding into a full driving education ecosystem."
       >
         <p className="mx-auto max-w-2xl text-center text-sm leading-relaxed text-brand-600">
-          Test Ready Score and Coaching Tools are live today. Theory Hub, Driving Routes, ADI Part 3 Hub and more
+          Test Ready Score and Coaching Tools are live today. Theory Hub, Driving Test Routes, ADI Part 3 Hub and more
           are on the way.
         </p>
         <p className="mt-6 text-center">

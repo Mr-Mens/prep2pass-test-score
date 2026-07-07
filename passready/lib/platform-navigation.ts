@@ -52,8 +52,8 @@ export const PLATFORM_MODULES: PlatformModule[] = [
   },
   {
     id: "driving-routes",
-    label: "Driving Routes",
-    description: "Curated practice routes for learners and supervisors.",
+    label: "Driving Test Routes",
+    description: "Curated test-centre practice routes for learners, instructors and supervisors.",
     status: "coming-soon",
     audience: "all",
   },

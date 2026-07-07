@@ -180,7 +180,7 @@ export default async function InstructorDashboardPage() {
   const lessons = isSupabaseConfigured() ? await listLessonsForInstructor(user.id) : [];
   const todayIso = toIsoDate(new Date());
   const today = buildPlannerDay(todayIso, lessons, todayIso);
-  const comingSoonHubs = comingSoonModulesForAudience("instructor").filter((module) => module.audience === "instructor");
+  const comingSoonHubs = comingSoonModulesForAudience("instructor");
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-4">

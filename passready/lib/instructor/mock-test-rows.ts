@@ -250,7 +250,7 @@ export const FAULT_GRID_COLUMNS: [FaultSectionDef[], FaultSectionDef[], FaultSec
   ],
 ];
 
-const emptyMark = (): FaultMarks => ({ minorCount: 0, serious: false, dangerous: false });
+const emptyMark = (): FaultMarks => ({ minorCount: 0, seriousCount: 0, dangerous: false });
 
 export function emptyFaultMap(rows: FaultRowDef[]): Record<string, FaultMarks> {
   const o: Record<string, FaultMarks> = {};

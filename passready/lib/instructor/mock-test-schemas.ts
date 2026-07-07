@@ -6,34 +6,40 @@ import {
 } from "@/lib/instructor/mock-test-rows";
 
 /** Legacy cells stored `"minor"` | `"serious"` | `"dangerous"` or new tallies object. */
-export function normalizeFaultCell(raw: unknown): { minorCount: number; serious: boolean; dangerous: boolean } {
+export function normalizeFaultCell(raw: unknown): { minorCount: number; seriousCount: number; dangerous: boolean } {
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
     const o = raw as Record<string, unknown>;
-    if ("minorCount" in o || "serious" in o || "dangerous" in o) {
+    if ("minorCount" in o || "seriousCount" in o || "serious" in o || "dangerous" in o) {
       const n = typeof o.minorCount === "number" ? Math.floor(o.minorCount) : 0;
+      let seriousCount = 0;
+      if (typeof o.seriousCount === "number") {
+        seriousCount = Math.floor(o.seriousCount);
+      } else if (Boolean(o.serious)) {
+        seriousCount = 1;
+      }
       return {
         minorCount: Math.min(99, Math.max(0, n)),
-        serious: Boolean(o.serious),
+        seriousCount: Math.min(99, Math.max(0, seriousCount)),
         dangerous: Boolean(o.dangerous),
       };
     }
   }
   const s = typeof raw === "string" ? raw : "";
-  if (s === "minor") return { minorCount: 1, serious: false, dangerous: false };
-  if (s === "serious") return { minorCount: 0, serious: true, dangerous: false };
-  if (s === "dangerous") return { minorCount: 0, serious: false, dangerous: true };
-  return { minorCount: 0, serious: false, dangerous: false };
+  if (s === "minor") return { minorCount: 1, seriousCount: 0, dangerous: false };
+  if (s === "serious") return { minorCount: 0, seriousCount: 1, dangerous: false };
+  if (s === "dangerous") return { minorCount: 0, seriousCount: 0, dangerous: true };
+  return { minorCount: 0, seriousCount: 0, dangerous: false };
 }
 
-export function hasFaultMarks(m: { minorCount: number; serious: boolean; dangerous: boolean }): boolean {
-  return m.minorCount > 0 || m.serious || m.dangerous;
+export function hasFaultMarks(m: { minorCount: number; seriousCount: number; dangerous: boolean }): boolean {
+  return m.minorCount > 0 || m.seriousCount > 0 || m.dangerous;
 }
 
 const faultCellSchema = z.preprocess(
   (raw) => normalizeFaultCell(raw),
   z.object({
     minorCount: z.number().int().min(0).max(99),
-    serious: z.boolean(),
+    seriousCount: z.number().int().min(0).max(99),
     dangerous: z.boolean(),
   }),
 );
@@ -63,7 +69,7 @@ function migratePositioningRows(o: Record<string, unknown>) {
     if (!hasFaultMarks(coreMarks)) continue;
     if (hasFaultMarks(targetMarks)) continue;
 
-    target[rowId] = core[rowId];
+    target[rowId] = coreMarks;
     o[targetSection] = target;
   }
   o.positioningCore = core;

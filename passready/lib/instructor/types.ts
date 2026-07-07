@@ -2,10 +2,10 @@ import type { MockTestFormPayload } from "@/lib/instructor/mock-test-schemas";
 
 export type UserAppRole = "learner" | "instructor" | "parent";
 
-/** Per competency row: repeat minors (DL25-style tallies), optional S/D. */
+/** Per competency row: repeat minors and serious faults (DL25-style tallies), optional D. */
 export type FaultMarks = {
   minorCount: number;
-  serious: boolean;
+  seriousCount: number;
   dangerous: boolean;
 };
 

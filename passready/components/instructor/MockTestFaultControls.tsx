@@ -12,16 +12,24 @@ type Props = {
 };
 
 /**
- * DL25-inspired: circle tallies driving (minor) faults per tap; S / D toggle serious / dangerous.
+ * DL25-inspired: circle tallies driving (minor) faults; S tallies serious faults; D toggles dangerous.
  */
 export function MockTestFaultControls({ value, onChange, disabled, compact }: Props) {
-  const { minorCount, serious, dangerous } = value;
+  const { minorCount, seriousCount, dangerous } = value;
   const escalatesToSerious = minorCount > MINOR_TALLY_CAP;
+  const seriousActive = seriousCount > 0 || escalatesToSerious;
 
   function bumpMinor(delta: number) {
     onChange({
       ...value,
       minorCount: Math.min(99, Math.max(0, minorCount + delta)),
+    });
+  }
+
+  function bumpSerious(delta: number) {
+    onChange({
+      ...value,
+      seriousCount: Math.min(99, Math.max(0, seriousCount + delta)),
     });
   }
 
@@ -76,19 +84,34 @@ export function MockTestFaultControls({ value, onChange, disabled, compact }: Pr
         ) : null}
       </div>
 
-      <button
-        type="button"
-        disabled={disabled}
-        title="Serious fault"
-        onClick={() => onChange({ ...value, serious: !serious })}
-        className={`mt-0.5 flex items-center justify-center rounded-md border font-heading font-semibold transition ${btnSize} ${
-          serious || escalatesToSerious
-            ? "border-orange-500 bg-orange-500 text-white shadow-sm"
-            : "border-brand-200 bg-white text-brand-600 hover:border-orange-300 hover:bg-orange-50"
-        } ${disabled ? "opacity-40" : ""}`}
-      >
-        S
-      </button>
+      <div className="flex flex-col items-center gap-0.5">
+        <button
+          type="button"
+          disabled={disabled}
+          title="Serious fault. Tap once per fault"
+          onClick={() => bumpSerious(1)}
+          className={`mt-0.5 flex items-center justify-center rounded-md border font-heading font-semibold tabular-nums transition ${btnSize} ${
+            seriousActive
+              ? "border-orange-500 bg-orange-500 text-white shadow-sm"
+              : "border-brand-200 bg-white text-brand-600 hover:border-orange-300 hover:bg-orange-50"
+          } ${disabled ? "opacity-40" : "active:scale-95"}`}
+        >
+          {seriousCount > 0 ? seriousCount : "S"}
+        </button>
+        {seriousCount > 0 ? (
+          <button
+            type="button"
+            disabled={disabled}
+            className="text-xs font-medium text-brand-600 underline-offset-2 hover:text-brand-900 hover:underline disabled:opacity-40"
+            onClick={() => bumpSerious(-1)}
+          >
+            −1
+          </button>
+        ) : (
+          <span className={`${c ? "h-3" : "h-3.5"}`} aria-hidden />
+        )}
+      </div>
+
       <button
         type="button"
         disabled={disabled}

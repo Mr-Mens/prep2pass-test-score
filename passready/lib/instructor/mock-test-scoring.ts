@@ -21,7 +21,8 @@ function getCell(rec: Record<string, unknown>, id: string): FaultMarks {
 /** Per row: only the first `MINOR_TALLY_CAP` minors count toward the minor total; beyond that counts as one serious on this line. */
 function effectiveRowFaults(m: FaultMarks) {
   const minorsTowardTotal = Math.min(m.minorCount, MINOR_TALLY_CAP);
-  const serious = m.serious || m.minorCount > MINOR_TALLY_CAP ? 1 : 0;
+  const escalationSerious = m.minorCount > MINOR_TALLY_CAP ? 1 : 0;
+  const serious = m.seriousCount + escalationSerious;
   const dangerous = m.dangerous ? 1 : 0;
   return { minorsTowardTotal, serious, dangerous };
 }
@@ -89,28 +90,43 @@ export function computeMockOutcome(
   return { outcome: "pass", failReason: null };
 }
 
+function rowSeriousTally(m: FaultMarks): number {
+  return m.seriousCount + (m.minorCount > MINOR_TALLY_CAP ? 1 : 0);
+}
+
 function rowScore(m: FaultMarks): number {
   if (m.dangerous) return 5;
   const repeatEscalation = m.minorCount > MINOR_TALLY_CAP;
-  if (m.serious || repeatEscalation) return 4 + Math.min(m.minorCount, MINOR_TALLY_CAP);
+  if (m.seriousCount > 0 || repeatEscalation) {
+    return 4 + rowSeriousTally(m) + Math.min(m.minorCount, MINOR_TALLY_CAP);
+  }
   return m.minorCount;
 }
 
-function formatRiskDisplayLabel(sectionTitle: string, rowLabel: string, minorCount: number, bucket: keyof MockTestTopRiskAreas) {
+function formatRiskDisplayLabel(
+  sectionTitle: string,
+  rowLabel: string,
+  marks: FaultMarks,
+  bucket: keyof MockTestTopRiskAreas,
+) {
   const base =
     sectionTitle.trim().toLowerCase() === rowLabel.trim().toLowerCase()
       ? rowLabel
       : `${sectionTitle}: ${rowLabel}`;
 
-  if (bucket === "driving" && minorCount > 0) {
-    return `${base} (${minorCount})`;
+  if (bucket === "driving" && marks.minorCount > 0) {
+    return `${base} (${marks.minorCount})`;
+  }
+  if (bucket === "serious") {
+    const tally = rowSeriousTally(marks);
+    if (tally > 0) return `${base} (${tally})`;
   }
   return base;
 }
 
 function classifyRowSeverity(m: FaultMarks): keyof MockTestTopRiskAreas | null {
   if (m.dangerous) return "dangerous";
-  if (m.serious || m.minorCount > MINOR_TALLY_CAP) return "serious";
+  if (m.seriousCount > 0 || m.minorCount > MINOR_TALLY_CAP) return "serious";
   if (m.minorCount > 0) return "driving";
   return null;
 }
@@ -134,7 +150,7 @@ function buildTopRiskAreas(payload: MockTestFormPayload): MockTestTopRiskAreas {
         compositeId: `${sec.key}:${row.id}`,
         sectionTitle: sec.title,
         rowLabel: row.label,
-        displayLabel: formatRiskDisplayLabel(sec.title, row.label, marks.minorCount, bucket),
+        displayLabel: formatRiskDisplayLabel(sec.title, row.label, marks, bucket),
         minorCount: marks.minorCount,
       };
       topRiskAreas[bucket].push(entry);
@@ -153,9 +169,9 @@ function buildTopRiskAreas(payload: MockTestFormPayload): MockTestTopRiskAreas {
 
 function getCellFromPayload(payload: MockTestFormPayload, compositeId: string): FaultMarks {
   const [sectionKey, rowId] = compositeId.split(":");
-  if (!sectionKey || !rowId) return { minorCount: 0, serious: false, dangerous: false };
+  if (!sectionKey || !rowId) return { minorCount: 0, seriousCount: 0, dangerous: false };
   const block = payload[sectionKey as keyof MockTestFormPayload];
-  if (!block || typeof block !== "object") return { minorCount: 0, serious: false, dangerous: false };
+  if (!block || typeof block !== "object") return { minorCount: 0, seriousCount: 0, dangerous: false };
   return getCell(block as Record<string, unknown>, rowId);
 }
 

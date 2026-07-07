@@ -211,7 +211,7 @@ export function InstructorMockTestForm({ initialMockTestId, autoStartCab = false
                     value={
                       (form[sec.key] as Record<string, FaultMarks>)[row.id] ?? {
                         minorCount: 0,
-                        serious: false,
+                        seriousCount: 0,
                         dangerous: false,
                       }
                     }
@@ -622,7 +622,8 @@ export function InstructorMockTestForm({ initialMockTestId, autoStartCab = false
         <div className="border-b border-brand-100 bg-brand-50/80 px-4 py-3">
           <h2 className="mock-sheet-h2">Fault recording</h2>
           <p className="mock-sheet-body mt-1.5">
-            Tap the circle for each driving fault. S / D = serious / dangerous. On the same line, more than {MINOR_TALLY_CAP}{" "}
+            Tap the circle for each driving fault. Tap <strong className="font-semibold text-brand-800">S</strong> for each
+            serious fault. D = dangerous. On the same line, more than {MINOR_TALLY_CAP}{" "}
             minors count as <strong className="font-semibold text-brand-800">one serious fault</strong> (4th tap onward).
           </p>
         </div>

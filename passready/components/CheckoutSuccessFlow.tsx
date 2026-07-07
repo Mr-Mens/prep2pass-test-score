@@ -9,6 +9,7 @@ import { requestConfirmUpgrade } from "@/lib/api/upgrade-to-lifetime";
 import { requestVerifyCheckoutSession } from "@/lib/api/verify-checkout-session";
 import { SMART_UI } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
+import { clearAssessmentFormDraft } from "@/lib/assessment-form-draft";
 import {
   clearPendingAssessment,
   loadPendingAssessment,
@@ -94,6 +95,7 @@ export function CheckoutSuccessFlow() {
           result: finalised.result,
         });
         clearPendingAssessment();
+        clearAssessmentFormDraft();
         router.replace(finalised.persisted ? `/reports/${finalised.reportId}` : "/results");
       } catch (e) {
         if (cancelled) return;

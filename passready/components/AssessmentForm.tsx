@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 import { requestAssessmentScore } from "@/lib/api/score-assessment";
@@ -10,6 +10,12 @@ import { requestCheckoutSession } from "@/lib/api/create-checkout-session";
 import { requestFinaliseReport } from "@/lib/api/finalise-report";
 import { BRAND_CTA, LIFETIME_MEMBER_UI, PRICING, PRODUCT, SMART_UI, WEAK_AREA_OPTIONS } from "@/lib/constants";
 import { ApiRequestError } from "@/lib/errors";
+import {
+  clearAssessmentFormDraft,
+  mergeAssessmentFormDefaults,
+  saveAssessmentFormDraft,
+  shouldPersistAssessmentFormDraft,
+} from "@/lib/assessment-form-draft";
 import {
   clearPendingAssessment,
   savePendingAssessment,
@@ -180,6 +186,12 @@ export function AssessmentForm({
 }: AssessmentFormProps = {}) {
   const router = useRouter();
   const submitLock = useRef(false);
+  const initialDefaults = useMemo(
+    () => mergeAssessmentFormDefaults({ prefilledFullName, lockedAccountEmail }),
+    // Restore saved draft once on mount; account props override name/email when signed in.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [preview, setPreview] = useState<ScorePreview | null>(initialPreview);
   const [unlocking, setUnlocking] = useState(false);
@@ -196,26 +208,19 @@ export function AssessmentForm({
     formState: { errors, isSubmitting },
   } = useForm<AssessmentFormValues>({
     resolver: zodResolver(assessmentSchema),
-    defaultValues: {
-      fullName: prefilledFullName ?? "",
-      email: lockedAccountEmail ?? "",
-      lessonsTaken: "",
-      testBooked: undefined,
-      testDate: "",
-      mockTestTaken: undefined,
-      mockTestResult: "not_taken",
-      seriousFaults: "",
-      drivingFaults: "",
-      confidenceLevel: 6,
-      weakAreas: [],
-      weakAreaDetails: [],
-      mockReflectionCategories: [],
-      mockReflectionDetails: [],
-      extraNotes: "",
-      syllabusCaptureVersion: 1,
-      topicsCovered: [],
-    },
+    defaultValues: initialDefaults,
   });
+
+  const formValues = watch();
+  const formValuesRef = useRef(formValues);
+  formValuesRef.current = formValues;
+
+  const flushFormDraft = useCallback(() => {
+    const values = formValuesRef.current;
+    if (shouldPersistAssessmentFormDraft(values)) {
+      saveAssessmentFormDraft(values);
+    }
+  }, []);
 
   const testBooked = watch("testBooked");
   const mockTestTaken = watch("mockTestTaken");
@@ -242,6 +247,7 @@ export function AssessmentForm({
           result: finalised.result,
         });
         clearPendingAssessment();
+        clearAssessmentFormDraft();
         router.replace(finalised.persisted ? `/reports/${finalised.reportId}` : "/results");
         return { kind: "finalised" };
       }
@@ -249,6 +255,24 @@ export function AssessmentForm({
     },
     [router],
   );
+
+  useEffect(() => {
+    if (preview) return;
+    const timer = window.setTimeout(() => {
+      flushFormDraft();
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [formValues, preview, flushFormDraft]);
+
+  useEffect(() => {
+    if (preview) return;
+    const onPageHide = () => flushFormDraft();
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      window.removeEventListener("pagehide", onPageHide);
+      flushFormDraft();
+    };
+  }, [preview, flushFormDraft]);
 
   useEffect(() => {
     if (mockTestTaken === "no") {
@@ -322,6 +346,7 @@ export function AssessmentForm({
         readinessScore: scored.result.readinessScore,
         readinessLabel: scored.result.readinessLabel,
       });
+      clearAssessmentFormDraft();
     } catch (e) {
       const message =
         e instanceof ApiRequestError

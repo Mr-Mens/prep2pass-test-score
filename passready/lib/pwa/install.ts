@@ -31,21 +31,24 @@ export function isIosSafari(): boolean {
   return !/crios|fxios|edgios|opr\//.test(ua);
 }
 
+/** Always false: dismiss is in-memory only so the install prompt returns on each visit/refresh. */
 export function readInstallDismissed(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(PWA.installDismissKey) === "1";
-  } catch {
-    return false;
-  }
+  return false;
 }
 
-export function persistInstallDismissed(): void {
+/** Clear any legacy permanent dismiss so users keep seeing the install prompt. */
+export function clearInstallDismissed(): void {
+  if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(PWA.installDismissKey, "1");
+    window.localStorage.removeItem(PWA.installDismissKey);
   } catch {
     // Ignore storage failures (private mode, etc.).
   }
+}
+
+/** No-op persist: banner hides for this page view only, then returns on next load. */
+export function persistInstallDismissed(): void {
+  clearInstallDismissed();
 }
 
 export function shouldRegisterServiceWorker(): boolean {

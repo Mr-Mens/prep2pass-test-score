@@ -7,10 +7,9 @@ import { Button } from "@/components/Button";
 import { BRAND_ICONS, PRODUCT } from "@/lib/constants";
 import {
   type BeforeInstallPromptEvent,
+  clearInstallDismissed,
   isStandaloneDisplayMode,
-  persistInstallDismissed,
   promptNativeInstall,
-  readInstallDismissed,
   registerPassPilotServiceWorker,
   resolveInstallMode,
   type PwaInstallMode,
@@ -39,12 +38,13 @@ export function PwaProvider() {
 
   useEffect(() => {
     setMounted(true);
+    clearInstallDismissed();
     void registerPassPilotServiceWorker();
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
-    if (isStandaloneDisplayMode() || readInstallDismissed()) return;
+    if (isStandaloneDisplayMode()) return;
 
     function onBeforeInstallPrompt(event: Event) {
       event.preventDefault();
@@ -57,7 +57,7 @@ export function PwaProvider() {
 
   useEffect(() => {
     if (!mounted) return;
-    if (isStandaloneDisplayMode() || readInstallDismissed()) {
+    if (isStandaloneDisplayMode()) {
       setVisible(false);
       return;
     }
@@ -68,9 +68,8 @@ export function PwaProvider() {
   }, [mounted, deferredPrompt]);
 
   const dismiss = useCallback(() => {
-    persistInstallDismissed();
+    // Hide for this page view only; prompt returns on the next refresh or visit.
     setVisible(false);
-    setDeferredPrompt(null);
   }, []);
 
   const install = useCallback(async () => {

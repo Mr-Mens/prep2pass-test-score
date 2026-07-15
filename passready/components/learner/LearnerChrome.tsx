@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { BrandLogo } from "@/components/BrandLogo";
+import { LearnerPushBadgeEffects } from "@/components/learner/LearnerPushBadgeEffects";
 import { useLearnerSession } from "@/components/learner/LearnerSessionContext";
 import { PRICING, PRODUCT } from "@/lib/constants";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -311,6 +312,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-viewport-shell app-viewport-shell-app min-w-0 bg-[#f0f2f5] md:flex-row">
+      <LearnerPushBadgeEffects />
       <aside className="hidden w-[17.5rem] shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
         <div className="border-b border-slate-700/90 px-5 py-6">
           <Link href={homeHref} className="block" aria-label={`${PRODUCT.name} home`}>

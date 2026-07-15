@@ -5,7 +5,7 @@ const IS_DEV =
   self.location.hostname === "127.0.0.1" ||
   self.location.hostname.endsWith(".local");
 
-const CACHE_VERSION = IS_DEV ? "pass-pilot-pwa-dev" : "pass-pilot-pwa-v5";
+const CACHE_VERSION = IS_DEV ? "pass-pilot-pwa-dev" : "pass-pilot-pwa-v6";
 
 const PRECACHE_URLS = IS_DEV
   ? ["/offline.html", "/manifest.webmanifest"]
@@ -119,4 +119,71 @@ self.addEventListener("fetch", (event) => {
       }),
     );
   }
+});
+
+self.addEventListener("push", (event) => {
+  let data = {
+    title: "Pass Pilot",
+    body: "You have a new update.",
+    url: "/dashboard",
+    badgeCount: 1,
+    tag: "pass-pilot-notification",
+  };
+
+  try {
+    if (event.data) {
+      data = { ...data, ...event.data.json() };
+    }
+  } catch {
+    // Keep defaults.
+  }
+
+  const badgeCount = typeof data.badgeCount === "number" ? data.badgeCount : 1;
+
+  event.waitUntil(
+    (async () => {
+      try {
+        if (badgeCount > 0 && self.registration.setAppBadge) {
+          await self.registration.setAppBadge(badgeCount);
+        } else if (badgeCount <= 0 && self.registration.clearAppBadge) {
+          await self.registration.clearAppBadge();
+        }
+      } catch {
+        // Badge API unavailable.
+      }
+
+      await self.registration.showNotification(data.title || "Pass Pilot", {
+        body: data.body || "You have a new update.",
+        icon: "/brand/pass-pilot-icon-192.png",
+        badge: "/brand/pass-pilot-favicon-32.png",
+        tag: data.tag || "pass-pilot-notification",
+        renotify: true,
+        data: { url: data.url || "/dashboard" },
+      });
+    })(),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "/dashboard";
+  const absoluteUrl = new URL(targetUrl, self.location.origin).href;
+
+  event.waitUntil(
+    (async () => {
+      const clientsList = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of clientsList) {
+        if ("focus" in client) {
+          await client.focus();
+          if ("navigate" in client) {
+            await client.navigate(absoluteUrl);
+          }
+          return;
+        }
+      }
+      if (self.clients.openWindow) {
+        await self.clients.openWindow(absoluteUrl);
+      }
+    })(),
+  );
 });

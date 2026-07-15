@@ -44,7 +44,21 @@ export async function createInstructorPupilInviteNotification(input: {
     if (error.code === "23505") return null;
     throw new Error(error.message);
   }
-  return data as AppNotificationRow;
+
+  const row = data as AppNotificationRow;
+  try {
+    const { sendLearnerWebPush } = await import("@/lib/server/web-push");
+    await sendLearnerWebPush(input.learnerUserId, {
+      title,
+      body,
+      url: "/dashboard",
+      tag: `instructor-invite-${input.pupilLinkId}`,
+    });
+  } catch (e) {
+    console.warn("[notifications] invite_push_failed", e instanceof Error ? e.message : e);
+  }
+
+  return row;
 }
 
 export async function createLessonReflectionRequestNotification(input: {
@@ -83,7 +97,32 @@ export async function createLessonReflectionRequestNotification(input: {
     if (error.code === "23505") return null;
     throw new Error(error.message);
   }
-  return data as AppNotificationRow;
+
+  const row = data as AppNotificationRow;
+  const params = new URLSearchParams({
+    lessonId: input.lessonId,
+    lessonDate: input.lessonDate,
+  });
+  if (input.durationMinutes > 0) {
+    params.set("hours", String(Math.max(0.5, Math.round((input.durationMinutes / 60) * 2) / 2)));
+  }
+  if (input.lessonFocus.length > 0) {
+    params.set("topics", input.lessonFocus.join(","));
+  }
+
+  try {
+    const { sendLearnerWebPush } = await import("@/lib/server/web-push");
+    await sendLearnerWebPush(input.learnerUserId, {
+      title,
+      body,
+      url: `/dashboard/reflections/new?${params.toString()}`,
+      tag: `lesson-reflection-${input.lessonId}`,
+    });
+  } catch (e) {
+    console.warn("[notifications] reflection_push_failed", e instanceof Error ? e.message : e);
+  }
+
+  return row;
 }
 
 export async function resolveLessonReflectionRequestNotifications(

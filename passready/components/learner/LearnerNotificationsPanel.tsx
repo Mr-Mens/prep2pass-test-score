@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { setHomescreenBadge } from "@/lib/pwa/badge";
+
 type Notification = {
   id: string;
   kind: string;
@@ -48,7 +50,10 @@ export function LearnerNotificationsPanel() {
       try {
         const res = await fetch("/api/learner/notifications", { credentials: "include" });
         const json = (await res.json()) as { success?: boolean; notifications?: Notification[] };
-        if (json.success && json.notifications) setItems(json.notifications);
+        if (json.success && json.notifications) {
+          setItems(json.notifications);
+          void setHomescreenBadge(json.notifications.length);
+        }
       } finally {
         setLoaded(true);
       }
@@ -66,7 +71,11 @@ export function LearnerNotificationsPanel() {
       });
       const json = (await res.json()) as { success?: boolean };
       if (json.success) {
-        setItems((prev) => prev.filter((n) => n.id !== notificationId));
+        setItems((prev) => {
+          const next = prev.filter((n) => n.id !== notificationId);
+          void setHomescreenBadge(next.length);
+          return next;
+        });
         router.refresh();
       }
     } finally {

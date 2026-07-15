@@ -101,10 +101,30 @@ function testLegacySeriousBooleanNormalizesToCount() {
   assert.ok(summary.topRiskAreas.serious.some((e) => e.displayLabel.includes("Necessary (1)")));
 }
 
+function testMixedMinorAndSeriousOnSameRowAppearInBothLists() {
+  const base = buildDefaultMockTestForm();
+  base.moveOff = {
+    control: { minorCount: 1, seriousCount: 1, dangerous: false },
+  };
+
+  const summary = buildMockTestSummary(base, 15);
+  assert.equal(summary.totalMinors, 1, "minor should count toward driving total");
+  assert.equal(summary.seriousCount, 1, "serious should count toward serious total");
+  assert.ok(
+    summary.topRiskAreas.driving.some((e) => e.displayLabel === "Move off: Control (1)"),
+    `expected minor in driving list, got ${summary.topRiskAreas.driving.map((e) => e.displayLabel).join(", ")}`,
+  );
+  assert.ok(
+    summary.topRiskAreas.serious.some((e) => e.displayLabel === "Move off: Control (1)"),
+    `expected serious in serious list, got ${summary.topRiskAreas.serious.map((e) => e.displayLabel).join(", ")}`,
+  );
+}
+
 testUseOfSpeedInDedicatedSection();
 testLegacyPositioningCoreDoesNotWipeUseOfSpeed();
 testLegacyAwarenessPlanningDrivingFaultMigrates();
 testMultipleSeriousFaultsOnSameRow();
 testLegacySeriousBooleanNormalizesToCount();
+testMixedMinorAndSeriousOnSameRowAppearInBothLists();
 
 console.log("Mock test use-of-speed tests passed.");

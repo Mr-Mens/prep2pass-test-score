@@ -114,8 +114,9 @@ function formatRiskDisplayLabel(
       ? rowLabel
       : `${sectionTitle}: ${rowLabel}`;
 
-  if (bucket === "driving" && marks.minorCount > 0) {
-    return `${base} (${marks.minorCount})`;
+  if (bucket === "driving") {
+    const tally = Math.min(marks.minorCount, MINOR_TALLY_CAP);
+    if (tally > 0) return `${base} (${tally})`;
   }
   if (bucket === "serious") {
     const tally = rowSeriousTally(marks);
@@ -124,11 +125,13 @@ function formatRiskDisplayLabel(
   return base;
 }
 
-function classifyRowSeverity(m: FaultMarks): keyof MockTestTopRiskAreas | null {
-  if (m.dangerous) return "dangerous";
-  if (m.seriousCount > 0 || m.minorCount > MINOR_TALLY_CAP) return "serious";
-  if (m.minorCount > 0) return "driving";
-  return null;
+/** A row can contribute to more than one list (e.g. 1 minor + 1 serious on the same line). */
+function rowRiskBuckets(m: FaultMarks): (keyof MockTestTopRiskAreas)[] {
+  const buckets: (keyof MockTestTopRiskAreas)[] = [];
+  if (m.dangerous) buckets.push("dangerous");
+  if (m.seriousCount > 0 || m.minorCount > MINOR_TALLY_CAP) buckets.push("serious");
+  if (Math.min(m.minorCount, MINOR_TALLY_CAP) > 0) buckets.push("driving");
+  return buckets;
 }
 
 function buildTopRiskAreas(payload: MockTestFormPayload): MockTestTopRiskAreas {
@@ -143,17 +146,16 @@ function buildTopRiskAreas(payload: MockTestFormPayload): MockTestTopRiskAreas {
     if (!block) continue;
     for (const row of sec.rows) {
       const marks = getCell(block, row.id);
-      const bucket = classifyRowSeverity(marks);
-      if (!bucket) continue;
-
-      const entry: MockTestRiskAreaEntry = {
-        compositeId: `${sec.key}:${row.id}`,
-        sectionTitle: sec.title,
-        rowLabel: row.label,
-        displayLabel: formatRiskDisplayLabel(sec.title, row.label, marks, bucket),
-        minorCount: marks.minorCount,
-      };
-      topRiskAreas[bucket].push(entry);
+      for (const bucket of rowRiskBuckets(marks)) {
+        const entry: MockTestRiskAreaEntry = {
+          compositeId: `${sec.key}:${row.id}`,
+          sectionTitle: sec.title,
+          rowLabel: row.label,
+          displayLabel: formatRiskDisplayLabel(sec.title, row.label, marks, bucket),
+          minorCount: marks.minorCount,
+        };
+        topRiskAreas[bucket].push(entry);
+      }
     }
   }
 

@@ -10,31 +10,49 @@ type Props = {
   learnerName?: string | null;
 };
 
-function ChipList({ label, items, emphasis = false }: { label: string; items: string[]; emphasis?: boolean }) {
-  const inner = (
-    <>
-      <p className={`text-[11px] font-semibold uppercase tracking-wide ${emphasis ? "text-teal-800" : "text-brand-500"}`}>
-        {label}
-      </p>
+function TopicBlock({
+  title,
+  items,
+  empty = "None noted",
+  tone = "default",
+}: {
+  title: string;
+  items: string[];
+  empty?: string;
+  tone?: "default" | "strength" | "difficulty" | "focus";
+}) {
+  const tones = {
+    default: "border-brand-100 bg-white",
+    strength: "border-emerald-200/70 bg-emerald-50/40",
+    difficulty: "border-amber-200/70 bg-amber-50/35",
+    focus: "border-teal-200/70 bg-teal-50/40",
+  } as const;
+  const titleTone = {
+    default: "text-brand-500",
+    strength: "text-emerald-800",
+    difficulty: "text-amber-900",
+    focus: "text-teal-900",
+  } as const;
+
+  return (
+    <section className={`rounded-2xl border p-5 sm:p-6 ${tones[tone]}`}>
+      <h2 className={`text-xs font-semibold uppercase tracking-wide ${titleTone[tone]}`}>{title}</h2>
       {items.length > 0 ? (
-        <p className={`mt-2 text-sm leading-relaxed ${emphasis ? "font-medium text-teal-950" : "text-brand-800"}`}>
-          {reflectionTopicLabels(items)}
-        </p>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <li
+              key={item}
+              className="rounded-full bg-white/80 px-3 py-1 text-sm font-medium text-brand-900 ring-1 ring-brand-100"
+            >
+              {syllabusTopicLabel(item)}
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p className="mt-2 text-sm text-brand-500">None noted</p>
+        <p className="mt-3 text-sm text-brand-500">{empty}</p>
       )}
-    </>
+    </section>
   );
-
-  if (emphasis) {
-    return (
-      <div className="rounded-xl border border-teal-200/60 bg-teal-50/35 p-4 ring-1 ring-teal-100/60 sm:col-span-2">
-        {inner}
-      </div>
-    );
-  }
-
-  return <div>{inner}</div>;
 }
 
 export function ReflectionDetailView({ reflection, learnerName }: Props) {
@@ -49,60 +67,63 @@ export function ReflectionDetailView({ reflection, learnerName }: Props) {
         }));
 
   return (
-    <article className="space-y-5">
+    <article className="space-y-4">
       <header className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Lesson reflection</p>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-brand-950">
-              {formatIsoDateUk(reflection.lesson_date)}
-            </h1>
-            {learnerName ? <p className="mt-1 text-sm text-brand-600">Learner: {learnerName}</p> : null}
-          </div>
-          <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-900 ring-1 ring-teal-100">
-            {LESSON_TYPE_LABELS[reflection.lesson_type]}
-          </span>
-        </div>
-        <dl className="mt-5 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-brand-100 bg-brand-50/40 px-4 py-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Length</dt>
-            <dd className="mt-1 text-sm font-semibold text-brand-950">{reflection.lesson_hours}h</dd>
-          </div>
-          <div className="rounded-xl border border-brand-100 bg-brand-50/40 px-4 py-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Avg confidence</dt>
-            <dd className="mt-1 text-sm font-semibold text-brand-950">
-              {reflection.confidence_before} → {reflection.confidence_after}
-              {confidenceDelta !== 0 ? (
-                <span className={confidenceDelta > 0 ? " text-emerald-700" : " text-amber-800"}>
-                  {" "}
-                  ({confidenceDelta > 0 ? "+" : ""}
-                  {confidenceDelta.toFixed(1)})
-                </span>
-              ) : null}
-            </dd>
-          </div>
-          <div className="rounded-xl border border-brand-100 bg-brand-50/40 px-4 py-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Private practice</dt>
-            <dd className="mt-1 text-sm font-semibold text-brand-950">
-              {reflection.private_practice_planned ? "Planned" : "Not planned"}
-            </dd>
-          </div>
-        </dl>
+        {learnerName ? (
+          <p className="text-sm font-semibold text-teal-800">{learnerName}</p>
+        ) : (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-500">Lesson reflection</p>
+        )}
+        <h1 className="mt-1 font-heading text-2xl font-semibold text-brand-950 sm:text-3xl">
+          {formatIsoDateUk(reflection.lesson_date)}
+        </h1>
+        <p className="mt-2 text-sm text-brand-600">
+          {LESSON_TYPE_LABELS[reflection.lesson_type]} · {reflection.lesson_hours}h
+          {reflection.private_practice_planned ? " · Private practice planned" : ""}
+        </p>
+        <p className="mt-4 text-sm text-brand-800">
+          <span className="font-semibold text-brand-950">Confidence:</span> {reflection.confidence_before} →{" "}
+          {reflection.confidence_after}
+          {confidenceDelta !== 0 ? (
+            <span className={confidenceDelta > 0 ? " font-semibold text-emerald-700" : " font-semibold text-amber-800"}>
+              {" "}
+              ({confidenceDelta > 0 ? "+" : ""}
+              {confidenceDelta.toFixed(1)})
+            </span>
+          ) : null}
+        </p>
+        {reflection.topics_practised.length > 0 ? (
+          <p className="mt-2 text-sm text-brand-600">
+            <span className="font-medium text-brand-800">Practised:</span>{" "}
+            {reflectionTopicLabels(reflection.topics_practised)}
+          </p>
+        ) : null}
       </header>
+
+      <TopicBlock title="What went well" items={reflection.strengths} tone="strength" />
+      <TopicBlock title="What was difficult" items={reflection.difficulties} tone="difficulty" />
+
+      {reflection.difficulty_notes ? (
+        <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-brand-500">Pupil notes</h2>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-brand-800">
+            {reflection.difficulty_notes}
+          </p>
+        </section>
+      ) : null}
+
+      <TopicBlock title="Next lesson focus" items={reflection.next_focus} tone="focus" empty="No focus suggested" />
 
       {perTopic.length > 0 ? (
         <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Confidence by topic</p>
-          <ul className="mt-4 space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-brand-500">Confidence by topic</h2>
+          <ul className="mt-4 divide-y divide-brand-100">
             {perTopic.map((entry) => {
               const delta = entry.after - entry.before;
               return (
-                <li
-                  key={entry.topicId}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50/40 px-4 py-3"
-                >
-                  <p className="text-sm font-semibold text-brand-950">{syllabusTopicLabel(entry.topicId)}</p>
-                  <p className="text-sm tabular-nums text-brand-800">
+                <li key={entry.topicId} className="flex flex-wrap items-center justify-between gap-2 py-3 first:pt-0 last:pb-0">
+                  <p className="text-sm font-medium text-brand-950">{syllabusTopicLabel(entry.topicId)}</p>
+                  <p className="text-sm tabular-nums text-brand-700">
                     {entry.before} → {entry.after}
                     {delta !== 0 ? (
                       <span className={delta > 0 ? " font-semibold text-emerald-700" : " font-semibold text-amber-800"}>
@@ -116,20 +137,6 @@ export function ReflectionDetailView({ reflection, learnerName }: Props) {
               );
             })}
           </ul>
-        </section>
-      ) : null}
-
-      <section className="grid gap-4 rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-6">
-        <ChipList label="Topics practised" items={reflection.topics_practised} />
-        <ChipList label="What went well" items={reflection.strengths} />
-        <ChipList label="What was difficult" items={reflection.difficulties} />
-        <ChipList label="Next lesson focus" items={reflection.next_focus} emphasis />
-      </section>
-
-      {reflection.difficulty_notes ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Notes</p>
-          <p className="mt-2 text-sm leading-relaxed text-brand-800">{reflection.difficulty_notes}</p>
         </section>
       ) : null}
     </article>

@@ -52,7 +52,7 @@ const socialProof = [
 const failedTestCards = [
   {
     title: "Money",
-    body: "A failed test can mean another test fee, additional lessons and months of waiting.",
+    body: "Failing a test will usually mean a minimum 10-hour refresher course, which typically costs about £370 — on top of another test fee.",
     icon: (
       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden>
         <path

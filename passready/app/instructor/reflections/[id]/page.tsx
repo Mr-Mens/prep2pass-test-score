@@ -13,17 +13,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: "Lesson review" };
 }
 
-async function canInstructorViewReflection(instructorUserId: string, learnerUserId: string): Promise<boolean> {
-  if (!isSupabaseConfigured()) return false;
+async function getInstructorPupilForReflection(
+  instructorUserId: string,
+  learnerUserId: string,
+): Promise<{ allowed: boolean; pupilName: string | null }> {
+  if (!isSupabaseConfigured()) return { allowed: false, pupilName: null };
   const supabase = getSupabaseServerClient();
   const { data } = await supabase
     .from("instructor_pupils")
-    .select("linked_learner_user_id")
+    .select("linked_learner_user_id, pupil_name")
     .eq("instructor_user_id", instructorUserId)
     .eq("link_status", "accepted")
     .eq("linked_learner_user_id", learnerUserId)
     .maybeSingle();
-  return Boolean(data?.linked_learner_user_id);
+  if (!data?.linked_learner_user_id) return { allowed: false, pupilName: null };
+  const pupilName = typeof data.pupil_name === "string" ? data.pupil_name.trim() : "";
+  return { allowed: true, pupilName: pupilName || null };
 }
 
 export default async function InstructorReflectionDetailPage({ params }: Props) {
@@ -31,7 +36,7 @@ export default async function InstructorReflectionDetailPage({ params }: Props) 
   const reflection = await getLessonReflectionById(params.id);
   if (!reflection) notFound();
 
-  const allowed = await canInstructorViewReflection(user.id, reflection.user_id);
+  const { allowed, pupilName } = await getInstructorPupilForReflection(user.id, reflection.user_id);
   if (!allowed) notFound();
 
   return (
@@ -40,9 +45,9 @@ export default async function InstructorReflectionDetailPage({ params }: Props) 
         href="/instructor/reflections"
         className="inline-block text-sm font-semibold text-teal-800 underline-offset-4 hover:underline"
       >
-        ← All lesson reviews
+        ← Back to pupils
       </Link>
-      <ReflectionDetailView reflection={reflection} />
+      <ReflectionDetailView reflection={reflection} learnerName={pupilName} />
     </div>
   );
 }

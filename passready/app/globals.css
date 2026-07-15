@@ -218,3 +218,47 @@
     min-height: 0;
   }
 }
+
+/* Lesson booking duration slider (15-minute steps) */
+.lesson-duration-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #0d9488 0%,
+    #0d9488 var(--duration-pct, 0%),
+    #e2e8f0 var(--duration-pct, 0%),
+    #e2e8f0 100%
+  );
+  outline: none;
+}
+
+.lesson-duration-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 9999px;
+  background: #0d9488;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+}
+
+.lesson-duration-slider::-moz-range-thumb {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 9999px;
+  background: #0d9488;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+}
+
+.lesson-duration-slider::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: transparent;
+}

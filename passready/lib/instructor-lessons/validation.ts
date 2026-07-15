@@ -14,7 +14,7 @@ export const createInstructorLessonSchema = z.object({
   pupilId: z.string().uuid(),
   lessonDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   startTime: timeSchema,
-  durationMinutes: z.number().int().min(15).max(480),
+  durationMinutes: z.number().int().min(30).max(360),
   lessonFocus: topicIdArray.default([]),
   location: z.string().trim().max(120).optional().nullable(),
   instructorNotes: z.string().trim().max(500).optional().nullable(),

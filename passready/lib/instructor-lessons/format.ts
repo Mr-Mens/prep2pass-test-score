@@ -19,6 +19,31 @@ export function formatLessonDuration(minutes: number): string {
   return `${minutes}m`;
 }
 
+/** Lesson booking slider bounds (15-minute steps). */
+export const LESSON_DURATION_MIN_MINUTES = 30;
+export const LESSON_DURATION_MAX_MINUTES = 360;
+export const LESSON_DURATION_STEP_MINUTES = 15;
+
+/** Human label for the booking slider, e.g. "1 hr 15 mins". */
+export function formatLessonDurationSliderLabel(totalMinutes: number): string {
+  const minutes = Math.max(0, Math.round(totalMinutes));
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} mins`;
+  const hourLabel = hours === 1 ? "1 hr" : `${hours} hrs`;
+  if (mins === 0) return hourLabel;
+  return `${hourLabel} ${mins} mins`;
+}
+
+export function clampLessonDurationMinutes(value: number): number {
+  const stepped =
+    Math.round(value / LESSON_DURATION_STEP_MINUTES) * LESSON_DURATION_STEP_MINUTES;
+  return Math.min(
+    LESSON_DURATION_MAX_MINUTES,
+    Math.max(LESSON_DURATION_MIN_MINUTES, stepped || LESSON_DURATION_MIN_MINUTES),
+  );
+}
+
 function parseDateAndTimeParts(lessonDate: string, startTime: string): {
   year: number;
   month: number;

@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 import { TopicChipField } from "@/components/reflections/TopicChipField";
 import { LESSON_STATUS_META } from "@/lib/instructor-lessons/constants";
+import {
+  clampLessonDurationMinutes,
+  formatLessonDurationSliderLabel,
+  LESSON_DURATION_MAX_MINUTES,
+  LESSON_DURATION_MIN_MINUTES,
+  LESSON_DURATION_STEP_MINUTES,
+} from "@/lib/instructor-lessons/format";
 import type { InstructorLessonWithPupil, LessonStatus } from "@/lib/instructor-lessons/types";
 import { LESSON_STATUSES } from "@/lib/instructor-lessons/types";
 import type { PupilRow } from "@/lib/instructor/pupil-link-types";
@@ -30,6 +37,80 @@ type Props = {
   successHref: string;
 };
 
+function LessonDurationSlider({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (minutes: number) => void;
+}) {
+  const pct =
+    ((value - LESSON_DURATION_MIN_MINUTES) /
+      (LESSON_DURATION_MAX_MINUTES - LESSON_DURATION_MIN_MINUTES)) *
+    100;
+
+  function bump(delta: number) {
+    onChange(clampLessonDurationMinutes(value + delta));
+  }
+
+  return (
+    <div className="text-sm">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="font-semibold text-brand-900">
+          Duration <span className="text-red-600">*</span>
+        </p>
+        <p className="rounded-full bg-teal-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+          {formatLessonDurationSliderLabel(value)}
+        </p>
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          aria-label="Decrease duration by 15 minutes"
+          onClick={() => bump(-LESSON_DURATION_STEP_MINUTES)}
+          disabled={value <= LESSON_DURATION_MIN_MINUTES}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 text-xl font-semibold text-brand-900 transition hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          −
+        </button>
+
+        <div className="relative min-w-0 flex-1 pt-1">
+          <input
+            type="range"
+            min={LESSON_DURATION_MIN_MINUTES}
+            max={LESSON_DURATION_MAX_MINUTES}
+            step={LESSON_DURATION_STEP_MINUTES}
+            value={value}
+            onChange={(e) => onChange(clampLessonDurationMinutes(Number(e.target.value)))}
+            aria-valuemin={LESSON_DURATION_MIN_MINUTES}
+            aria-valuemax={LESSON_DURATION_MAX_MINUTES}
+            aria-valuenow={value}
+            aria-valuetext={formatLessonDurationSliderLabel(value)}
+            aria-label="Lesson duration"
+            className="lesson-duration-slider w-full"
+            style={{ ["--duration-pct" as string]: `${pct}%` }}
+          />
+          <div className="mt-2 flex justify-between text-xs text-brand-500">
+            <span>30 mins</span>
+            <span>6 hours</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          aria-label="Increase duration by 15 minutes"
+          onClick={() => bump(LESSON_DURATION_STEP_MINUTES)}
+          disabled={value >= LESSON_DURATION_MAX_MINUTES}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 text-xl font-semibold text-brand-900 transition hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function InstructorLessonForm({
   pupils,
   lesson,
@@ -48,8 +129,8 @@ export function InstructorLessonForm({
   const [pupilId, setPupilId] = useState(lesson?.pupil_id ?? defaultPupilId ?? pupils[0]?.id ?? "");
   const [lessonDate, setLessonDate] = useState(lesson?.lesson_date ?? defaultLessonDate ?? today);
   const [startTime, setStartTime] = useState(lesson?.start_time ?? defaultStartTime ?? "09:00");
-  const [durationMinutes, setDurationMinutes] = useState(
-    String(lesson?.duration_minutes ?? defaultDurationMinutes ?? 60),
+  const [durationMinutes, setDurationMinutes] = useState(() =>
+    clampLessonDurationMinutes(Number(lesson?.duration_minutes ?? defaultDurationMinutes ?? 60)),
   );
   const [lessonFocus, setLessonFocus] = useState<string[]>(lesson?.lesson_focus ?? []);
   const [location, setLocation] = useState(lesson?.location ?? "");
@@ -64,7 +145,7 @@ export function InstructorLessonForm({
         pupilId,
         lessonDate,
         startTime: startTime.slice(0, 5),
-        durationMinutes: Number(durationMinutes),
+        durationMinutes: clampLessonDurationMinutes(durationMinutes),
         lessonFocus,
         location: location.trim() || null,
         instructorNotes: instructorNotes.trim() || null,
@@ -127,18 +208,7 @@ export function InstructorLessonForm({
           </label>
         </div>
 
-        <label className="block text-sm">
-          <span className="font-semibold text-brand-900">Duration (minutes)</span>
-          <input
-            type="number"
-            min={15}
-            max={480}
-            step={15}
-            value={durationMinutes}
-            onChange={(e) => setDurationMinutes(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-brand-200 px-3 py-3 text-sm"
-          />
-        </label>
+        <LessonDurationSlider value={durationMinutes} onChange={setDurationMinutes} />
 
         <TopicChipField label="Lesson focus" options={topicOptions} selected={lessonFocus} onChange={setLessonFocus} />
 

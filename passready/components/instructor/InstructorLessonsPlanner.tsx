@@ -43,7 +43,7 @@ function PlannerLessonCard({ lesson }: { lesson: PlannerLesson }) {
   return (
     <Link
       href={`/instructor/lessons/${lesson.id}`}
-      className="block rounded-xl border border-brand-100 bg-white p-3 shadow-sm transition hover:border-teal-200 hover:shadow"
+      className="block rounded-xl border border-brand-100 border-l-[3px] border-l-teal-600 bg-white p-3 shadow-sm transition hover:border-teal-200 hover:shadow"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -76,30 +76,27 @@ function PlannerLessonCard({ lesson }: { lesson: PlannerLesson }) {
   );
 }
 
-function GapCard({ gap, date }: { gap: PlannerGap; date: string }) {
+function GapCard({ gap, date, compact = false }: { gap: PlannerGap; date: string; compact?: boolean }) {
   return (
-    <div className="rounded-xl border border-dashed border-teal-200 bg-teal-50/40 p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Available</p>
-          <p className="mt-1 text-sm font-medium text-brand-900">
-            {formatLessonTime(gap.startTime)}–{formatLessonTime(gap.endTime)}
-          </p>
-          <p className="text-xs text-brand-600">{formatGapDuration(gap.durationMinutes)}</p>
-        </div>
-      </div>
-      <Link
-        href={bookLessonHref(gap, date)}
-        className="mt-3 inline-flex min-h-[40px] w-full items-center justify-center rounded-lg bg-teal-600 px-3 text-sm font-semibold text-white hover:bg-teal-700"
-      >
-        Book lesson
-      </Link>
-    </div>
+    <Link
+      href={bookLessonHref(gap, date)}
+      className={`block rounded-xl border border-dashed border-brand-200/80 bg-brand-50/30 transition hover:border-teal-300 hover:bg-teal-50/40 ${
+        compact ? "px-3 py-2.5" : "px-3 py-3"
+      }`}
+    >
+      <p className="text-sm font-medium text-brand-800">
+        {formatLessonTime(gap.startTime)}–{formatLessonTime(gap.endTime)}
+      </p>
+      <p className="text-xs text-brand-500">
+        {formatGapDuration(gap.durationMinutes)} free · tap to book
+      </p>
+    </Link>
   );
 }
 
 function DayCard({ day, expanded = false }: { day: PlannerDay; expanded?: boolean }) {
   const plannedCount = day.lessons.filter((lesson) => lesson.status === "planned").length;
+  const compactGaps = !expanded;
 
   return (
     <section
@@ -117,7 +114,7 @@ function DayCard({ day, expanded = false }: { day: PlannerDay; expanded?: boolea
         </span>
       </header>
 
-      <div className={`mt-4 space-y-3 ${expanded ? "" : "max-h-[28rem] overflow-y-auto"}`}>
+      <div className={`mt-4 space-y-2 ${expanded ? "" : "max-h-[28rem] overflow-y-auto"}`}>
         {day.lessons.length === 0 && day.gaps.length === 0 ? (
           <p className="rounded-xl border border-dashed border-brand-200 bg-brand-50/50 px-3 py-4 text-sm text-brand-600">
             No lessons scheduled.
@@ -129,7 +126,7 @@ function DayCard({ day, expanded = false }: { day: PlannerDay; expanded?: boolea
         ))}
 
         {day.gaps.map((gap) => (
-          <GapCard key={`${gap.startTime}-${gap.endTime}`} gap={gap} date={day.date} />
+          <GapCard key={`${gap.startTime}-${gap.endTime}`} gap={gap} date={day.date} compact={compactGaps} />
         ))}
       </div>
     </section>
@@ -198,7 +195,7 @@ function MonthView({
 
 export function InstructorLessonsPlanner({ lessons }: Props) {
   const todayIso = useMemo(() => toIsoDate(new Date()), []);
-  const [tab, setTab] = useState<Tab>("week");
+  const [tab, setTab] = useState<Tab>("month");
   const [weekAnchor, setWeekAnchor] = useState(() => startOfWeek(new Date()));
   const [monthAnchor, setMonthAnchor] = useState(() => new Date());
   const [viewDate, setViewDate] = useState<string | null>(null);

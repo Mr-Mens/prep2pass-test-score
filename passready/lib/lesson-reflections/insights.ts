@@ -56,12 +56,12 @@ export function buildReflectionInsights(reflections: LessonReflectionRow[]): Ref
 
   const confidenceSummary =
     lastFive.length === 0
-      ? "Add a reflection after your next lesson to start tracking confidence."
+      ? "Log a lesson to start"
       : direction === "up"
-        ? `Confidence is trending up by ${averageDelta.toFixed(1)} on average after recent lessons.`
+        ? "Rising"
         : direction === "down"
-          ? `Confidence has dipped slightly (${averageDelta.toFixed(1)} on average). Focus on one win per lesson.`
-          : "Confidence is holding steady across recent lessons.";
+          ? "Dipped"
+          : "Steady";
 
   const practisedSet = new Set(practisedCounts.keys());
   const underPractisedTopics = SYLLABUS_TOPIC_IDS.filter((id) => !practisedSet.has(id))
@@ -73,21 +73,18 @@ export function buildReflectionInsights(reflections: LessonReflectionRow[]): Ref
     .slice(0, 5)
     .map(([topicId, count]) => ({ topicId, label: syllabusTopicLabel(topicId), count }));
 
+  // One short takeaway — easy to scan, no stacked sentences.
   const highlights: string[] = [];
   if (repeatedWeaknesses[0]) {
-    highlights.push(`${repeatedWeaknesses[0].label} keeps appearing as a difficulty. Worth a focused repeat.`);
-  }
-  if (improvingTopics[0]) {
-    highlights.push(`${improvingTopics[0].label} is showing up in what went well.`);
-  }
-  if (underPractisedTopics[0]) {
-    highlights.push(`${underPractisedTopics[0].label} has not been logged recently. Consider covering it soon.`);
-  }
-  if (recent.filter((row) => row.lesson_type === "private_practice").length >= 2) {
-    highlights.push("Private practice is building consistency between paid lessons.");
-  }
-  if (highlights.length === 0) {
-    highlights.push("Keep logging short reflections after each lesson to unlock richer Progress Insights.");
+    highlights.push(`Focus next: ${repeatedWeaknesses[0].label}`);
+  } else if (improvingTopics[0]) {
+    highlights.push(`Going well: ${improvingTopics[0].label}`);
+  } else if (underPractisedTopics[0] && recent.length >= 2) {
+    highlights.push(`Try soon: ${underPractisedTopics[0].label}`);
+  } else if (recent.filter((row) => row.lesson_type === "private_practice").length >= 2) {
+    highlights.push("Private practice is helping");
+  } else if (recent.length === 0) {
+    highlights.push("Add a reflection after your next lesson");
   }
 
   return {

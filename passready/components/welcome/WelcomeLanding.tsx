@@ -11,7 +11,7 @@ import { PLATFORM_TERMS } from "@/lib/platform-copy";
 type RoleKey = "learner" | "instructor" | "parent";
 
 const ROLE_DEST: Record<RoleKey, string> = {
-  learner: "/assessment",
+  learner: "/dashboard",
   instructor: "/instructor",
   parent: "/supervisor",
 };

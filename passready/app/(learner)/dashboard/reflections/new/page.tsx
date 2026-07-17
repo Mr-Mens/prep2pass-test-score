@@ -76,7 +76,7 @@ export default async function NewLearnerReflectionPage({ searchParams }: Props) 
         <h1 className="mt-4 font-heading text-2xl font-semibold tracking-tight text-brand-950 sm:text-3xl">
           New reflection
         </h1>
-        <p className="mt-2 text-sm text-brand-600">Takes under two minutes. Be honest. It helps your progress insights.</p>
+        <p className="mt-2 text-sm text-brand-600">Takes under two minutes. Honest answers help your next lesson focus.</p>
       </header>
       <ReflectionForm
         cancelHref="/dashboard/reflections"

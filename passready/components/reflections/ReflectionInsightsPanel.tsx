@@ -5,58 +5,108 @@ type Props = {
   title?: string;
 };
 
-export function ReflectionInsightsPanel({ insights, title = "Progress Insights" }: Props) {
-  return (
-    <section className="rounded-2xl border border-teal-200/70 bg-teal-50/40 p-5 sm:p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-brand-800">{insights.confidenceTrend.summary}</p>
+function TopicPills({
+  items,
+  empty,
+  tone = "neutral",
+}: {
+  items: Array<{ topicId: string; label: string; count?: number }>;
+  empty: string;
+  tone?: "neutral" | "watch" | "good";
+}) {
+  if (items.length === 0) {
+    return <p className="text-sm text-brand-500">{empty}</p>;
+  }
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Repeated weaknesses</p>
-          <ul className="mt-2 space-y-1 text-sm text-brand-800">
-            {insights.repeatedWeaknesses.length > 0 ? (
-              insights.repeatedWeaknesses.map((item) => (
-                <li key={item.topicId}>
-                  {item.label} · {item.count}x
-                </li>
-              ))
-            ) : (
-              <li className="text-brand-600">No repeated difficulties yet.</li>
-            )}
-          </ul>
+  const toneClass =
+    tone === "watch"
+      ? "border-amber-200 bg-amber-50 text-amber-950"
+      : tone === "good"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+        : "border-brand-200 bg-white text-brand-900";
+
+  return (
+    <ul className="flex flex-wrap gap-1.5">
+      {items.map((item) => (
+        <li key={item.topicId} className={`rounded-full border px-2.5 py-1 text-xs font-medium ${toneClass}`}>
+          {item.label}
+          {item.count != null && item.count > 1 ? (
+            <span className="ml-1 tabular-nums opacity-70">{item.count}×</span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ConfidenceBadge({ insights }: { insights: ReflectionInsights }) {
+  const { direction, averageDelta, summary } = insights.confidenceTrend;
+  const hasData = summary !== "Log a lesson to start";
+
+  const badgeClass =
+    direction === "up"
+      ? "bg-emerald-50 text-emerald-900 ring-emerald-200"
+      : direction === "down"
+        ? "bg-amber-50 text-amber-950 ring-amber-200"
+        : "bg-brand-50 text-brand-800 ring-brand-200";
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ring-1 ${badgeClass}`}>
+        {hasData ? `Confidence ${summary.toLowerCase()}` : summary}
+      </span>
+      {hasData ? (
+        <span className="text-xs tabular-nums text-brand-500">
+          {averageDelta > 0 ? "+" : ""}
+          {averageDelta.toFixed(1)} avg · last lessons
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+export function ReflectionInsightsPanel({ insights, title = "Progress insights" }: Props) {
+  const takeaway = insights.highlights[0] ?? null;
+
+  return (
+    <section className="space-y-5 rounded-2xl border border-brand-100 bg-white p-5 sm:p-6">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">{title}</p>
+        <div className="mt-3">
+          <ConfidenceBadge insights={insights} />
         </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Improving topics</p>
-          <ul className="mt-2 space-y-1 text-sm text-brand-800">
-            {insights.improvingTopics.length > 0 ? (
-              insights.improvingTopics.map((item) => (
-                <li key={item.topicId}>
-                  {item.label} · {item.count}x
-                </li>
-              ))
-            ) : (
-              <li className="text-brand-600">Log strengths to track improvement.</li>
-            )}
-          </ul>
-        </div>
-        <div className="sm:col-span-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Under-practised topics</p>
-          <p className="mt-2 text-sm text-brand-800">
-            {insights.underPractisedTopics.length > 0
-              ? insights.underPractisedTopics.map((item) => item.label).join(" · ")
-              : "Great breadth so far across your recent reflections."}
-          </p>
-        </div>
+        {takeaway ? (
+          <p className="mt-3 text-base font-semibold text-brand-950">{takeaway}</p>
+        ) : null}
       </div>
 
-      {insights.highlights.length > 0 ? (
-        <ul className="mt-5 space-y-2 border-t border-teal-100 pt-4 text-sm text-brand-800">
-          {insights.highlights.map((line) => (
-            <li key={line}>• {line}</li>
-          ))}
-        </ul>
-      ) : null}
+      <div className="grid gap-5 sm:grid-cols-3">
+        <div>
+          <p className="text-xs font-semibold text-brand-700">Needs work</p>
+          <div className="mt-2">
+            <TopicPills
+              items={insights.repeatedWeaknesses}
+              empty="Nothing repeating yet"
+              tone="watch"
+            />
+          </div>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-brand-700">Going well</p>
+          <div className="mt-2">
+            <TopicPills items={insights.improvingTopics} empty="Log what went well" tone="good" />
+          </div>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-brand-700">Not covered yet</p>
+          <div className="mt-2">
+            <TopicPills
+              items={insights.underPractisedTopics.slice(0, 4)}
+              empty="Good coverage so far"
+            />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

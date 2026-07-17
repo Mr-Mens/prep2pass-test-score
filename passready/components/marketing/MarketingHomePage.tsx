@@ -23,7 +23,7 @@ const audienceCards = [
     label: "Learners",
     headline: "Build skills with structure and clarity.",
     body: "Track your Learning Journey, get Progress Insights and prepare confidently for test day.",
-    href: "/welcome?role=learner&next=%2Fassessment",
+    href: "/welcome?role=learner&next=%2Fdashboard",
     cta: BRAND_CTA.getMyScore,
   },
   {

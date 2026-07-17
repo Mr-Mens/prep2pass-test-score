@@ -3,12 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ReflectionDetailView } from "@/components/reflections/ReflectionDetailView";
-import { ReflectionInsightsPanel } from "@/components/reflections/ReflectionInsightsPanel";
-import { buildReflectionInsights } from "@/lib/lesson-reflections/insights";
-import {
-  getLessonReflectionById,
-  listLessonReflectionsForLearner,
-} from "@/lib/server/repositories/lesson-reflections-repository";
+import { getLessonReflectionById } from "@/lib/server/repositories/lesson-reflections-repository";
 import { getCachedServerAuthUser } from "@/lib/server/cached-user-data";
 
 type Props = { params: { id: string } };
@@ -22,9 +17,6 @@ export default async function LearnerReflectionDetailPage({ params }: Props) {
   const reflection = await getLessonReflectionById(params.id);
   if (!reflection || reflection.user_id !== user.id) notFound();
 
-  const allRows = await listLessonReflectionsForLearner(user.id);
-  const insights = buildReflectionInsights(allRows);
-
   return (
     <div className="space-y-6 pb-4">
       <Link
@@ -34,7 +26,11 @@ export default async function LearnerReflectionDetailPage({ params }: Props) {
         ← All reflections
       </Link>
       <ReflectionDetailView reflection={reflection} />
-      <ReflectionInsightsPanel insights={insights} title="Your progress insights" />
+      <p className="text-center text-sm text-brand-600">
+        <Link href="/dashboard/reflections#insights" className="font-semibold text-teal-800 underline-offset-2 hover:underline">
+          See progress insights
+        </Link>
+      </p>
     </div>
   );
 }

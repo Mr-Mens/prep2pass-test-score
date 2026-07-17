@@ -3,12 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ReflectionDetailView } from "@/components/reflections/ReflectionDetailView";
-import { ReflectionInsightsPanel } from "@/components/reflections/ReflectionInsightsPanel";
-import { buildReflectionInsights } from "@/lib/lesson-reflections/insights";
-import {
-  getLessonReflectionById,
-  listLessonReflectionsForSupervisor,
-} from "@/lib/server/repositories/lesson-reflections-repository";
+import { getLessonReflectionById } from "@/lib/server/repositories/lesson-reflections-repository";
 import { requireLinkedLearnerUserId, requireParentSession } from "@/lib/server/supervisor-page-auth";
 
 type Props = { params: { id: string } };
@@ -25,9 +20,6 @@ export default async function SupervisorReflectionDetailPage({ params }: Props) 
   const reflection = await getLessonReflectionById(params.id);
   if (!reflection || reflection.user_id !== learnerUserId) notFound();
 
-  const allRows = await listLessonReflectionsForSupervisor(user.id);
-  const insights = buildReflectionInsights(allRows);
-
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-4">
       <Link
@@ -37,7 +29,14 @@ export default async function SupervisorReflectionDetailPage({ params }: Props) 
         ← All reflections
       </Link>
       <ReflectionDetailView reflection={reflection} />
-      <ReflectionInsightsPanel insights={insights} title="Learner progress insights" />
+      <p className="text-center text-sm text-brand-600">
+        <Link
+          href="/supervisor/reflections#insights"
+          className="font-semibold text-teal-800 underline-offset-2 hover:underline"
+        >
+          See progress insights
+        </Link>
+      </p>
     </div>
   );
 }

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/Button";
-import { LessonReflectionsSummaryCard } from "@/components/reflections/LessonReflectionsSummaryCard";
 import { ReflectionInsightsPanel } from "@/components/reflections/ReflectionInsightsPanel";
+import { ReflectionInsightsStrip } from "@/components/reflections/ReflectionInsightsStrip";
 import { ReflectionListSection } from "@/components/reflections/ReflectionListSection";
 import { buildReflectionDashboardSummary, buildReflectionInsights } from "@/lib/lesson-reflections/insights";
 import { listLessonReflectionsForSupervisor } from "@/lib/server/repositories/lesson-reflections-repository";
@@ -31,7 +31,7 @@ export default async function SupervisorReflectionsPage() {
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-brand-600">
             {learnerUserId
-              ? "Track practice sessions and confidence after each drive with your learner."
+              ? "Track practice sessions and confidence after each drive."
               : "Link your learner first to start logging reflections together."}
           </p>
         </div>
@@ -51,30 +51,28 @@ export default async function SupervisorReflectionsPage() {
         </p>
       ) : (
         <>
-          <LessonReflectionsSummaryCard
-            summary={summary}
-            newHref="/supervisor/reflections/new"
-            listHref="/supervisor/reflections"
-            latestReflectionHref={
-              summary.latestReflectionId ? `/supervisor/reflections/${summary.latestReflectionId}` : undefined
-            }
-          />
-          <ReflectionInsightsPanel insights={insights} />
+          <ReflectionInsightsStrip summary={summary} insights={insights} />
           <section>
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-500">All reflections</h2>
-              <Link
-                href="/supervisor/reflections/new"
-                className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline"
-              >
-                Add new
-              </Link>
-            </div>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-500">Reflections</h2>
             <ReflectionListSection
               reflections={reflections}
               detailHref={(id) => `/supervisor/reflections/${id}`}
             />
           </section>
+          {summary.totalReflections > 0 ? (
+            <details id="insights" className="group rounded-2xl border border-brand-100 bg-white">
+              <summary className="cursor-pointer list-none px-4 py-3.5 text-sm font-semibold text-brand-800 [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center justify-between gap-2">
+                  Full progress insights
+                  <span className="text-xs font-medium text-brand-500 group-open:hidden">Show</span>
+                  <span className="hidden text-xs font-medium text-brand-500 group-open:inline">Hide</span>
+                </span>
+              </summary>
+              <div className="border-t border-brand-100 px-1 pb-1 sm:px-2 sm:pb-2">
+                <ReflectionInsightsPanel insights={insights} title="Progress insights" />
+              </div>
+            </details>
+          ) : null}
         </>
       )}
     </div>

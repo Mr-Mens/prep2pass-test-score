@@ -32,29 +32,31 @@ export function LessonReflectionsSummaryCard({
         </span>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Confidence trend</p>
-          <p className="mt-2 text-sm leading-relaxed text-brand-800">{summary.confidenceTrend.summary}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Confidence</p>
+          <p className="mt-2 text-sm font-semibold text-brand-950">
+            {summary.confidenceTrend.summary === "Log a lesson to start"
+              ? "—"
+              : summary.confidenceTrend.summary}
+          </p>
         </div>
         <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Most practised</p>
           <p className="mt-2 text-sm font-semibold text-brand-950">
-            {summary.mostPractisedTopic?.label ?? "Log your first reflection"}
+            {summary.mostPractisedTopic?.label ?? "—"}
           </p>
         </div>
-        <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4 sm:col-span-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Most repeated difficulty</p>
+        <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-500">Watch</p>
           <p className="mt-2 text-sm font-semibold text-brand-950">
-            {summary.mostRepeatedDifficulty?.label ?? "None flagged yet"}
+            {summary.mostRepeatedDifficulty?.label ?? "—"}
           </p>
         </div>
       </div>
 
       {summary.insights.highlights[0] ? (
-        <p className="mt-4 rounded-xl border border-teal-100 bg-teal-50/50 px-4 py-3 text-sm text-teal-950">
-          {summary.insights.highlights[0]}
-        </p>
+        <p className="mt-4 text-sm font-semibold text-brand-950">{summary.insights.highlights[0]}</p>
       ) : null}
 
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">

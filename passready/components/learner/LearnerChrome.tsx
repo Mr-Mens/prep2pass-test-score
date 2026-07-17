@@ -228,7 +228,7 @@ export function LearnerChrome({ children }: { children: React.ReactNode }) {
   const isPremium = session?.hasPremiumAccess ?? false;
   const railLinks = isPremium ? premiumRailNavItems : freeRailNavItems;
   const dockLinks = isPremium ? premiumDockNavItems : freeDockNavItems;
-  const homeHref = isPremium ? "/dashboard" : "/assessment";
+  const homeHref = "/dashboard";
 
   function NavRail() {
     if (!accessReady) {

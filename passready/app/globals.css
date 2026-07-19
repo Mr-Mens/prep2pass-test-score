@@ -120,8 +120,11 @@
   }
 
   .app-main-scroll {
-    @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain;
+    @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    /* Avoid iOS rubber-band stealing scroll from long forms (Score tab). */
+    touch-action: pan-y;
   }
 
   .pt-safe {

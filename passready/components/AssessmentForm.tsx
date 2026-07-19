@@ -400,25 +400,19 @@ export function AssessmentForm({
     }
   }
 
+  // Learner chrome already scrolls via `.app-main-scroll`. Nested overflow-y here
+  // causes intermittent mobile scroll lock (especially iOS). Keep one scroller only.
   const mobileScrollPadClass = stackAboveMobileNav
-    ? "pb-4"
+    ? "pb-[calc(12rem+env(safe-area-inset-bottom))]"
     : "pb-[calc(7.25rem+env(safe-area-inset-bottom))]";
-  const mobileStickyBarClass = stackAboveMobileNav ? "" : "bottom-0";
-  const mobileFormShellClass = stackAboveMobileNav
-    ? "flex max-h-[min(100%,calc(100dvh-8rem-env(safe-area-inset-bottom)))] flex-col overflow-hidden md:block md:max-h-none"
-    : "";
-  const mobileFieldsScrollClass = stackAboveMobileNav
-    ? "min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] md:contents md:overflow-visible"
-    : "contents";
+  const mobileStickyBarClass = stackAboveMobileNav
+    ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom))]"
+    : "bottom-0";
 
   function renderMobileSubmitBar() {
     return (
       <div
-        className={
-          stackAboveMobileNav
-            ? "shrink-0 border-t border-brand-200/90 bg-white pt-3 md:hidden"
-            : `fixed inset-x-0 z-40 max-w-full overflow-x-hidden border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`
-        }
+        className={`fixed inset-x-0 z-40 max-w-full overflow-x-hidden border-t border-brand-200/90 bg-white/95 px-4 pt-3 shadow-[0_-8px_32px_rgba(28,34,48,0.08)] backdrop-blur-lg md:hidden ${mobileStickyBarClass}`}
         style={{
           paddingBottom: stackAboveMobileNav
             ? "0.75rem"
@@ -559,9 +553,9 @@ export function AssessmentForm({
       onSubmit={handleSubmit(onSubmit, () => {
         setSubmitError("Please check the highlighted fields above and try again.");
       })}
-      className={`min-w-0 overflow-x-hidden sm:space-y-10 md:pb-0 ${mobileFormShellClass} ${stackAboveMobileNav ? "" : `space-y-6 ${mobileScrollPadClass}`}`}
+      className={`min-w-0 space-y-6 overflow-x-hidden sm:space-y-10 md:pb-0 ${mobileScrollPadClass}`}
     >
-      <div className={mobileFieldsScrollClass}>
+      <div className="contents">
       <fieldset className={sectionBox}>
         <SectionHeader
           step={1}

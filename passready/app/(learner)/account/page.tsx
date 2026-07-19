@@ -160,6 +160,7 @@ export default async function LearnerAccountPage() {
             <MenuRow href="/assessment" title={BRAND_CTA.updateMyScore} hint="Takes around 5 minutes" />
             <MenuRow href="/progress" title="Progress timeline" hint={`Score arc across ${SMART_UI.reports.toLowerCase()}`} />
             <MenuRow href="/my-reports" title={BRAND_CTA.viewScoreHistory} hint="Open past write-ups" />
+            <MenuRow href="/mock-tests" title="Mock test reports" hint="Reports your instructor has shared" />
           </>
         ) : (
           <>

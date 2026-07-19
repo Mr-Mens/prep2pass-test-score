@@ -54,6 +54,8 @@ export async function POST(request: Request) {
 
     let stripePromotionCodeId: string | undefined;
     let trialPeriodDays: number | undefined;
+    let paymentMethodCollection: "always" | "if_required" | undefined;
+    let cancelPath = "/subscribe";
     let promoMetadata:
       | {
           adminPromoCodeId?: string;
@@ -71,6 +73,18 @@ export async function POST(request: Request) {
       });
       if (!resolved.ok) return jsonError(400, "INVALID_PROMO", resolved.message);
 
+      // 100% invites should never reach checkout — claim path activates them.
+      if (resolved.promo.type === "discount" && resolved.promo.discountPercent >= 100 && premiumInviteToken) {
+        return NextResponse.json({
+          success: false as const,
+          error: {
+            code: "USE_GIFT_CLAIM",
+            message: "This invite is free Premium. Activate it from your invite link instead of checkout.",
+          },
+          redirect: `/invite/premium/${encodeURIComponent(premiumInviteToken)}/claim`,
+        });
+      }
+
       promoMetadata = {
         adminPromoCodeId: resolved.promo.promoCodeId,
         ...(resolved.promo.inviteId ? { adminPremiumInviteId: resolved.promo.inviteId } : {}),
@@ -79,19 +93,29 @@ export async function POST(request: Request) {
 
       if (resolved.promo.type === "discount") {
         stripePromotionCodeId = resolved.promo.stripePromotionCodeId;
+        // Discount invites skip the default 7-day trial so checkout isn't "trial then £0".
+        trialPeriodDays = 0;
+        if (resolved.promo.discountPercent >= 100) {
+          paymentMethodCollection = "if_required";
+        }
       } else {
         trialPeriodDays = resolved.promo.trialDays;
         promoMetadata.trialDays = resolved.promo.trialDays;
       }
     }
 
+    if (premiumInviteToken) {
+      cancelPath = `/subscribe?premiumInvite=${encodeURIComponent(premiumInviteToken)}`;
+    }
+
     const session = await createSubscriptionCheckoutSession({
       email: auth.email,
       userId: auth.userId,
       returnPath,
-      cancelPath: "/subscribe",
+      cancelPath,
       stripePromotionCodeId,
       trialPeriodDays,
+      paymentMethodCollection,
       promoMetadata,
     });
     if (!session.url) {

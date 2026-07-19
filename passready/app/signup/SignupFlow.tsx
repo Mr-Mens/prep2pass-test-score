@@ -228,8 +228,8 @@ export function SignupFlow() {
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-brand-950">Create account</h1>
       {premiumInviteToken ? (
         <p className="mt-3 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
-          You&apos;ve been invited to Pass Pilot Premium. Use the invited email address below, then subscribe with your
-          discount applied.
+          You&apos;ve been invited to Pass Pilot Premium. Use the invited email below, verify once, and we&apos;ll unlock
+          your access — no trial maze.
         </p>
       ) : inviteToken ? (
         <p className="mt-3 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">

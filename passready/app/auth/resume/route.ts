@@ -4,6 +4,13 @@ import { detectLoginIntentMismatch, loginIntentRoleFromContinue } from "@/lib/au
 import { dashboardPathForAppRole } from "@/lib/auth/post-auth-destination";
 import { resolvePostAuthDestination } from "@/lib/auth/resolve-post-auth-destination";
 import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
+import {
+  extractPremiumInviteToken,
+  premiumInviteClaimPath,
+  premiumInviteSubscribePath,
+  redeemPremiumInviteForUser,
+} from "@/lib/server/redeem-premium-invite";
+import { getAdminPremiumInviteByToken, resolvePremiumInviteStatus } from "@/lib/server/repositories/admin-promo-repository";
 import { syncUserProfileFromSignupMetadata } from "@/lib/server/repositories/user-profiles-repository";
 import { redirectIfAccountPaused } from "@/lib/server/paused-account-guard";
 import { ensureUserAppRoleFromIntent, getUserAppRole } from "@/lib/server/user-app-role";
@@ -36,11 +43,16 @@ export async function GET(request: NextRequest) {
     return redirect(origin, query ? `/login?${query}` : "/login");
   }
 
+  const continueRaw = request.nextUrl.searchParams.get("continue");
+  const resumeContinuePath =
+    typeof continueRaw === "string" && continueRaw.startsWith("/") && !continueRaw.startsWith("//")
+      ? `/auth/resume?continue=${encodeURIComponent(continueRaw)}`
+      : "/auth/resume";
+
   if (!user.emailConfirmedAt) {
-    return redirect(origin, `/verify-email?next=${encodeURIComponent("/auth/resume")}`);
+    return redirect(origin, `/verify-email?next=${encodeURIComponent(resumeContinuePath)}`);
   }
 
-  const continueRaw = request.nextUrl.searchParams.get("continue");
   await redirectIfAccountPaused(user.id, continueRaw ?? undefined);
 
   try {
@@ -73,6 +85,42 @@ export async function GET(request: NextRequest) {
     return redirect(origin, `/login?${q.toString()}`);
   }
 
-  const destination = resolvePostAuthDestination(role, continueRaw);
+  let destination = resolvePostAuthDestination(role, continueRaw);
+
+  if (role === "learner" && user.email) {
+    const inviteToken = extractPremiumInviteToken(
+      continueRaw,
+      user.userMetadata as Record<string, unknown> | undefined,
+    );
+    if (inviteToken) {
+      try {
+        const invite = await getAdminPremiumInviteByToken(inviteToken);
+        if (invite && resolvePremiumInviteStatus(invite) === "pending") {
+          if (invite.discount_percent >= 100) {
+            const redeemed = await redeemPremiumInviteForUser({
+              token: inviteToken,
+              userId: user.id,
+              email: user.email,
+            });
+            if (redeemed.ok) {
+              destination = "/dashboard?premium=gift";
+            } else if (redeemed.kind === "needs_checkout") {
+              destination = premiumInviteSubscribePath(inviteToken);
+            } else {
+              destination = premiumInviteClaimPath(inviteToken);
+            }
+          } else {
+            destination = premiumInviteSubscribePath(inviteToken);
+          }
+        } else if (invite && resolvePremiumInviteStatus(invite) === "redeemed") {
+          destination = "/dashboard";
+        }
+      } catch (e) {
+        console.warn("[auth/resume] premium_invite_redeem_failed", e);
+        destination = premiumInviteClaimPath(inviteToken);
+      }
+    }
+  }
+
   return redirect(origin, destination);
 }

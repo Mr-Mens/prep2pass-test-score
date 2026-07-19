@@ -6,6 +6,7 @@ const ROLE_DESTINATIONS: ReadonlyArray<{ prefix: string; role: UserAppRole }> = 
   { prefix: "/dashboard", role: "learner" },
   { prefix: "/assessment", role: "learner" },
   { prefix: "/subscribe", role: "learner" },
+  { prefix: "/invite", role: "learner" },
   { prefix: "/mock-tests", role: "learner" },
   { prefix: "/progress", role: "learner" },
   { prefix: "/account", role: "learner" },

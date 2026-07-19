@@ -15,6 +15,7 @@ type NavMatch =
   | "journey"
   | "lessons"
   | "reflections"
+  | "mocks"
   | "resources"
   | "subscribe"
   | "account";
@@ -25,26 +26,29 @@ const premiumRailNavItems: readonly { href: string; label: string; match: NavMat
   { href: "/progress", label: "Learning Journey", match: "journey" },
   { href: "/dashboard/lessons", label: "Lessons", match: "lessons" },
   { href: "/dashboard/reflections", label: "Lesson Reflections", match: "reflections" },
+  { href: "/mock-tests", label: "Mock tests", match: "mocks" },
   { href: "/dashboard/resources", label: "Resources", match: "resources" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
 const premiumDockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/dashboard", label: "Home", match: "home" },
   { href: "/assessment", label: "Score", match: "assessment" },
-  { href: "/progress", label: "Journey", match: "journey" },
   { href: "/dashboard/lessons", label: "Lessons", match: "lessons" },
+  { href: "/mock-tests", label: "Mocks", match: "mocks" },
   { href: "/dashboard/reflections", label: "Reflect", match: "reflections" },
-  { href: "/dashboard/resources", label: "Library", match: "resources" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
 const freeRailNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/dashboard", label: "Dashboard", match: "home" },
   { href: "/assessment", label: PRODUCT.score, match: "assessment" },
   { href: "/subscribe", label: "Premium trial", match: "subscribe" },
   { href: "/account", label: "Account", match: "account" },
 ];
 
 const freeDockNavItems: readonly { href: string; label: string; match: NavMatch }[] = [
+  { href: "/dashboard", label: "Home", match: "home" },
   { href: "/assessment", label: "Score", match: "assessment" },
   { href: "/subscribe", label: "Trial", match: "subscribe" },
   { href: "/account", label: "Account", match: "account" },
@@ -59,6 +63,9 @@ function activeFor(pathname: string, match: NavMatch): boolean {
   }
   if (match === "reflections") {
     return pathname === "/dashboard/reflections" || pathname.startsWith("/dashboard/reflections/");
+  }
+  if (match === "mocks") {
+    return pathname === "/mock-tests" || pathname.startsWith("/mock-tests/");
   }
   if (match === "resources") {
     return pathname === "/dashboard/resources" || pathname.startsWith("/dashboard/resources/");
@@ -151,6 +158,20 @@ function IconAccount({ stroke }: { stroke: string }) {
   );
 }
 
+function IconMocks({ stroke }: { stroke: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M8 4h8a2 2 0 012 2v14l-3-1.5L12 20l-3-1.5L6 20V6a2 2 0 012-2z"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M9 9h6M9 13h6" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function IconTrial({ stroke }: { stroke: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -171,6 +192,8 @@ function iconForMatch(match: NavMatch, stroke: string) {
       return <IconLessons stroke={stroke} />;
     case "reflections":
       return <IconReflect stroke={stroke} />;
+    case "mocks":
+      return <IconMocks stroke={stroke} />;
     case "resources":
       return <IconBook stroke={stroke} />;
     case "account":

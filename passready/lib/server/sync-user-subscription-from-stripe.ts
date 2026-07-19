@@ -29,6 +29,7 @@ function checkoutSessionIsComplete(session: Stripe.Checkout.Session): boolean {
 /** Pull active/trialing subscription rows from Stripe into Supabase (webhook fallback). */
 export async function syncSubscriptionForUserFromStripe(userId: string): Promise<boolean> {
   const existing = await getSubscriptionByUserId(userId);
+  // Includes gift Premium (`gift_*` ids) — do not replace active access via Stripe search.
   if (existing && subscriptionGrantsPremium(existing.status)) {
     return true;
   }

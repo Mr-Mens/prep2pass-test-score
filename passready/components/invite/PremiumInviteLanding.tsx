@@ -49,25 +49,30 @@ export function PremiumInviteLanding({ token }: Props) {
     void load();
   }, [token]);
 
-  const subscribeNext = useMemo(
-    () => `/subscribe?premiumInvite=${encodeURIComponent(token)}`,
-    [token],
-  );
+  const isFullGift = Boolean(invite && invite.discountPercent >= 100);
+
+  const postAuthNext = useMemo(() => {
+    if (!invite) return "/dashboard";
+    if (invite.discountPercent >= 100) {
+      return `/invite/premium/${encodeURIComponent(token)}/claim`;
+    }
+    return `/subscribe?premiumInvite=${encodeURIComponent(token)}`;
+  }, [invite, token]);
 
   const signupHref = useMemo(() => {
     if (!invite) return "/signup";
     const q = new URLSearchParams({
-      next: subscribeNext,
+      next: postAuthNext,
       email: invite.pupilEmail,
       premiumInvite: token,
     });
     return `/signup?${q.toString()}`;
-  }, [invite, subscribeNext, token]);
+  }, [invite, postAuthNext, token]);
 
   const loginHref = useMemo(() => {
-    const q = new URLSearchParams({ next: subscribeNext });
+    const q = new URLSearchParams({ next: postAuthNext });
     return `/login?${q.toString()}`;
-  }, [subscribeNext]);
+  }, [postAuthNext]);
 
   if (loading) {
     return (
@@ -96,22 +101,17 @@ export function PremiumInviteLanding({ token }: Props) {
       <section className="rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/80 via-white to-brand-50/50 p-8 shadow-card ring-1 ring-teal-100">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Premium invite</p>
         <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-brand-950">
-          {formatDiscountLabel(invite.discountPercent)} Pass Pilot Premium
+          {isFullGift ? "Your free Premium access" : `${formatDiscountLabel(invite.discountPercent)} Pass Pilot Premium`}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-brand-700">
-          You&apos;ve been invited to create a premium learner account
-          {invite.discountPercent >= 100 ? " at no cost" : ` with ${invite.discountLabel}`}.
+          {isFullGift
+            ? "Create your account with the invited email, verify once, and Premium unlocks automatically — no payment step."
+            : `You've been invited to Premium with ${invite.discountLabel}. Create your account, then claim your discount in one short checkout.`}
         </p>
         <div className="mt-5 rounded-xl border border-brand-200 bg-white/80 px-4 py-3 text-sm text-brand-800">
           <p>
-            <span className="font-medium text-brand-950">Invited email:</span> {invite.pupilEmail}
+            <span className="font-medium text-brand-950">Use this email:</span> {invite.pupilEmail}
           </p>
-          {invite.promoCode ? (
-            <p className="mt-1">
-              <span className="font-medium text-brand-950">Promo code:</span>{" "}
-              <span className="font-mono">{invite.promoCode}</span>
-            </p>
-          ) : null}
           <p className="mt-1 text-xs text-brand-500">
             Valid until {new Date(invite.expiresAt).toLocaleString("en-GB")}
           </p>
@@ -124,12 +124,12 @@ export function PremiumInviteLanding({ token }: Props) {
         ) : (
           <div className="mt-6 space-y-3">
             <Button href={signupHref} variant="conversion" className="min-h-[52px] w-full">
-              Create Pass Pilot account
+              {isFullGift ? "Create account & activate" : "Create account & claim"}
             </Button>
             <p className="text-center text-sm text-brand-600">
               Already have an account?{" "}
               <Link href={loginHref} className="font-semibold text-teal-800 underline-offset-4 hover:underline">
-                Sign in to subscribe
+                {isFullGift ? "Sign in to activate" : "Sign in to claim"}
               </Link>
             </p>
           </div>

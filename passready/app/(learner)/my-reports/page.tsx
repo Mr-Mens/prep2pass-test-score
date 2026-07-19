@@ -122,17 +122,27 @@ export default async function MyReportsPage() {
         ) : null}
       </div>
 
-      {mockTests.length > 0 ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-end justify-between gap-2">
+      <section className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
             <h2 className="font-heading text-lg font-semibold tracking-tight text-brand-950">Instructor mock tests</h2>
-            <Link href="/mock-tests" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
-              View all
-            </Link>
+            <p className="mt-1 text-sm text-brand-600">Open reports in the app whenever you need them — not only from email.</p>
           </div>
+          <Link href="/mock-tests" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
+            {mockTests.length > 0 ? "View all" : "Open mock tests"}
+          </Link>
+        </div>
+        {mockTests.length === 0 ? (
+          <p className="mt-4 text-sm text-brand-600">
+            None shared yet. When your instructor sends a mock test, it will appear here and under Mock tests.
+          </p>
+        ) : (
           <ul className="mt-4 divide-y divide-brand-100">
             {mockTests.slice(0, 3).map((item) => (
-              <li key={item.deliveryId} className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+              <li
+                key={item.deliveryId}
+                className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div>
                   <p className="text-sm font-semibold text-brand-950">
                     {item.instructorName} · {formatIsoDateUk(item.sentAt)}
@@ -150,8 +160,8 @@ export default async function MyReportsPage() {
               </li>
             ))}
           </ul>
-        </section>
-      ) : null}
+        )}
+      </section>
 
       <section aria-labelledby="reports-list-heading">
         <div className="flex flex-wrap items-end justify-between gap-2 border-b border-brand-200/80 pb-3">

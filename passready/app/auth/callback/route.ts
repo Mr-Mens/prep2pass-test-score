@@ -5,6 +5,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 
 import { authResumePath } from "@/lib/auth/post-auth-destination";
 import { selfServiceRoleFromSignupMetadata } from "@/lib/auth/self-service-roles";
+import { premiumInviteClaimPath } from "@/lib/server/redeem-premium-invite";
 import { autoAcceptPupilInviteByToken } from "@/lib/server/repositories/instructor-pupil-link-repository";
 import { syncUserProfileFromSignupMetadata } from "@/lib/server/repositories/user-profiles-repository";
 import { ensureUserAppRoleFromIntent } from "@/lib/server/user-app-role";
@@ -20,7 +21,24 @@ function safeContinuePath(raw: unknown): string | null {
 }
 
 function destinationAfterSignupConfirm(user: { user_metadata?: Record<string, unknown> } | null): string {
-  const continuePath = safeContinuePath(user?.user_metadata?.post_auth_continue);
+  let continuePath = safeContinuePath(user?.user_metadata?.post_auth_continue);
+  const pendingPremium =
+    typeof user?.user_metadata?.pending_premium_invite_token === "string"
+      ? user.user_metadata.pending_premium_invite_token.trim()
+      : "";
+
+  if (pendingPremium) {
+    const encoded = encodeURIComponent(pendingPremium);
+    const hasInvite =
+      Boolean(continuePath?.includes(`premiumInvite=${encoded}`)) ||
+      Boolean(continuePath?.includes(`premiumInvite=${pendingPremium}`)) ||
+      Boolean(continuePath?.includes(`/invite/premium/${pendingPremium}`)) ||
+      Boolean(continuePath?.includes(`/invite/premium/${encoded}`));
+    if (!hasInvite) {
+      continuePath = premiumInviteClaimPath(pendingPremium);
+    }
+  }
+
   return authResumePath(continuePath);
 }
 

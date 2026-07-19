@@ -21,7 +21,7 @@ export default async function PremiumInvitePage({ params }: PageProps) {
       contentClassName="max-w-3xl"
       eyebrow="Pass Pilot"
       title="Premium learner invite"
-      subtitle="Create your account with the email this invite was sent to, then subscribe with your discount applied."
+      subtitle="A short path to unlock Premium with the email this invite was sent to."
     >
       <PremiumInviteLanding token={token} />
     </Section>

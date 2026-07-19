@@ -43,8 +43,8 @@ export default async function LearnerMockTestsPage() {
 
       {items.length === 0 ? (
         <section className="rounded-2xl border border-dashed border-brand-200 bg-white/80 p-8 text-center text-sm leading-relaxed text-brand-700">
-          No mock test reports yet. When your instructor completes a mock test and sends it to your email, it appears
-          here.
+          No mock test reports yet. When your instructor sends a completed mock test to you, it will show here as well
+          as in your email.
         </section>
       ) : (
         <ul className="space-y-4">

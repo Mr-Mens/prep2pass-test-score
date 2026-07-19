@@ -31,7 +31,7 @@ export async function getSubscriptionByUserId(userId: string): Promise<UserSubsc
 
 export async function upsertSubscription(input: {
   userId: string;
-  stripeSubscriptionId: string;
+  stripeSubscriptionId: string | null;
   stripeCustomerId: string | null;
   status: SubscriptionStatus;
   currentPeriodStart: Date | null;
@@ -58,6 +58,25 @@ export async function upsertSubscription(input: {
     console.error("[subscriptions] upsertSubscription failed", error.message);
     throw new Error("Failed to save subscription");
   }
+}
+
+/** Grant Premium from a 100% admin invite without Stripe Checkout. */
+export async function grantGiftPremiumSubscription(input: {
+  userId: string;
+  giftSubscriptionId: string;
+  adminPromoCodeId?: string | null;
+}): Promise<void> {
+  const now = new Date();
+  await upsertSubscription({
+    userId: input.userId,
+    stripeSubscriptionId: input.giftSubscriptionId,
+    stripeCustomerId: null,
+    status: "active",
+    currentPeriodStart: now,
+    currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
+    adminPromoCodeId: input.adminPromoCodeId ?? null,
+  });
 }
 
 export async function updateSubscriptionStatus(input: {

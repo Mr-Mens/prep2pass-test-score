@@ -153,7 +153,9 @@ export async function createSubscriptionCheckoutSession(params: {
   returnPath?: string;
   cancelPath?: string;
   stripePromotionCodeId?: string;
+  /** Pass 0 to skip the default free trial (e.g. discount invites). */
   trialPeriodDays?: number;
+  paymentMethodCollection?: "always" | "if_required";
   promoMetadata?: {
     adminPromoCodeId?: string;
     adminPremiumInviteId?: string;
@@ -168,7 +170,9 @@ export async function createSubscriptionCheckoutSession(params: {
   const priceId = subscriptionPriceId();
   const returnPath = params.returnPath ?? "/checkout/success";
   const cancelPath = params.cancelPath ?? "/assessment";
-  const trialPeriodDays = params.trialPeriodDays ?? PRICING.subscription.trialDays;
+  const trialPeriodDays =
+    params.trialPeriodDays !== undefined ? params.trialPeriodDays : PRICING.subscription.trialDays;
+  const collectPaymentMethod = params.paymentMethodCollection ?? "always";
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -177,14 +181,14 @@ export async function createSubscriptionCheckoutSession(params: {
     success_url: `${config.appUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}&mode=subscription`,
     cancel_url: `${config.appUrl}${cancelPath}`,
     customer_email: params.email,
-    payment_method_collection: "always",
+    payment_method_collection: collectPaymentMethod,
     ...(params.stripePromotionCodeId
       ? { discounts: [{ promotion_code: params.stripePromotionCodeId }] }
       : params.promoMetadata?.adminPromoCodeId
         ? {}
         : { allow_promotion_codes: true }),
     subscription_data: {
-      trial_period_days: trialPeriodDays,
+      ...(trialPeriodDays > 0 ? { trial_period_days: trialPeriodDays } : {}),
       description: `${SITE.name}: ${PRICING.subscription.label}`,
       metadata: {
         supabase_user_id: params.userId,

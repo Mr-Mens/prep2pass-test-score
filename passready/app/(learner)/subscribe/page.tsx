@@ -4,13 +4,21 @@ import { Suspense } from "react";
 
 import { SubscribeFlow } from "@/components/SubscribeFlow";
 import { getLearnerAccessStatus } from "@/lib/server/learner-access";
+import {
+  premiumInviteClaimPath,
+  premiumInviteSubscribePath,
+} from "@/lib/server/redeem-premium-invite";
+import {
+  getAdminPremiumInviteByToken,
+  resolvePremiumInviteStatus,
+} from "@/lib/server/repositories/admin-promo-repository";
 import { requireAuthenticatedSession } from "@/lib/server/require-authenticated-session";
 import { syncSubscriptionForUserFromStripe } from "@/lib/server/sync-user-subscription-from-stripe";
 
 export const metadata: Metadata = {
-  title: "Start Premium trial · Pass Pilot",
+  title: "Start Premium · Pass Pilot",
   description:
-    "7-day free trial: unlimited Test Ready Scores, Smart Reports, lessons, reflections, mock test reports, parent connections, and full learner dashboard.",
+    "Unlock unlimited Test Ready Scores, Smart Reports, lessons, reflections, mock test reports, and your full learner dashboard.",
 };
 
 function SubscribeLoading() {
@@ -21,8 +29,23 @@ function SubscribeLoading() {
   );
 }
 
-export default async function SubscribePage() {
-  const user = await requireAuthenticatedSession("/subscribe");
+type Props = {
+  searchParams?: {
+    premiumInvite?: string;
+    promo?: string;
+  };
+};
+
+export default async function SubscribePage({ searchParams }: Props) {
+  const premiumInvite = searchParams?.premiumInvite?.trim() ?? "";
+  const promo = searchParams?.promo?.trim() ?? "";
+  const returnPath = premiumInvite
+    ? premiumInviteSubscribePath(premiumInvite)
+    : promo
+      ? `/subscribe?promo=${encodeURIComponent(promo)}`
+      : "/subscribe";
+
+  const user = await requireAuthenticatedSession(returnPath);
   try {
     await syncSubscriptionForUserFromStripe(user.id);
   } catch (error) {
@@ -32,10 +55,23 @@ export default async function SubscribePage() {
   if (access.hasPremiumAccess) redirect("/dashboard");
   if (access.isGraduated) redirect("/graduate");
 
+  let inviteDiscountPercent: number | null = null;
+  if (premiumInvite) {
+    const invite = await getAdminPremiumInviteByToken(premiumInvite);
+    if (invite && resolvePremiumInviteStatus(invite) === "pending" && invite.discount_percent >= 100) {
+      redirect(premiumInviteClaimPath(premiumInvite));
+    }
+    inviteDiscountPercent = invite?.discount_percent ?? null;
+  }
+
   return (
     <div className="pb-4">
       <Suspense fallback={<SubscribeLoading />}>
-        <SubscribeFlow />
+        <SubscribeFlow
+          initialPromoCode={promo}
+          initialPremiumInvite={premiumInvite}
+          inviteDiscountPercent={inviteDiscountPercent}
+        />
       </Suspense>
     </div>
   );

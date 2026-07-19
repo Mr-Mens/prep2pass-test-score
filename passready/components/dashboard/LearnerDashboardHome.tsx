@@ -212,6 +212,23 @@ export function LearnerDashboardHome({ view, userId }: Props) {
       {/* Lesson reflections */}
       <LessonReflectionsSummaryCard summary={view.reflectionSummary} />
 
+      <DashboardCard>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <SectionLabel>Mock test reports</SectionLabel>
+            <p className="mt-2 text-sm text-brand-700">
+              View DVSA-style mock reports your instructor shares with you in the app.
+            </p>
+          </div>
+          <Link
+            href="/mock-tests"
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-teal-600 px-4 text-sm font-semibold text-white hover:bg-teal-700"
+          >
+            Open mock tests
+          </Link>
+        </div>
+      </DashboardCard>
+
       {/* Section 6, Recent reports */}
       {view.recentReports.length > 0 ? (
         <DashboardCard>

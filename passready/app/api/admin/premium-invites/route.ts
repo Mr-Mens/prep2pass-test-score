@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { EmailNotConfiguredError } from "@/lib/email/resend";
+import { sendPremiumInviteEmail } from "@/lib/email/templates/premium-invite";
 import { createStripePromoForDiscount } from "@/lib/server/admin-promo-stripe";
 import { handleAdminPromoRouteError, jsonAdminError } from "@/lib/server/admin-promo-route-errors";
 import { assertAdminAccess, getAdminKeyFromRequest } from "@/lib/server/admin-gate";
@@ -37,6 +39,7 @@ const createInviteSchema = z.object({
   promoCodeId: z.string().uuid().optional(),
   note: z.string().trim().max(240).optional(),
   expiresInDays: z.number().int().min(1).max(365).default(30),
+  sendEmail: z.boolean().optional().default(true),
 });
 
 export async function GET(request: Request) {
@@ -148,8 +151,31 @@ export async function POST(request: Request) {
     const appUrl = getStripeConfig().appUrl;
     const inviteUrl = `${appUrl}/invite/premium/${token}`;
 
+    let emailSent = false;
+    let emailError: string | null = null;
+    if (parsed.data.sendEmail !== false) {
+      try {
+        await sendPremiumInviteEmail({
+          toEmail: pupilEmail,
+          inviteToken: token,
+          discountPercent: invite.discount_percent,
+          expiresAt: invite.expires_at,
+        });
+        emailSent = true;
+      } catch (e) {
+        if (e instanceof EmailNotConfiguredError) {
+          emailError = "Invite created, but email is not configured on the server.";
+        } else {
+          console.error("[admin/premium-invites] send_email_failed", e);
+          emailError = "Invite created, but the email could not be sent.";
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true as const,
+      emailSent,
+      emailError,
       invite: {
         id: invite.id,
         token: invite.token,

@@ -87,7 +87,18 @@ export async function getMockTestDeliveryForLearner(
     .eq("learner_user_id", learnerUserId)
     .maybeSingle();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    const msg = (error.message ?? "").toLowerCase();
+    if (
+      error.code === "PGRST205" ||
+      error.code === "42P01" ||
+      msg.includes("learner_mock_test_deliveries") ||
+      msg.includes("schema cache")
+    ) {
+      return null;
+    }
+    throw new Error(error.message);
+  }
   if (!delivery) return null;
 
   const { data: mockTest, error: mockError } = await supabase
@@ -118,7 +129,15 @@ export async function listMockTestDeliveriesForLearner(learnerUserId: string): P
     .order("sent_at", { ascending: false });
 
   if (error) {
-    if (error.code === "PGRST205" || error.code === "42P01") return [];
+    const msg = (error.message ?? "").toLowerCase();
+    if (
+      error.code === "PGRST205" ||
+      error.code === "42P01" ||
+      msg.includes("learner_mock_test_deliveries") ||
+      msg.includes("schema cache")
+    ) {
+      return [];
+    }
     throw new Error(error.message);
   }
   if (!deliveries?.length) return [];

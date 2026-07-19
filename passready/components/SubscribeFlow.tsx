@@ -4,14 +4,20 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/Button";
+import { formatDiscountLabel } from "@/lib/admin/promo-discounts";
 import { PREMIUM_SUBSCRIPTION_BENEFIT_GROUPS, PRICING } from "@/lib/constants";
 
 type Props = {
   initialPromoCode?: string;
   initialPremiumInvite?: string;
+  inviteDiscountPercent?: number | null;
 };
 
-export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = "" }: Props) {
+export function SubscribeFlow({
+  initialPromoCode = "",
+  initialPremiumInvite = "",
+  inviteDiscountPercent = null,
+}: Props) {
   const searchParams = useSearchParams();
   const promoCode = useMemo(
     () => (searchParams.get("promo") ?? initialPromoCode).trim(),
@@ -53,11 +59,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
         return;
       }
       setError(null);
-      if (json.promotion.type === "trial_extension" && json.promotion.trialDays) {
-        setPromoPreview(`${json.promotion.summary} will be applied at checkout.`);
-      } else {
-        setPromoPreview(`${json.promotion.summary} will be applied at checkout.`);
-      }
+      setPromoPreview(`${json.promotion.summary} will be applied at checkout.`);
     } catch {
       setPromoPreview(null);
     } finally {
@@ -103,26 +105,36 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
   }
 
   const hasInvite = Boolean(premiumInvite);
+  const discountLabel =
+    inviteDiscountPercent != null ? formatDiscountLabel(inviteDiscountPercent) : "your invite discount";
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <section className="rounded-3xl border border-teal-200/80 bg-gradient-to-br from-teal-50/80 via-white to-brand-50/50 p-6 shadow-card ring-1 ring-teal-100 sm:p-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">Premium trial</p>
-        <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-brand-950">
-          {PRICING.subscription.display}
-          <span className="ml-2 text-lg font-medium text-brand-500">/ month</span>
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-brand-700">{PRICING.subscription.trialMessage}</p>
-        <p className="mt-2 text-xs leading-relaxed text-brand-600">
-          {PRICING.subscription.trialDays}-day free trial by default, then {PRICING.subscription.display}/month until you
-          pass or cancel. Trial extension codes can give you longer. Graduate Mode stops billing when you pass.
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+          {hasInvite ? "Premium invite" : "Premium"}
         </p>
-
-        {hasInvite ? (
-          <p className="mt-4 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
-            Your premium invite discount will be applied at checkout.
+        <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-brand-950">
+          {hasInvite ? `Claim ${discountLabel} Premium` : PRICING.subscription.display}
+          {!hasInvite ? <span className="ml-2 text-lg font-medium text-brand-500">/ month</span> : null}
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-brand-700">
+          {hasInvite
+            ? `Your invite discount is ready. Confirm in checkout — no free-trial step, just your ${discountLabel} Premium.`
+            : PRICING.subscription.trialMessage}
+        </p>
+        {!hasInvite ? (
+          <p className="mt-2 text-xs leading-relaxed text-brand-600">
+            {PRICING.subscription.trialDays}-day free trial by default, then {PRICING.subscription.display}/month until
+            you pass or cancel. Trial extension codes can give you longer. Graduate Mode stops billing when you pass.
           </p>
         ) : (
+          <p className="mt-4 rounded-xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm text-teal-900">
+            {discountLabel} is applied automatically for the invited email.
+          </p>
+        )}
+
+        {!hasInvite ? (
           <div className="mt-4">
             <label className="text-sm font-medium text-brand-900" htmlFor="subscribe-promo">
               Promotion code (optional)
@@ -144,7 +156,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
               <p className="mt-2 text-xs text-teal-800">{promoPreview}</p>
             ) : null}
           </div>
-        )}
+        ) : null}
 
         <div className="mt-8">
           <h2 className="text-sm font-semibold text-brand-950">Everything included with Premium</h2>
@@ -168,8 +180,8 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
         </div>
 
         <p className="mt-6 text-xs leading-relaxed text-brand-500">
-          Instructors and parent supervisors use Pass Pilot free. Learner billing continues until you cancel or record your
-          practical test pass.
+          Instructors and parent supervisors use Pass Pilot free. Learner billing continues until you cancel or record
+          your practical test pass.
         </p>
         {error ? (
           <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
@@ -183,7 +195,7 @@ export function SubscribeFlow({ initialPromoCode = "", initialPremiumInvite = ""
           className="mt-6 min-h-[52px] w-full"
           onClick={() => void startCheckout()}
         >
-          {busy ? "Opening checkout…" : PRICING.subscription.trialCta}
+          {busy ? "Opening checkout…" : hasInvite ? "Claim Premium discount" : PRICING.subscription.trialCta}
         </Button>
       </section>
     </div>

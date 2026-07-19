@@ -117,17 +117,25 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
       const json = (await res.json()) as {
         success?: boolean;
         invite?: Invite;
+        emailSent?: boolean;
+        emailError?: string | null;
         error?: { message?: string };
       };
       if (!res.ok || !json.success || !json.invite) {
         throw new Error(json.error?.message ?? "Could not create invite");
       }
-      setMessage(`Invite link created for ${json.invite.pupilEmail}`);
+      if (json.emailSent) {
+        setMessage(`Invite emailed to ${json.invite.pupilEmail}. Link also copied.`);
+      } else if (json.emailError) {
+        setMessage(`${json.emailError} Link copied so you can share it manually.`);
+      } else {
+        setMessage(`Invite created for ${json.invite.pupilEmail}. Link copied.`);
+      }
       setPupilEmail("");
       setNote("");
       setPromoCodeId("");
       await loadData();
-      await copyText(json.invite.inviteUrl);
+      await copyText(json.invite.inviteUrl, { silent: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create invite");
     } finally {
@@ -135,12 +143,33 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
     }
   }
 
-  async function copyText(text: string) {
+  async function copyText(text: string, options?: { silent?: boolean }) {
     try {
       await navigator.clipboard.writeText(text);
-      setMessage(`Copied invite link`);
+      if (!options?.silent) setMessage("Copied invite link");
     } catch {
-      setError("Could not copy to clipboard");
+      if (!options?.silent) setError("Could not copy to clipboard");
+    }
+  }
+
+  async function resendEmail(invite: Invite) {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/admin/premium-invites/${encodeURIComponent(invite.id)}/send`, {
+        method: "POST",
+        headers: { "x-admin-access-key": adminKey },
+      });
+      const json = (await res.json()) as { success?: boolean; error?: { message?: string } };
+      if (!res.ok || !json.success) {
+        throw new Error(json.error?.message ?? "Could not send email");
+      }
+      setMessage(`Invite email sent to ${invite.pupilEmail}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not send email");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -150,9 +179,10 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
         onSubmit={(e) => void onCreate(e)}
         className="rounded-2xl border border-brand-200/80 bg-white p-6 shadow-card ring-1 ring-black/[0.02]"
       >
-        <h2 className="text-lg font-semibold text-brand-950">Create premium invite link</h2>
+        <h2 className="text-lg font-semibold text-brand-950">Create premium invite</h2>
         <p className="mt-1 text-sm text-brand-600">
-          Generate a personal link for a pupil email. They sign up with that address and subscribe with the discount applied.
+          Emails the pupil a personal invite link (and copies it for backup). For 100% gifts they activate after verify —
+          no trial maze.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -241,7 +271,7 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
           </div>
         </div>
         <Button type="submit" disabled={busy} className="mt-5">
-          {busy ? "Creating…" : "Generate invite link"}
+          {busy ? "Creating…" : "Create & email invite"}
         </Button>
       </form>
 
@@ -268,7 +298,7 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
                   <th className="pb-2">Promo</th>
                   <th className="pb-2">Status</th>
                   <th className="pb-2">Expires</th>
-                  <th className="pb-2">Link</th>
+                  <th className="pb-2">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-100 text-brand-800">
@@ -280,13 +310,25 @@ export function AdminPremiumInvitesPanel({ adminKey }: Props) {
                     <td className="py-2 capitalize">{i.status}</td>
                     <td className="py-2">{new Date(i.expiresAt).toLocaleString("en-GB")}</td>
                     <td className="py-2">
-                      <button
-                        type="button"
-                        onClick={() => void copyText(i.inviteUrl)}
-                        className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-800 hover:bg-brand-50"
-                      >
-                        Copy link
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void copyText(i.inviteUrl)}
+                          className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-800 hover:bg-brand-50"
+                        >
+                          Copy link
+                        </button>
+                        {i.status === "pending" ? (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => void resendEmail(i)}
+                            className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-900 hover:bg-teal-100 disabled:opacity-60"
+                          >
+                            Email again
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))}

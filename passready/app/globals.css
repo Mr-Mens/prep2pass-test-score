@@ -123,8 +123,8 @@
     @apply min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
-    /* Avoid iOS rubber-band stealing scroll from long forms (Score tab). */
-    touch-action: pan-y;
+    /* pan-y alone blocks pinch-zoom; keep vertical scroll intent + allow zoom (diagrams). */
+    touch-action: pan-y pinch-zoom;
   }
 
   .pt-safe {

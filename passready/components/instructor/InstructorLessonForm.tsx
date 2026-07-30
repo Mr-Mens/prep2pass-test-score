@@ -34,7 +34,6 @@ type Props = {
   defaultStartTime?: string;
   defaultDurationMinutes?: string;
   cancelHref: string;
-  successHref: string;
 };
 
 function LessonDurationSlider({
@@ -119,7 +118,6 @@ export function InstructorLessonForm({
   defaultStartTime,
   defaultDurationMinutes,
   cancelHref,
-  successHref,
 }: Props) {
   const router = useRouter();
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -160,7 +158,8 @@ export function InstructorLessonForm({
         setError(result.message);
         return;
       }
-      router.push(successHref);
+      // Land on the lesson so instructors have a clear back path (not a dead-end planner dump).
+      router.replace(`/instructor/lessons/${result.lessonId}`);
       router.refresh();
     } catch {
       setError("Could not save lesson.");

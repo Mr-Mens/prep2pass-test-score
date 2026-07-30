@@ -49,7 +49,6 @@ export default async function InstructorNewLessonPage({ searchParams }: Props) {
           defaultStartTime={searchParams.startTime}
           defaultDurationMinutes={searchParams.durationMinutes}
           cancelHref="/instructor/lessons"
-          successHref="/instructor/lessons"
         />
       )}
     </div>

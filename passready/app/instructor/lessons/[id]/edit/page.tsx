@@ -34,7 +34,11 @@ export default async function InstructorEditLessonPage({ params }: Props) {
         <p className="mt-2 text-sm text-brand-600">{lesson.pupil_name}</p>
       </header>
 
-      <InstructorLessonForm pupils={pupils} lesson={lesson} cancelHref="/instructor/lessons" successHref="/instructor/lessons" />
+      <InstructorLessonForm
+        pupils={pupils}
+        lesson={lesson}
+        cancelHref={`/instructor/lessons/${lesson.id}`}
+      />
     </div>
   );
 }

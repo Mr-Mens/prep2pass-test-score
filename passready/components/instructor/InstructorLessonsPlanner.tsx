@@ -199,6 +199,7 @@ export function InstructorLessonsPlanner({ lessons }: Props) {
   const [weekAnchor, setWeekAnchor] = useState(() => startOfWeek(new Date()));
   const [monthAnchor, setMonthAnchor] = useState(() => new Date());
   const [viewDate, setViewDate] = useState<string | null>(null);
+  const [dayReturnTab, setDayReturnTab] = useState<"week" | "month" | null>(null);
 
   const activeDayIso = viewDate ?? todayIso;
   const activeDay = useMemo(
@@ -235,7 +236,8 @@ export function InstructorLessonsPlanner({ lessons }: Props) {
             type="button"
             onClick={() => {
               setTab(value);
-              if (value === "today") setViewDate(null);
+              setViewDate(null);
+              setDayReturnTab(null);
             }}
             className={`min-h-[44px] flex-1 rounded-lg text-sm font-semibold transition ${
               tab === value ? "bg-white text-brand-950 shadow-sm" : "text-brand-600 hover:text-brand-900"
@@ -248,6 +250,19 @@ export function InstructorLessonsPlanner({ lessons }: Props) {
 
       {tab === "today" ? (
         <div className="space-y-3">
+          {dayReturnTab ? (
+            <button
+              type="button"
+              className="inline-flex min-h-[44px] items-center text-sm font-semibold text-teal-800 underline-offset-4 hover:underline"
+              onClick={() => {
+                setTab(dayReturnTab);
+                setViewDate(null);
+                setDayReturnTab(null);
+              }}
+            >
+              ← Back to {dayReturnTab}
+            </button>
+          ) : null}
           {viewDate && viewDate !== todayIso ? (
             <div className="rounded-xl border border-brand-200 bg-brand-50/50 px-3 py-2 text-sm text-brand-700">
               Viewing{" "}
@@ -262,7 +277,10 @@ export function InstructorLessonsPlanner({ lessons }: Props) {
               <button
                 type="button"
                 className="font-semibold text-teal-800 underline-offset-4 hover:underline"
-                onClick={() => setViewDate(null)}
+                onClick={() => {
+                  setViewDate(null);
+                  setDayReturnTab(null);
+                }}
               >
                 Back to today
               </button>
@@ -333,6 +351,7 @@ export function InstructorLessonsPlanner({ lessons }: Props) {
             lessons={lessons}
             onSelectDate={(date) => {
               setViewDate(date);
+              setDayReturnTab("month");
               setTab("today");
             }}
           />
